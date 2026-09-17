@@ -1,4 +1,4 @@
-﻿import pytest
+import pytest
 
 
 def _subject(subject_id: str, subject_class: str = "CAUSAL_FAMILY"):
@@ -120,3 +120,20 @@ def test_benchmark_direction_does_not_change_causal_structural_label():
     results["B1_REDUCED_FORM_EMPIRICAL"].direction = "NOT_SUPPORTED"
     comparison = compare(_protocol(), results)
     assert comparison.structural_label == StructuralResultLabel.ROBUST_ACROSS_FAMILIES
+
+
+def test_benchmark_superiority_respects_preregistered_margin():
+    from worldzero.science.comparison import compare
+
+    protocol = _protocol().model_copy(
+        update={
+            "decision_rules": (
+                _protocol().decision_rules[0].model_copy(update={"threshold": 0.2}),
+            )
+        }
+    )
+    results = _results()
+    results["B1_REDUCED_FORM_EMPIRICAL"].metrics["RMSE"] = 0.85
+
+    comparison = compare(protocol, results)
+    assert "B1_REDUCED_FORM_EMPIRICAL" not in comparison.benchmark_labels

@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Literal
 
@@ -76,7 +76,9 @@ class RunReceipt(BaseModel):
     result_digest: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
     def with_solver(self, solver_name: str) -> RunReceipt:
-        execution = self.execution.model_copy(update={"solver_name": solver_name})
+        execution = ExecutionIdentity.model_validate(
+            {**self.execution.model_dump(), "solver_name": solver_name}
+        )
         return self.model_copy(update={"execution": execution})
 
     def digest(self) -> str:

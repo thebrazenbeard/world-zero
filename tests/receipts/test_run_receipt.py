@@ -76,3 +76,19 @@ def test_benchmark_subject_cannot_claim_causal_topology():
     )
     with pytest.raises(ValidationError, match="benchmark"):
         ScientificSubjectIdentity.model_validate(data)
+
+
+def test_with_solver_revalidates_solver_name():
+    import pytest
+    from pydantic import ValidationError
+
+    from worldzero.receipts.run_receipt import RunReceipt
+
+    receipt = RunReceipt(
+        schema_version="RUN_RECEIPT_V1",
+        receipt_id="RUN_INVALID_SOLVER",
+        subject=_subject(),
+        execution=_execution(),
+    )
+    with pytest.raises(ValidationError):
+        receipt.with_solver("")

@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Literal
 
@@ -35,12 +35,26 @@ def _strictly_better(
     metric: MetricSpec,
     benchmark_value: float,
     causal_values: list[float],
+    required_margin: float,
 ) -> bool:
     if metric.direction == "LOWER_IS_BETTER":
-        return benchmark_value < min(causal_values)
-    if metric.direction == "HIGHER_IS_BETTER":
-        return benchmark_value > max(causal_values)
-    return False
+        improvement = min(causal_values) - benchmark_value
+    elif metric.direction == "HIGHER_IS_BETTER":
+        improvement = benchmark_value - max(causal_values)
+    else:
+        return False
+    return improvement > 0 and improvement >= required_margin
+
+
+def _benchmark_margin(protocol: ComparisonProtocol, metric_id: str) -> float:
+    margins = [
+        rule.threshold
+        for rule in protocol.decision_rules
+        if rule.rule_type == "BENCHMARK_MARGIN"
+        and rule.metric_id == metric_id
+        and rule.threshold is not None
+    ]
+    return max([0.0, *margins])
 
 
 def compare(
@@ -107,6 +121,7 @@ def compare(
                     metric,
                     benchmark.metrics[metric.metric_id],
                     [causal.metrics[metric.metric_id] for causal in valid_causal],
+                    _benchmark_margin(protocol, metric.metric_id),
                 )
             )
         if comparable_metrics and all(superior_flags):
