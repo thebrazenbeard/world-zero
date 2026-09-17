@@ -17,7 +17,7 @@ permissions:
 
 concurrency:
   group: world-zero-offline-bootstrap
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-bundles:
@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: impl/scientific-spine-v2
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
