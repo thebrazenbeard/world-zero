@@ -1,0 +1,21 @@
+schema_version: MODEL_FAMILY_V1
+family_id: F3_NET_ENERGY_MATERIAL
+status: DRAFT
+causal_interpretation: true
+source_commit: null
+topology_digest: null
+required_mechanisms:
+  - GROSS_FINAL_USEFUL_ENERGY_ACCOUNTING
+  - ENERGY_SECTOR_OWN_USE
+  - EXPLICIT_EROI_BOUNDARY
+  - TRANSITION_ENERGY_INVESTMENT
+  - MINERAL_EXTRACTION_REFINING_RECYCLING
+  - RESOURCE_QUALITY_EFFECT
+  - CONSTRUCTION_LEAD_TIME
+forbidden_mechanisms: []
+hostile_controls:
+  - alternative EROI boundaries
+  - high and low transition-energy burden
+  - rapid and slow recycling maturation
+  - mineral bottleneck variations
+  - demand-side reduction versus constant-service-demand
