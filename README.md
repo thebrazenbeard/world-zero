@@ -10,6 +10,8 @@ The goal is **not** to reproduce a predetermined collapse narrative, nor to assu
 
 Current research branch: `work/world-zero-research-architecture-v1`
 
+Draft review surface: PR #1. Exact branch head must be read fresh before review; this README does not serve as a timeless head pointer.
+
 The architecture now requires a scientific comparison spine **before** modern-sector calibration. The first implementation frontier is therefore:
 
 1. typed evidence/claim/provenance contracts;
