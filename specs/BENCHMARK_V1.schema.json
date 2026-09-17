@@ -1,0 +1,189 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "benchmark_id": {
+      "enum": [
+        "B0_PERSISTENCE_TREND",
+        "B1_REDUCED_FORM_EMPIRICAL"
+      ],
+      "title": "Benchmark Id",
+      "type": "string"
+    },
+    "method": {
+      "enum": [
+        "PERSISTENCE",
+        "LINEAR_TREND",
+        "LOG_LINEAR_TREND",
+        "BOUNDED_LOGISTIC_TREND",
+        "REGULARIZED_VAR",
+        "DYNAMIC_FACTOR",
+        "STATE_SPACE",
+        "OTHER_PREREGISTERED_REDUCED_FORM"
+      ],
+      "title": "Method",
+      "type": "string"
+    },
+    "causal_interpretation": {
+      "const": false,
+      "default": false,
+      "title": "Causal Interpretation",
+      "type": "boolean"
+    },
+    "feature_set": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Feature Set",
+      "type": "array"
+    },
+    "allowed_forms": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Forms",
+      "type": "array"
+    },
+    "regularization_policy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Regularization Policy"
+    },
+    "hyperparameter_policy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Hyperparameter Policy"
+    },
+    "transformation_policy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Transformation Policy"
+    },
+    "partition_binding_required": {
+      "default": true,
+      "title": "Partition Binding Required",
+      "type": "boolean"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    }
+  },
+  "required": [
+    "benchmark_id",
+    "method"
+  ],
+  "title": "BenchmarkManifest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/thebrazenbeard/world-zero/specs/BENCHMARK_V1.schema.json",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "benchmark_id": {
+            "const": "B0_PERSISTENCE_TREND"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "method": {
+            "enum": [
+              "PERSISTENCE",
+              "LINEAR_TREND",
+              "LOG_LINEAR_TREND",
+              "BOUNDED_LOGISTIC_TREND"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "benchmark_id": {
+            "const": "B1_REDUCED_FORM_EMPIRICAL"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "feature_set",
+          "hyperparameter_policy"
+        ],
+        "properties": {
+          "method": {
+            "enum": [
+              "REGULARIZED_VAR",
+              "DYNAMIC_FACTOR",
+              "STATE_SPACE",
+              "OTHER_PREREGISTERED_REDUCED_FORM"
+            ]
+          },
+          "feature_set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "hyperparameter_policy": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "method": {
+            "const": "REGULARIZED_VAR"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "regularization_policy"
+        ],
+        "properties": {
+          "regularization_policy": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  ]
+}

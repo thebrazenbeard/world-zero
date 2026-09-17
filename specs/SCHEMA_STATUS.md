@@ -4,6 +4,8 @@ Date: 2026-09-17
 
 ## Current
 
+- `BENCHMARK_V1.schema.json` ? current non-causal predictive-benchmark manifest contract. Static B0/B1 method constraints and B1 feature/hyperparameter requirements mirror canonical `BenchmarkManifest`; predictive benchmarks carry no causal-topology identity.
+- `RUN_RECEIPT_V1.schema.json` ? current exact scientific-subject/execution receipt contract. Causal-family versus predictive-benchmark identity boundaries are enforced by both static conditional schema rules and the runtime Pydantic model.
 - `CAUSAL_TOPOLOGY_V2.schema.json` — current causal-topology design candidate. Supports higher-order `inputs[] -> outputs[]` relations, explicit functional-form class, upstream source-lineage references and optional implementation bindings. Exact Git/source binding remains external to topology content.
 - `CLAIM_RECORD_V1.schema.json` — current append-oriented claim-record contract.
 - `COMPARISON_PROTOCOL_V1.schema.json` — current comparison preregistration contract.
