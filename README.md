@@ -76,6 +76,10 @@ The architecture now requires a scientific comparison spine **before** modern-se
 - `specs/IMPLEMENTATION_COVERAGE_V1.schema.json` — declared-topology to executable-binding coverage contract.
 - `specs/SCHEMA_STATUS.md` — current/superseded schema status.
 
+## Review posture
+
+The current branch deliberately treats architecture defects discovered during review as normal project bugs, not as reasons to preserve an earlier clean story. The current exact review subject belongs in PR/Bus review records, while this README points to the durable current contracts and tells reviewers to fresh-read mutable head state.
+
 ## Reference implementation boundary
 
 [`cvanwynsberghe/pyworld3`](https://github.com/cvanwynsberghe/pyworld3) is a useful behavioral/reference implementation of World3. It is licensed under CeCILL 2.1. World Zero should initially use it as a reference subject and comparison target rather than blindly copying source code.
