@@ -6,11 +6,12 @@ on:
       - impl/scientific-spine-v2
     paths:
       - .github/workflows/build-offline-bundles.yml
+      - .gitattributes
       - pyproject.toml
+      - src/**
+      - tests/**
       - third_party/bootstrap-requirements.in
-      - tools/build_wheelhouse.py
-      - tools/bootstrap_offline.py
-      - tools/verify_wheelhouse.py
+      - tools/**
 
 permissions:
   contents: write
