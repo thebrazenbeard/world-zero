@@ -10,6 +10,9 @@ on:
       - pyproject.toml
       - src/**
       - tests/**
+      - model_families/**
+      - benchmarks/**
+      - specs/**
       - third_party/bootstrap-requirements.in
       - tools/**
 
