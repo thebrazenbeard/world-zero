@@ -1,7 +1,7 @@
 # World Zero Mechanism Admission and Ablation V1
 
 Date: 2026-09-17
-Status: normative research/design gate for future implementation
+Status: normative research/design gate with executable F7 admission enforcement
 
 ## Why this exists
 
@@ -30,9 +30,13 @@ Every proposed mechanism must have a compact packet containing:
 - parameter or structural uncertainty;
 - identifiability assessment;
 - motivating residual or failure case;
-- preregistered kill test;
-- holdout target;
-- ablation expectation;
+- preregistered kill test and whether it survived that test;
+- holdout and/or hard-invariant target plus demonstrated value status;
+- ablation expectation plus demonstrated ablation-value status;
+- structural-rival analysis;
+- explicit complexity accounting and proportionality judgment;
+- numerical-integrity status;
+- unresolved negative-transfer defects;
 - computational cost class;
 - current disposition.
 
@@ -94,6 +98,8 @@ Examples:
 
 If no plausible observation can discriminate the mechanism, it remains structural uncertainty rather than an established component.
 
+For F7 composition, merely naming a kill test is insufficient. The admission packet must record that the exact candidate survived its preregistered kill test. A failed or not-yet-run kill test leaves the mechanism outside F7.
+
 ## Gate D — holdout value
 
 The mechanism must improve or materially alter at least one preregistered out-of-sample target without unacceptable regressions elsewhere.
@@ -109,7 +115,7 @@ Valid targets include:
 - uncertainty calibration;
 - conservation/invariant behavior.
 
-Historical in-sample fit by itself does not pass Gate D.
+Historical in-sample fit by itself does not pass Gate D. F7 admission records both the target and whether claim-relevant holdout or invariant value was actually demonstrated.
 
 ## Gate E — ablation necessity
 
@@ -123,7 +129,7 @@ Ask:
 - Does uncertainty widen in a meaningful way?
 - Can a simpler relation reproduce the same gain?
 
-A mechanism that cannot survive ablation review may remain in a specialized rival family, but it does not enter F7 merely because it is realistic.
+A mechanism that cannot survive ablation review may remain in a specialized rival family, but it does not enter F7 merely because it is realistic. The F7 gate therefore records a preregistered ablation expectation separately from demonstrated nontrivial ablation value.
 
 ## Gate F — rival-family robustness
 
@@ -187,14 +193,17 @@ Unexpected cross-domain effects trigger root-cause analysis before qualification
 A mechanism may enter `F7_MINIMAL_ADAPTIVE_SYNTHESIS` only when:
 
 1. Gate A passes;
-2. Gate B is at least `WEAKLY_IDENTIFIABLE`, unless the mechanism is required for a hard physical/accounting invariant;
-3. a preregistered Gate C kill test exists;
-4. Gate D shows claim-relevant holdout value or invariant necessity;
-5. Gate E shows nontrivial ablation value;
-6. Gate F documents structural sensitivity;
-7. complexity cost is proportionate to gain;
-8. numerical integrity passes;
-9. no unresolved negative-transfer defect remains.
+2. Gate B is at least `WEAKLY_IDENTIFIABLE`, unless the mechanism is required for a hard physical/accounting invariant with an explicit invariant target;
+3. a preregistered Gate C kill test exists and the candidate survived it;
+4. Gate D records demonstrated claim-relevant holdout value or invariant necessity;
+5. Gate E records demonstrated nontrivial ablation value;
+6. Gate F documents structural sensitivity against a rival/null account;
+7. complexity cost is explicitly recorded and proportionate to gain;
+8. numerical integrity is `PASS`;
+9. no unresolved negative-transfer defect remains;
+10. the current disposition is explicitly `F7_CANDIDATE` or `F7_ADMITTED`.
+
+The executable `assert_f7_admissible()` gate recomputes these requirements from the packet. A self-asserted disposition does not bypass them.
 
 Exceptions for conservation/accounting structure must be explicit and do not grant causal-validation credit.
 
