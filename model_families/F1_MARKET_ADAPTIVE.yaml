@@ -1,0 +1,35 @@
+schema_version: MODEL_FAMILY_V1
+family_id: F1_MARKET_ADAPTIVE
+family_name: Market-adaptive rival
+status: DRAFT
+purpose: Test whether price, substitution, trade and investment adaptation materially change World3-style outcomes.
+enabled_mechanism_ids:
+  - WORLD3_CORE
+  - SCARCITY_PRICE_FEEDBACK
+  - DEMAND_RESPONSE
+  - SUBSTITUTION
+  - RESOURCE_DEVELOPMENT_RESPONSE
+  - TRADE_REALLOCATION
+  - INVESTMENT_REDIRECTION
+  - AFFORDABILITY_CONSTRAINT
+  - SHORTAGE_RATIONING
+required_mechanism_ids:
+  - SCARCITY_PRICE_FEEDBACK
+  - DEMAND_RESPONSE
+  - SUBSTITUTION
+  - TRADE_REALLOCATION
+  - INVESTMENT_REDIRECTION
+  - AFFORDABILITY_CONSTRAINT
+  - SHORTAGE_RATIONING
+forbidden_mechanism_ids: []
+comparison_observable_ids:
+  - POPULATION
+  - INDUSTRIAL_OUTPUT_PER_CAPITA
+  - FOOD_PER_CAPITA
+  - RESOURCE_PRICE_INDEX
+  - MATERIAL_THROUGHPUT
+hostile_control_ids:
+  - NEAR_ZERO_SUBSTITUTION
+  - HIGH_SUBSTITUTION
+  - DELAYED_INVESTMENT
+  - LOW_INCOME_DEMAND_DESTRUCTION
