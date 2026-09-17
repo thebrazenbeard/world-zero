@@ -1,0 +1,52 @@
+﻿{
+  "$defs": {
+    "ExecutionIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "environment_fingerprint": {"minLength": 1, "title": "Environment Fingerprint", "type": "string"},
+        "random_seed": {"minimum": 0, "title": "Random Seed", "type": "integer"},
+        "solver_name": {"minLength": 1, "title": "Solver Name", "type": "string"},
+        "solver_version": {"minLength": 1, "title": "Solver Version", "type": "string"},
+        "timestep": {"exclusiveMinimum": 0, "title": "Timestep", "type": "number"},
+        "tolerance": {"minimum": 0, "title": "Tolerance", "type": "number"}
+      },
+      "required": ["solver_name", "solver_version", "timestep", "tolerance", "random_seed", "environment_fingerprint"],
+      "title": "ExecutionIdentity",
+      "type": "object"
+    },
+    "ScientificSubjectIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "calibration_partition_id": {"minLength": 1, "title": "Calibration Partition Id", "type": "string"},
+        "comparison_protocol_digest": {"pattern": "^[0-9a-f]{64}$", "title": "Comparison Protocol Digest", "type": "string"},
+        "dataset_manifest_set_digest": {"pattern": "^[0-9a-f]{64}$", "title": "Dataset Manifest Set Digest", "type": "string"},
+        "holdout_partition_ids": {"items": {"type": "string"}, "minItems": 1, "title": "Holdout Partition Ids", "type": "array"},
+        "implementation_coverage_digest": {"anyOf": [{"pattern": "^[0-9a-f]{64}$", "type": "string"}, {"type": "null"}], "default": null, "title": "Implementation Coverage Digest"},
+        "manifest_digest": {"pattern": "^[0-9a-f]{64}$", "title": "Manifest Digest", "type": "string"},
+        "observation_map_digest": {"pattern": "^[0-9a-f]{64}$", "title": "Observation Map Digest", "type": "string"},
+        "parameter_digest": {"pattern": "^[0-9a-f]{64}$", "title": "Parameter Digest", "type": "string"},
+        "region_set_digest": {"pattern": "^[0-9a-f]{64}$", "title": "Region Set Digest", "type": "string"},
+        "scenario_digest": {"pattern": "^[0-9a-f]{64}$", "title": "Scenario Digest", "type": "string"},
+        "source_commit": {"pattern": "^[0-9a-f]{40,64}$", "title": "Source Commit", "type": "string"},
+        "source_tree": {"pattern": "^[0-9a-f]{40,64}$", "title": "Source Tree", "type": "string"},
+        "subject_class": {"enum": ["CAUSAL_FAMILY", "PREDICTIVE_BENCHMARK"], "title": "Subject Class", "type": "string"},
+        "subject_id": {"minLength": 1, "title": "Subject Id", "type": "string"},
+        "topology_digest": {"anyOf": [{"pattern": "^[0-9a-f]{64}$", "type": "string"}, {"type": "null"}], "default": null, "title": "Topology Digest"}
+      },
+      "required": ["subject_id", "subject_class", "source_commit", "source_tree", "manifest_digest", "dataset_manifest_set_digest", "parameter_digest", "region_set_digest", "scenario_digest", "observation_map_digest", "calibration_partition_id", "holdout_partition_ids", "comparison_protocol_digest"],
+      "title": "ScientificSubjectIdentity",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "execution": {"$ref": "#/$defs/ExecutionIdentity"},
+    "receipt_id": {"minLength": 1, "title": "Receipt Id", "type": "string"},
+    "result_digest": {"anyOf": [{"pattern": "^[0-9a-f]{64}$", "type": "string"}, {"type": "null"}], "default": null, "title": "Result Digest"},
+    "schema_version": {"const": "RUN_RECEIPT_V1", "title": "Schema Version", "type": "string"},
+    "subject": {"$ref": "#/$defs/ScientificSubjectIdentity"}
+  },
+  "required": ["schema_version", "receipt_id", "subject", "execution"],
+  "title": "RunReceipt",
+  "type": "object"
+}
