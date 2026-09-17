@@ -1,0 +1,92 @@
+{
+  "$defs": {
+    "AdmissionDisposition": {
+      "enum": [
+        "RESEARCH_ONLY",
+        "RIVAL_FAMILY_ONLY",
+        "ADMITTED_COMPONENT",
+        "F7_CANDIDATE",
+        "F7_ADMITTED",
+        "REJECTED",
+        "SUPERSEDED",
+        "UNIDENTIFIABLE_WITH_CURRENT_EVIDENCE"
+      ],
+      "title": "AdmissionDisposition",
+      "type": "string"
+    },
+    "ComplexityCost": {
+      "additionalProperties": false,
+      "properties": {
+        "calibrated_parameters": {"default": 0, "minimum": 0, "title": "Calibrated Parameters", "type": "integer"},
+        "dynamic_states": {"default": 0, "minimum": 0, "title": "Dynamic States", "type": "integer"},
+        "external_scenario_inputs": {"default": 0, "minimum": 0, "title": "External Scenario Inputs", "type": "integer"},
+        "latent_variables": {"default": 0, "minimum": 0, "title": "Latent Variables", "type": "integer"},
+        "lookup_functions": {"default": 0, "minimum": 0, "title": "Lookup Functions", "type": "integer"},
+        "runtime_cost_class": {"default": "LOW", "enum": ["TRIVIAL", "LOW", "MODERATE", "HIGH", "EXTREME"], "title": "Runtime Cost Class", "type": "string"}
+      },
+      "title": "ComplexityCost",
+      "type": "object"
+    },
+    "EvidenceClass": {
+      "enum": ["OBSERVED", "DERIVED", "INFERRED", "HYPOTHESIS", "DISPUTED", "UNKNOWN", "SUPERSEDED"],
+      "title": "EvidenceClass",
+      "type": "string"
+    },
+    "IdentifiabilityClass": {
+      "enum": ["IDENTIFIABLE_ENOUGH_FOR_TEST", "WEAKLY_IDENTIFIABLE", "UNIDENTIFIABLE_WITH_CURRENT_EVIDENCE", "OBSERVATION_MODEL_INADEQUATE"],
+      "title": "IdentifiabilityClass",
+      "type": "string"
+    }
+  },
+  "$id": "https://github.com/thebrazenbeard/world-zero/specs/MECHANISM_ADMISSION_V1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Evidence packet for one proposed causal/accounting mechanism.",
+  "properties": {
+    "ablation_expectation": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Ablation Expectation"},
+    "ablation_value_pass": {"default": false, "title": "Ablation Value Pass", "type": "boolean"},
+    "affected_object_ids": {"items": {"type": "string"}, "minItems": 1, "title": "Affected Object Ids", "type": "array"},
+    "clarity_pass": {"title": "Clarity Pass", "type": "boolean"},
+    "complexity": {"$ref": "#/$defs/ComplexityCost"},
+    "complexity_proportionate": {"title": "Complexity Proportionate", "type": "boolean"},
+    "computational_notes": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Computational Notes"},
+    "disposition": {"$ref": "#/$defs/AdmissionDisposition"},
+    "evidence_class": {"$ref": "#/$defs/EvidenceClass"},
+    "hard_invariant_required": {"default": false, "title": "Hard Invariant Required", "type": "boolean"},
+    "holdout_or_invariant_value_pass": {"default": false, "title": "Holdout Or Invariant Value Pass", "type": "boolean"},
+    "holdout_target": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Holdout Target"},
+    "identifiability": {"$ref": "#/$defs/IdentifiabilityClass"},
+    "interpretation": {"minLength": 1, "title": "Interpretation", "type": "string"},
+    "invariant_target": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Invariant Target"},
+    "kill_test_id": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Kill Test Id"},
+    "kill_test_survived": {"default": false, "title": "Kill Test Survived", "type": "boolean"},
+    "mechanism_id": {"minLength": 1, "title": "Mechanism Id", "type": "string"},
+    "motivating_residual": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Motivating Residual"},
+    "numerical_integrity": {"enum": ["PASS", "FAIL", "UNKNOWN"], "title": "Numerical Integrity", "type": "string"},
+    "proposition": {"minLength": 1, "title": "Proposition", "type": "string"},
+    "rival_or_null": {"minLength": 1, "title": "Rival Or Null", "type": "string"},
+    "source_ids": {"default": [], "items": {"type": "string"}, "title": "Source Ids", "type": "array"},
+    "structural_rival_analysis": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Structural Rival Analysis"},
+    "uncertainty": {"minLength": 1, "title": "Uncertainty", "type": "string"},
+    "units_and_conservation": {"minLength": 1, "title": "Units And Conservation", "type": "string"},
+    "unresolved_negative_transfer_defects": {"default": [], "items": {"type": "string"}, "title": "Unresolved Negative Transfer Defects", "type": "array"}
+  },
+  "required": [
+    "mechanism_id",
+    "proposition",
+    "affected_object_ids",
+    "interpretation",
+    "units_and_conservation",
+    "evidence_class",
+    "clarity_pass",
+    "rival_or_null",
+    "uncertainty",
+    "identifiability",
+    "complexity",
+    "complexity_proportionate",
+    "numerical_integrity",
+    "disposition"
+  ],
+  "title": "World Zero Mechanism Admission V1",
+  "type": "object"
+}
