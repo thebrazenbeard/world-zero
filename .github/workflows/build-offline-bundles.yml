@@ -1,0 +1,94 @@
+name: Build offline bootstrap bundles
+
+on:
+  push:
+    branches:
+      - impl/scientific-spine-v2
+    paths:
+      - .github/workflows/build-offline-bundles.yml
+      - pyproject.toml
+      - third_party/bootstrap-requirements.in
+      - tools/build_wheelhouse.py
+      - tools/bootstrap_offline.py
+      - tools/verify_wheelhouse.py
+
+permissions:
+  contents: write
+
+concurrency:
+  group: world-zero-offline-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  build-bundles:
+    runs-on: ubuntu-latest
+    outputs:
+      bundle_commit: ${{ steps.publish.outputs.bundle_commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: impl/scientific-spine-v2
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install connected resolver
+        run: python -m pip install --disable-pip-version-check uv==0.10.0
+      - name: Resolve project lock
+        run: uv lock
+      - name: Build CPython 3.12 wheelhouses
+        run: |
+          rm -rf third_party/wheels/cp312-win_amd64 third_party/wheels/cp312-manylinux_x86_64
+          python tools/build_wheelhouse.py --requirements third_party/bootstrap-requirements.in --wheelhouse third_party/wheels/cp312-win_amd64 --target cp312-win_amd64
+          python tools/build_wheelhouse.py --requirements third_party/bootstrap-requirements.in --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --target cp312-manylinux_x86_64
+          python tools/verify_wheelhouse.py third_party/wheels/cp312-win_amd64
+          python tools/verify_wheelhouse.py third_party/wheels/cp312-manylinux_x86_64
+      - name: Publish immutable bundle artifacts to implementation branch
+        id: publish
+        shell: bash
+        run: |
+          git config user.name 'world-zero-ci'
+          git config user.email 'world-zero-ci@users.noreply.github.com'
+          git add uv.lock third_party/wheels
+          if ! git diff --cached --quiet; then
+            git commit -m 'build: vendor CPython 3.12 offline bundles'
+            git push origin HEAD:impl/scientific-spine-v2
+          fi
+          echo "bundle_commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  qualify-linux:
+    needs: build-bundles
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build-bundles.outputs.bundle_commit }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reconstruct from Linux wheelhouse with index disabled
+        run: python tools/bootstrap_offline.py --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --venv .offline-verify/linux
+      - name: Verify reconstructed Linux environment
+        run: |
+          .offline-verify/linux/bin/python -m pytest -q
+          .offline-verify/linux/bin/ruff check src tests tools
+          .offline-verify/linux/bin/mypy src/worldzero
+
+  qualify-windows:
+    needs: build-bundles
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build-bundles.outputs.bundle_commit }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reconstruct from Windows wheelhouse with index disabled
+        run: python tools/bootstrap_offline.py --wheelhouse third_party/wheels/cp312-win_amd64 --venv .offline-verify/windows
+      - name: Verify reconstructed Windows environment
+        shell: pwsh
+        run: |
+          .\.offline-verify\windows\Scripts\python.exe -m pytest -q
+          .\.offline-verify\windows\Scripts\ruff.exe check src tests tools
+          .\.offline-verify\windows\Scripts\mypy.exe src/worldzero
