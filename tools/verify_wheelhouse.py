@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
 import hashlib
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -26,20 +26,20 @@ def load_manifest(wheelhouse: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"invalid MANIFEST.json: {exc}") from exc
     if not isinstance(value, dict):
-        raise ValueError("MANIFEST.json root must be an object")
+        raise ValueError("MANIFEST.json root must be an object")  # noqa: TRY004
     if value.get("schema_version") != SCHEMA_VERSION:
         raise ValueError(f"schema_version must be {SCHEMA_VERSION}")
     if not isinstance(value.get("bundle_id"), str) or not value["bundle_id"]:
         raise ValueError("bundle_id must be a non-empty string")
     target = value.get("target")
     if not isinstance(target, dict):
-        raise ValueError("target must be an object")
+        raise ValueError("target must be an object")  # noqa: TRY004
     for key in ("python_abi", "platform", "architecture"):
         if not isinstance(target.get(key), str) or not target[key]:
             raise ValueError(f"target.{key} must be a non-empty string")
     artifacts = value.get("artifacts")
     if not isinstance(artifacts, list):
-        raise ValueError("artifacts must be a list")
+        raise ValueError("artifacts must be a list")  # noqa: TRY004
     return value
 
 
@@ -61,19 +61,47 @@ def verify_wheelhouse(wheelhouse: Path | str) -> VerificationResult:
     declared: dict[str, dict[str, Any]] = {}
     for artifact in manifest["artifacts"]:
         if not isinstance(artifact, dict):
-            return VerificationResult(False, "OFFLINE_BUNDLE_INVALID_MANIFEST", ("artifact must be an object",))
+            return VerificationResult(
+                False,
+                "OFFLINE_BUNDLE_INVALID_MANIFEST",
+                ("artifact must be an object",),
+            )
         filename = artifact.get("filename")
         if not isinstance(filename, str) or not filename.endswith(".whl"):
-            return VerificationResult(False, "OFFLINE_BUNDLE_INVALID_MANIFEST", ("artifact filename must end in .whl",))
+            return VerificationResult(
+                False,
+                "OFFLINE_BUNDLE_INVALID_MANIFEST",
+                ("artifact filename must end in .whl",),
+            )
         if Path(filename).name != filename:
-            return VerificationResult(False, "OFFLINE_BUNDLE_INVALID_MANIFEST", (f"unsafe artifact filename: {filename}",))
+            return VerificationResult(
+                False,
+                "OFFLINE_BUNDLE_INVALID_MANIFEST",
+                (f"unsafe artifact filename: {filename}",),
+            )
         if filename in declared:
-            return VerificationResult(False, "OFFLINE_BUNDLE_INVALID_MANIFEST", (f"duplicate artifact: {filename}",))
+            return VerificationResult(
+                False,
+                "OFFLINE_BUNDLE_INVALID_MANIFEST",
+                (f"duplicate artifact: {filename}",),
+            )
         if not isinstance(artifact.get("size_bytes"), int) or artifact["size_bytes"] < 0:
-            return VerificationResult(False, "OFFLINE_BUNDLE_INVALID_MANIFEST", (f"invalid size for {filename}",))
+            return VerificationResult(
+                False,
+                "OFFLINE_BUNDLE_INVALID_MANIFEST",
+                (f"invalid size for {filename}",),
+            )
         sha = artifact.get("sha256")
-        if not isinstance(sha, str) or len(sha) != 64 or any(c not in "0123456789abcdef" for c in sha):
-            return VerificationResult(False, "OFFLINE_BUNDLE_INVALID_MANIFEST", (f"invalid sha256 for {filename}",))
+        if (
+            not isinstance(sha, str)
+            or len(sha) != 64
+            or any(c not in "0123456789abcdef" for c in sha)
+        ):
+            return VerificationResult(
+                False,
+                "OFFLINE_BUNDLE_INVALID_MANIFEST",
+                (f"invalid sha256 for {filename}",),
+            )
         declared[filename] = artifact
 
     problems: list[str] = []
@@ -91,13 +119,21 @@ def verify_wheelhouse(wheelhouse: Path | str) -> VerificationResult:
     if problems:
         if any(item.startswith("missing:") for item in problems):
             return VerificationResult(False, "OFFLINE_BUNDLE_INCOMPLETE", tuple(problems))
-        return VerificationResult(False, "OFFLINE_BUNDLE_TAMPERED_OR_DRIFTED", tuple(problems))
+        return VerificationResult(
+            False,
+            "OFFLINE_BUNDLE_TAMPERED_OR_DRIFTED",
+            tuple(problems),
+        )
 
     if not manifest.get("allow_undeclared_wheels", False):
         actual = {path.name for path in root.glob("*.whl") if path.is_file()}
         extras = sorted(actual - set(declared))
         if extras:
-            return VerificationResult(False, "OFFLINE_BUNDLE_UNDECLARED_ARTIFACT", tuple(extras))
+            return VerificationResult(
+                False,
+                "OFFLINE_BUNDLE_UNDECLARED_ARTIFACT",
+                tuple(extras),
+            )
 
     return VerificationResult(True, "PASS")
 
@@ -107,7 +143,12 @@ def main() -> int:
     parser.add_argument("wheelhouse", type=Path)
     args = parser.parse_args()
     result = verify_wheelhouse(args.wheelhouse)
-    print(json.dumps({"ok": result.ok, "code": result.code, "details": result.details}, sort_keys=True))
+    print(
+        json.dumps(
+            {"ok": result.ok, "code": result.code, "details": result.details},
+            sort_keys=True,
+        )
+    )
     return 0 if result.ok else 1
 
 
