@@ -52,6 +52,7 @@ def test_solver_change_only_changes_execution_identity():
 def test_causal_subject_requires_topology_and_coverage():
     import pytest
     from pydantic import ValidationError
+
     from worldzero.receipts.run_receipt import ScientificSubjectIdentity
 
     data = _subject().model_dump()
@@ -64,6 +65,7 @@ def test_causal_subject_requires_topology_and_coverage():
 def test_benchmark_subject_cannot_claim_causal_topology():
     import pytest
     from pydantic import ValidationError
+
     from worldzero.receipts.run_receipt import ScientificSubjectIdentity
 
     data = _subject().model_dump()
