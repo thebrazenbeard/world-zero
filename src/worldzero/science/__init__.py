@@ -7,6 +7,7 @@ from .benchmarks import (
 )
 from .canonical import canonical_json_bytes, content_digest
 from .claims import ClaimRecord, ClaimRegistry, SourceRef
+from .comparison import ClaimComparison, FamilyRunResult, compare
 from .comparison_protocol import (
     ComparisonProtocol,
     ComparisonProtocolV1,
@@ -45,6 +46,7 @@ __all__ = [
     "BenchmarkRegistry",
     "BenchmarkResultLabel",
     "CausalTopologyV2",
+    "ClaimComparison",
     "ClaimRecord",
     "ClaimRegistry",
     "ComparisonProtocol",
@@ -56,6 +58,7 @@ __all__ = [
     "EvidenceClass",
     "EvidencePartition",
     "FamilyRegistry",
+    "FamilyRunResult",
     "IdentifiabilityClass",
     "ImplementationBinding",
     "ImplementationCoverage",
@@ -76,6 +79,7 @@ __all__ = [
     "assert_no_holdout_leakage",
     "calibration_only_observation_ids",
     "canonical_json_bytes",
+    "compare",
     "content_digest",
     "summarize_independence",
     "validate_coverage",
