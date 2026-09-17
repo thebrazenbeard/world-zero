@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
+
+if TYPE_CHECKING:
+    from worldzero.science.partitions import PartitionSet
 
 BenchmarkId = Literal["B0_PERSISTENCE_TREND", "B1_REDUCED_FORM_EMPIRICAL"]
 BenchmarkStatus = Literal[
@@ -53,6 +56,18 @@ class BenchmarkManifest(BaseModel):
             if not self.regularization_policy:
                 raise ValueError("B1 requires a regularization policy")
         return self
+
+    def hyperparameter_search_observation_ids(
+        self,
+        partitions: "PartitionSet",
+    ) -> frozenset[str]:
+        if self.benchmark_id != "B1_REDUCED_FORM_EMPIRICAL":
+            raise ValueError("hyperparameter search is defined only for B1")
+        from worldzero.science.partitions import assert_no_holdout_leakage
+
+        used_ids = partitions.calibration_ids
+        assert_no_holdout_leakage(used_ids, partitions.final_holdout_ids)
+        return used_ids
 
 
 class BenchmarkRegistry:
