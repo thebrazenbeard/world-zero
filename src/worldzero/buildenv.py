@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import platform as platform_module
 import sys
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
