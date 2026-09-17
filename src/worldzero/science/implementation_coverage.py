@@ -35,7 +35,7 @@ class ImplementationCoverage(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def pass_requires_clean_coverage(self) -> "ImplementationCoverage":
+    def pass_requires_clean_coverage(self) -> ImplementationCoverage:
         if self.coverage_status == "PASS":
             if self.undeclared_runtime_relations:
                 raise ValueError("PASS coverage cannot contain undeclared runtime relations")
