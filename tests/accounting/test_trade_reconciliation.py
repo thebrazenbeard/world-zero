@@ -17,6 +17,7 @@ def test_trade_routing_conserves_global_physical_stock():
 
 def test_trade_flow_rejects_loss_larger_than_shipped_amount():
     from pydantic import ValidationError
+
     from worldzero.accounting.trade import TradeFlow
 
     with pytest.raises(ValidationError):
