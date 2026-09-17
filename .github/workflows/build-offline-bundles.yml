@@ -1,0 +1,77 @@
+name: Verify offline bootstrap bundles
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/build-offline-bundles.yml
+      - .gitattributes
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
+      - specs/OFFLINE_WHEELHOUSE_MANIFEST_V1.schema.json
+      - third_party/bootstrap-requirements.in
+      - third_party/wheels/**
+      - tools/**
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/build-offline-bundles.yml
+      - .gitattributes
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
+      - specs/OFFLINE_WHEELHOUSE_MANIFEST_V1.schema.json
+      - third_party/bootstrap-requirements.in
+      - third_party/wheels/**
+      - tools/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: world-zero-offline-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify committed Linux wheelhouse
+        run: python -m tools.verify_wheelhouse third_party/wheels/cp312-manylinux_x86_64
+      - name: Reconstruct Linux environment offline
+        run: python -m tools.bootstrap_offline --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --venv .offline-verify/linux
+      - name: Qualify Linux reconstruction
+        run: |
+          .offline-verify/linux/bin/python -m pytest -q
+          .offline-verify/linux/bin/ruff check src tests tools
+          .offline-verify/linux/bin/mypy src/worldzero tools
+
+  qualify-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify committed Windows wheelhouse
+        run: python -m tools.verify_wheelhouse third_party/wheels/cp312-win_amd64
+      - name: Reconstruct Windows environment offline
+        run: python -m tools.bootstrap_offline --wheelhouse third_party/wheels/cp312-win_amd64 --venv .offline-verify/windows
+      - name: Qualify Windows reconstruction
+        shell: pwsh
+        run: |
+          .\.offline-verify\windows\Scripts\python.exe -m pytest -q
+          .\.offline-verify\windows\Scripts\ruff.exe check src tests tools
+          .\.offline-verify\windows\Scripts\mypy.exe src/worldzero tools

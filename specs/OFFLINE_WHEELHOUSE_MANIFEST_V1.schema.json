@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/thebrazenbeard/world-zero/specs/OFFLINE_WHEELHOUSE_MANIFEST_V1.schema.json",
+  "title": "World Zero Offline Wheelhouse Manifest V1",
+  "type": "object",
+  "required": ["schema_version", "bundle_id", "target", "artifacts", "status"],
+  "properties": {
+    "schema_version": {"const": "OFFLINE_WHEELHOUSE_MANIFEST_V1"},
+    "bundle_id": {"type": "string", "minLength": 1},
+    "target": {
+      "type": "object",
+      "required": ["python_abi", "platform", "architecture"],
+      "properties": {
+        "python_abi": {"type": "string", "minLength": 1},
+        "platform": {"type": "string", "minLength": 1},
+        "architecture": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "source_lock_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "allow_undeclared_wheels": {"type": "boolean", "default": false},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["filename", "size_bytes", "sha256"],
+        "properties": {
+          "filename": {"type": "string", "pattern": "^[^/\\\\]+\\.whl$"},
+          "size_bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "package": {"type": ["string", "null"]},
+          "version": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "status": {"type": "string", "enum": ["CANDIDATE", "VERIFIED_OFFLINE", "SUPERSEDED"]},
+    "verification_receipt_ids": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

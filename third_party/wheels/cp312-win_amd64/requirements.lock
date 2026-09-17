@@ -1,0 +1,7 @@
+pydantic==2.13.4
+PyYAML==6.0.3
+pytest==9.0.2
+ruff==0.16.8
+mypy==2.3.1
+types-PyYAML==6.0.12.20260906
+colorama==0.4.6

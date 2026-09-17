@@ -1,0 +1,22 @@
+schema_version: MODEL_FAMILY_V1
+family_id: F0_WORLD3_CONTROL
+status: DRAFT
+causal_interpretation: true
+source_commit: null
+topology_digest: null
+required_mechanisms:
+  - WORLD3_CORE
+forbidden_mechanisms:
+  - SCARCITY_PRICE_FEEDBACK
+  - ENDOGENOUS_INNOVATION_COMPETITION
+  - REGIONAL_TRADE_NETWORK
+  - NETWORK_CASCADE
+  - DETAILED_NET_ENERGY_ACCOUNTING
+declared_weaknesses:
+  - explicit market prices absent
+  - endogenous innovation competition absent
+  - detailed regional trade absent
+  - network cascades absent
+  - detailed net-energy accounting absent
+hostile_controls:
+  - modern rivals must outperform or materially discriminate against this control
