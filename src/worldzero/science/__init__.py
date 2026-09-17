@@ -8,6 +8,12 @@ from .implementation_coverage import (
     validate_coverage,
 )
 from .lineage import LineageRef, LineageRegistry
+from .mechanisms import (
+    ComplexityCost,
+    MechanismAdmission,
+    MechanismRegistry,
+    assert_f7_admissible,
+)
 from .topology import CausalTopologyV2, KillTest, TopologyNode, TopologyRelation
 from .types import (
     AdmissionDisposition,
@@ -24,6 +30,7 @@ __all__ = [
     "CausalTopologyV2",
     "ClaimRecord",
     "ClaimRegistry",
+    "ComplexityCost",
     "ControlMode",
     "EvidenceClass",
     "IdentifiabilityClass",
@@ -32,10 +39,13 @@ __all__ = [
     "KillTest",
     "LineageRef",
     "LineageRegistry",
+    "MechanismAdmission",
+    "MechanismRegistry",
     "SourceRef",
     "StructuralResultLabel",
     "TopologyNode",
     "TopologyRelation",
+    "assert_f7_admissible",
     "canonical_json_bytes",
     "content_digest",
     "validate_coverage",
