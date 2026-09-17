@@ -39,10 +39,10 @@ jobs:
       - name: Build CPython 3.12 wheelhouses
         run: |
           rm -rf third_party/wheels/cp312-win_amd64 third_party/wheels/cp312-manylinux_x86_64
-          python tools/build_wheelhouse.py --requirements third_party/bootstrap-requirements.in --wheelhouse third_party/wheels/cp312-win_amd64 --target cp312-win_amd64
-          python tools/build_wheelhouse.py --requirements third_party/bootstrap-requirements.in --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --target cp312-manylinux_x86_64
-          python tools/verify_wheelhouse.py third_party/wheels/cp312-win_amd64
-          python tools/verify_wheelhouse.py third_party/wheels/cp312-manylinux_x86_64
+          python -m tools.build_wheelhouse --requirements third_party/bootstrap-requirements.in --wheelhouse third_party/wheels/cp312-win_amd64 --target cp312-win_amd64
+          python -m tools.build_wheelhouse --requirements third_party/bootstrap-requirements.in --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --target cp312-manylinux_x86_64
+          python -m tools.verify_wheelhouse third_party/wheels/cp312-win_amd64
+          python -m tools.verify_wheelhouse third_party/wheels/cp312-manylinux_x86_64
       - name: Publish immutable bundle artifacts to implementation branch
         id: publish
         shell: bash
@@ -67,7 +67,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Reconstruct from Linux wheelhouse with index disabled
-        run: python tools/bootstrap_offline.py --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --venv .offline-verify/linux
+        run: python -m tools.bootstrap_offline --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --venv .offline-verify/linux
       - name: Verify reconstructed Linux environment
         run: |
           .offline-verify/linux/bin/python -m pytest -q
@@ -85,7 +85,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Reconstruct from Windows wheelhouse with index disabled
-        run: python tools/bootstrap_offline.py --wheelhouse third_party/wheels/cp312-win_amd64 --venv .offline-verify/windows
+        run: python -m tools.bootstrap_offline --wheelhouse third_party/wheels/cp312-win_amd64 --venv .offline-verify/windows
       - name: Verify reconstructed Windows environment
         shell: pwsh
         run: |
