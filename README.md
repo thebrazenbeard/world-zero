@@ -21,8 +21,13 @@ The first implementation milestone will be a reproducible World3-compatible beha
 - Physical, ecological, economic, demographic, distributional and institutional feedbacks are modeled separately before coupling.
 - Technology, policy, fertility, prices and inequality must be explicitly endogenous or explicitly scenario-controlled; never silently both.
 - Every empirical series carries source/provenance, definition, units, geography, time coverage, revision vintage and uncertainty.
+- Dataset admission is explicit; candidate data do not become model evidence merely because they were downloaded.
+- Identifiability is checked before calibration credit is granted.
+- Every new sector or material feedback must have a cheap serious kill test; complexity must earn its place.
 - Every simulation run is reproducible from source, data, parameter, scenario, solver and random-seed receipts.
 - Validation is claim-specific. No model receives an unqualified label of "validated."
+- Missing evidence remains `UNKNOWN`; required fields never justify fabricated precision.
+- Superseded hypotheses and failed model structures remain reproducible historical subjects with explicit disposition.
 
 ## Research package
 
@@ -30,6 +35,7 @@ The first implementation milestone will be a reproducible World3-compatible beha
 - `docs/research/WORLD_ZERO_2026_EXTENSION_MATRIX.md` — modern systems and feedbacks to add or restructure.
 - `docs/research/DATA_SOURCE_REGISTRY_V0.md` — candidate 2026 data sources and observables.
 - `docs/research/VALIDATION_AND_FALSIFICATION_STRATEGY.md` — calibration, holdouts, sensitivity, shocks and hostile tests.
+- `docs/research/CROSS_PROJECT_ENGINEERING_PATTERNS_2026-09-17.md` — generalized engineering patterns transferred after reviewing the owner’s repository portfolio, with private-project details deliberately excluded from this public repository.
 - `docs/coordination/THIRTEEN_LANE_SYNTHESIS_2026-09-17.md` — contributions from One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Thirteen, Masa, Mune and Hephaestus.
 - `docs/superpowers/specs/2026-09-17-world-zero-model-design.md` — model architecture specification.
 - `docs/superpowers/plans/2026-09-17-world-zero-model.md` — staged implementation plan.
