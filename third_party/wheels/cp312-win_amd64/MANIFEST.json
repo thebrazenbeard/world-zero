@@ -1,0 +1,141 @@
+{
+  "allow_undeclared_wheels": false,
+  "artifacts": [
+    {
+      "filename": "annotated_types-0.8.0-py3-none-any.whl",
+      "package": null,
+      "sha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0",
+      "size_bytes": 13427,
+      "version": null
+    },
+    {
+      "filename": "ast_serialize-0.11.2-cp39-abi3-win_amd64.whl",
+      "package": null,
+      "sha256": "b9065dd23131a23b41f5bab3bf4e9b3c350a3fe8e36e8200eded9b729fcea484",
+      "size_bytes": 1165434,
+      "version": null
+    },
+    {
+      "filename": "iniconfig-2.3.0-py3-none-any.whl",
+      "package": null,
+      "sha256": "f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12",
+      "size_bytes": 7484,
+      "version": null
+    },
+    {
+      "filename": "librt-0.15.0-cp312-cp312-win_amd64.whl",
+      "package": null,
+      "sha256": "73b30cfa976659b3917c8f6153bdb0591c6a9ec6583599fd24a689b690622022",
+      "size_bytes": 126974,
+      "version": null
+    },
+    {
+      "filename": "mypy-2.3.1-cp312-cp312-win_amd64.whl",
+      "package": null,
+      "sha256": "4c5095a327483591c94e0c8d3ef9e50d4ab1369b541eae007c1f23bc2a41f6bb",
+      "size_bytes": 11226359,
+      "version": null
+    },
+    {
+      "filename": "mypy_extensions-1.1.0-py3-none-any.whl",
+      "package": null,
+      "sha256": "1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505",
+      "size_bytes": 4963,
+      "version": null
+    },
+    {
+      "filename": "packaging-26.3-py3-none-any.whl",
+      "package": null,
+      "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+      "size_bytes": 129956,
+      "version": null
+    },
+    {
+      "filename": "pathspec-1.1.1-py3-none-any.whl",
+      "package": null,
+      "sha256": "a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189",
+      "size_bytes": 57328,
+      "version": null
+    },
+    {
+      "filename": "pluggy-1.6.0-py3-none-any.whl",
+      "package": null,
+      "sha256": "e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746",
+      "size_bytes": 20538,
+      "version": null
+    },
+    {
+      "filename": "pydantic-2.13.4-py3-none-any.whl",
+      "package": null,
+      "sha256": "45a282cde31d808236fd7ea9d919b128653c8b38b393d1c4ab335c62924d9aba",
+      "size_bytes": 472262,
+      "version": null
+    },
+    {
+      "filename": "pydantic_core-2.46.4-cp312-cp312-win_amd64.whl",
+      "package": null,
+      "sha256": "e9c26f834c65f5752f3f06cb08cb86a913ceb7274d0db6e267808a708b46bc89",
+      "size_bytes": 2072919,
+      "version": null
+    },
+    {
+      "filename": "pygments-2.21.0-py3-none-any.whl",
+      "package": null,
+      "sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9",
+      "size_bytes": 1250147,
+      "version": null
+    },
+    {
+      "filename": "pytest-9.0.2-py3-none-any.whl",
+      "package": null,
+      "sha256": "711ffd45bf766d5264d487b917733b453d917afd2b0ad65223959f59089f875b",
+      "size_bytes": 374801,
+      "version": null
+    },
+    {
+      "filename": "pyyaml-6.0.3-cp312-cp312-win_amd64.whl",
+      "package": null,
+      "sha256": "5fcd34e47f6e0b794d17de1b4ff496c00986e1c83f7ab2fb8fcfe9616ff7477b",
+      "size_bytes": 154003,
+      "version": null
+    },
+    {
+      "filename": "ruff-0.16.8-py3-none-win_amd64.whl",
+      "package": null,
+      "sha256": "a6b85621fd3c81e31fc5f5add09c9c078b430db3595ca632efafdec9e64ebfaa",
+      "size_bytes": 10586899,
+      "version": null
+    },
+    {
+      "filename": "types_pyyaml-6.0.12.20260906-py3-none-any.whl",
+      "package": null,
+      "sha256": "bca893ff0d51df5c9053137d5d0e6ccd36e939a196356f1d5c16372422f5137b",
+      "size_bytes": 21282,
+      "version": null
+    },
+    {
+      "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+      "package": null,
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "size_bytes": 45571,
+      "version": null
+    },
+    {
+      "filename": "typing_inspection-0.4.4-py3-none-any.whl",
+      "package": null,
+      "sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147",
+      "size_bytes": 14750,
+      "version": null
+    }
+  ],
+  "bundle_id": "world-zero-bootstrap-cp312-win_amd64",
+  "schema_version": "OFFLINE_WHEELHOUSE_MANIFEST_V1",
+  "source_lock_sha256": "33b92530a880fd21691535c9aa6808c9dffd51969ca1a21d2bb48b260251fd61",
+  "status": "CANDIDATE",
+  "target": {
+    "architecture": "x86_64",
+    "platform": "win_amd64",
+    "python_abi": "cp312"
+  },
+  "verification_receipt_ids": []
+}
