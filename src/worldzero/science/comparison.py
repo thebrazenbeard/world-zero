@@ -72,9 +72,7 @@ def compare(
         result.subject_id: result.direction for result in causal_results
     }
 
-    if missing:
-        structural_label = StructuralResultLabel.UNKNOWN
-    elif not causal_results:
+    if missing or not causal_results:
         structural_label = StructuralResultLabel.UNKNOWN
     elif any(not result.valid or result.direction == "INDETERMINATE" for result in causal_results):
         structural_label = StructuralResultLabel.IDENTIFICATION_LIMITED
