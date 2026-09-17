@@ -1,0 +1,33 @@
+[project]
+name = "world-zero"
+version = "0.0.0"
+description = "Hostile-tested world-systems research and modeling framework"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "pydantic==2.13.4",
+  "PyYAML==6.0.3",
+]
+
+[dependency-groups]
+dev = [
+  "pytest==9.0.2",
+  "ruff==0.16.8",
+  "mypy==2.3.1",
+  "types-PyYAML==6.0.12.20260906",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src/worldzero", "tools"]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
