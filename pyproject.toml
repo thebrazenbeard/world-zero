@@ -6,17 +6,18 @@ build-backend = "setuptools.build_meta"
 name = "world-zero"
 version = "0.1.0.dev0"
 description = "Provenance-aware global systems modeling and scientific comparison framework"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
-  "pydantic>=2.12,<3",
-  "PyYAML>=6,<7",
+  "pydantic==2.13.4",
+  "PyYAML==6.0.3",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=8,<9",
-  "ruff>=0.13,<1",
-  "mypy>=1.18,<2",
+  "pytest==9.0.2",
+  "ruff==0.16.8",
+  "mypy==2.3.1",
+  "types-PyYAML==6.0.12.20260906",
 ]
 
 [tool.setuptools.packages.find]
@@ -25,6 +26,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+norecursedirs = []
 
 [tool.ruff]
 target-version = "py312"
