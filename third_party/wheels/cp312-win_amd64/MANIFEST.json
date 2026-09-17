@@ -16,6 +16,13 @@
       "version": null
     },
     {
+      "filename": "colorama-0.4.6-py2.py3-none-any.whl",
+      "package": null,
+      "sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+      "size_bytes": 25335,
+      "version": null
+    },
+    {
       "filename": "iniconfig-2.3.0-py3-none-any.whl",
       "package": null,
       "sha256": "f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12",
@@ -130,7 +137,7 @@
   ],
   "bundle_id": "world-zero-bootstrap-cp312-win_amd64",
   "schema_version": "OFFLINE_WHEELHOUSE_MANIFEST_V1",
-  "source_lock_sha256": "33b92530a880fd21691535c9aa6808c9dffd51969ca1a21d2bb48b260251fd61",
+  "source_lock_sha256": "07bcb892360cd8edaa7559b1ba5ab87a0da8f067d6a8ec9cad81fbbb632729ca",
   "status": "CANDIDATE",
   "target": {
     "architecture": "x86_64",
