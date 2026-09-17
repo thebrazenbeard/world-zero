@@ -5,7 +5,6 @@ import yaml
 
 from worldzero.science.families import FamilyRegistry, ModelFamilyManifest
 
-
 ROOT = Path(__file__).parents[2]
 
 

@@ -7,6 +7,13 @@ from .benchmarks import (
 )
 from .canonical import canonical_json_bytes, content_digest
 from .claims import ClaimRecord, ClaimRegistry, SourceRef
+from .comparison_protocol import (
+    ComparisonProtocol,
+    ComparisonProtocolV1,
+    ComparisonSubject,
+    DecisionRule,
+    MetricSpec,
+)
 from .families import FamilyRegistry, ModelFamilyManifest
 from .implementation_coverage import (
     ImplementationBinding,
@@ -40,8 +47,12 @@ __all__ = [
     "CausalTopologyV2",
     "ClaimRecord",
     "ClaimRegistry",
+    "ComparisonProtocol",
+    "ComparisonProtocolV1",
+    "ComparisonSubject",
     "ComplexityCost",
     "ControlMode",
+    "DecisionRule",
     "EvidenceClass",
     "EvidencePartition",
     "FamilyRegistry",
@@ -53,6 +64,7 @@ __all__ = [
     "LineageRegistry",
     "MechanismAdmission",
     "MechanismRegistry",
+    "MetricSpec",
     "ModelFamilyManifest",
     "ObservationMapping",
     "PartitionSet",

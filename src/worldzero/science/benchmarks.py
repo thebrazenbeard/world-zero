@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Set
+from collections.abc import Iterable
+from collections.abc import Set as AbstractSet
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 BenchmarkId = Literal["B0_PERSISTENCE_TREND", "B1_REDUCED_FORM_EMPIRICAL"]
 BenchmarkMethod = Literal[
@@ -35,7 +36,7 @@ class BenchmarkManifest(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def validate_benchmark_contract(self) -> "BenchmarkManifest":
+    def validate_benchmark_contract(self) -> BenchmarkManifest:
         if self.benchmark_id == "B0_PERSISTENCE_TREND":
             if self.method not in {
                 "PERSISTENCE",
@@ -77,7 +78,7 @@ class BenchmarkRegistry:
 
 
 def calibration_only_observation_ids(
-    calibration_ids: Set[str] | set[str], final_holdout_ids: Set[str] | set[str]
+    calibration_ids: AbstractSet[str] | set[str], final_holdout_ids: AbstractSet[str] | set[str]
 ) -> set[str]:
     """Return calibration IDs for tuning, failing closed on final-holdout leakage."""
     overlap = sorted(set(calibration_ids) & set(final_holdout_ids))

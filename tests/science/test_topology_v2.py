@@ -5,7 +5,6 @@ import pytest
 
 from worldzero.science.topology import CausalTopologyV2
 
-
 FIXTURE = Path(__file__).parent / "fixtures" / "minimal_topology_v2.json"
 
 

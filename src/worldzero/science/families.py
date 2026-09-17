@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Set
+from collections.abc import Iterable
+from collections.abc import Set as AbstractSet
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -44,7 +45,7 @@ class ModelFamilyManifest(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def validate_family_contract(self) -> "ModelFamilyManifest":
+    def validate_family_contract(self) -> ModelFamilyManifest:
         overlap = sorted(set(self.required_mechanisms) & set(self.forbidden_mechanisms))
         if overlap:
             raise ValueError("mechanisms cannot be both required and forbidden: " + ", ".join(overlap))
@@ -59,7 +60,7 @@ class ModelFamilyManifest(BaseModel):
             self.validate_enabled_mechanisms(set(self.enabled_mechanisms))
         return self
 
-    def validate_enabled_mechanisms(self, enabled: Set[str] | set[str]) -> None:
+    def validate_enabled_mechanisms(self, enabled: AbstractSet[str] | set[str]) -> None:
         forbidden = sorted(set(enabled) & set(self.forbidden_mechanisms))
         if forbidden:
             raise ValueError(

@@ -10,9 +10,10 @@ from worldzero.science.implementation_coverage import (
 )
 from worldzero.science.topology import (
     CausalTopologyV2,
+)
+from worldzero.science.topology import (
     ImplementationBinding as TopologyImplementationBinding,
 )
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "minimal_topology_v2.json"
 
@@ -151,3 +152,20 @@ def test_endogenous_intentionally_external_relation_still_requires_micro_test():
 def test_valid_coverage_passes():
     topo = topology()
     validate_coverage(topo, valid_coverage(topo))
+
+
+def test_declared_behavioral_contract_drift_fails():
+    topo = topology().model_copy(deep=True)
+    topo.relations[0].implementation_binding = TopologyImplementationBinding(
+        module="worldzero.models.market",
+        symbol="demand_response",
+        behavioral_contract_id="BC_EXPECTED",
+    )
+    binding = valid_coverage(topo).bindings[0].model_copy(
+        update={"behavioral_contract_id": "BC_WRONG"}
+    )
+    coverage = valid_coverage(topo).model_copy(
+        update={"topology_digest": topo.digest(), "bindings": (binding,)}, deep=True
+    )
+    with pytest.raises(ValueError, match="binding drift"):
+        validate_coverage(topo, coverage)

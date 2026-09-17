@@ -174,7 +174,7 @@ class TopologyRelation(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def validate_relation_ids(self) -> "TopologyRelation":
+    def validate_relation_ids(self) -> TopologyRelation:
         for field_name, values in (("inputs", self.inputs), ("outputs", self.outputs)):
             if len(values) != len(set(values)):
                 raise ValueError(f"{self.id} has duplicate {field_name}")
@@ -221,7 +221,7 @@ class CausalTopologyV2(BaseModel):
     known_conflicts: tuple[TopologyConflict, ...] = ()
 
     @model_validator(mode="after")
-    def validate_referential_integrity(self) -> "CausalTopologyV2":
+    def validate_referential_integrity(self) -> CausalTopologyV2:
         node_ids = [node.id for node in self.nodes]
         duplicate_nodes = sorted({node_id for node_id in node_ids if node_ids.count(node_id) > 1})
         if duplicate_nodes:

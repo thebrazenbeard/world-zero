@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Set
+from collections.abc import Set as AbstractSet
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -29,7 +29,7 @@ class EvidencePartition(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def reject_duplicate_observations(self) -> "EvidencePartition":
+    def reject_duplicate_observations(self) -> EvidencePartition:
         if len(self.observation_ids) != len(set(self.observation_ids)):
             raise ValueError(f"duplicate observation ID within partition {self.partition_id}")
         return self
@@ -44,7 +44,7 @@ class PartitionSet(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def validate_partition_isolation(self) -> "PartitionSet":
+    def validate_partition_isolation(self) -> PartitionSet:
         partition_ids = [partition.partition_id for partition in self.partitions]
         duplicates = sorted(
             {partition_id for partition_id in partition_ids if partition_ids.count(partition_id) > 1}
@@ -96,7 +96,7 @@ class PartitionSet(BaseModel):
 
 
 def assert_no_holdout_leakage(
-    calibration_ids: Set[str] | set[str], final_holdout_ids: Set[str] | set[str]
+    calibration_ids: AbstractSet[str] | set[str], final_holdout_ids: AbstractSet[str] | set[str]
 ) -> None:
     overlap = sorted(set(calibration_ids) & set(final_holdout_ids))
     if overlap:

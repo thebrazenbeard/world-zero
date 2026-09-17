@@ -34,7 +34,7 @@ class ClaimRecord(BaseModel):
     supersedes_revision: int | None = Field(default=None, ge=1)
 
     @model_validator(mode="after")
-    def validate_supersession_direction(self) -> "ClaimRecord":
+    def validate_supersession_direction(self) -> ClaimRecord:
         if self.supersedes_revision is not None and self.supersedes_revision >= self.revision:
             raise ValueError("supersedes_revision must be lower than revision")
         return self

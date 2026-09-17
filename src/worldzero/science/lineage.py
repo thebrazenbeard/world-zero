@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Set
+from collections.abc import Iterable
+from collections.abc import Set as AbstractSet
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -27,8 +28,8 @@ class LineageRegistry:
     def get(self, source_id: str) -> LineageRef:
         return self._by_source[source_id]
 
-    def independent_source_count(self, source_ids: Set[str] | set[str]) -> int:
-        unknown = sorted(source_ids.difference(self._by_source))
+    def independent_source_count(self, source_ids: AbstractSet[str]) -> int:
+        unknown = sorted(set(source_ids).difference(self._by_source))
         if unknown:
             raise KeyError(f"unknown lineage source IDs: {', '.join(unknown)}")
         return len({self._by_source[source_id].upstream_lineage_id for source_id in source_ids})

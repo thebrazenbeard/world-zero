@@ -9,7 +9,6 @@ from worldzero.science.benchmarks import (
     calibration_only_observation_ids,
 )
 
-
 ROOT = Path(__file__).parents[2]
 
 
