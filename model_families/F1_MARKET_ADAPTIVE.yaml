@@ -1,0 +1,22 @@
+schema_version: MODEL_FAMILY_V1
+family_id: F1_MARKET_ADAPTIVE
+status: DRAFT
+causal_interpretation: true
+source_commit: null
+topology_digest: null
+required_mechanisms:
+  - SCARCITY_PRICE_FEEDBACK
+  - DEMAND_RESPONSE
+  - SUBSTITUTION_ELASTICITY
+  - RESOURCE_DEVELOPMENT_RESPONSE
+  - TRADE_REALLOCATION
+  - INVESTMENT_REDIRECTION
+  - AFFORDABILITY_DISTRIBUTION_CONSTRAINT
+  - SHORTAGE_RATIONING_BEHAVIOR
+forbidden_mechanisms: []
+hostile_controls:
+  - near-zero substitution
+  - high substitution
+  - rapid versus delayed investment
+  - concentrated versus diversified supply
+  - price spikes with low-income demand destruction
