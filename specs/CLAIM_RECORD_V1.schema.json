@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "EvidenceClass": {
+      "enum": [
+        "OBSERVED",
+        "DERIVED",
+        "INFERRED",
+        "HYPOTHESIS",
+        "DISPUTED",
+        "UNKNOWN",
+        "SUPERSEDED"
+      ],
+      "title": "EvidenceClass",
+      "type": "string"
+    },
+    "SourceRef": {
+      "properties": {
+        "evidence_class": {
+          "$ref": "#/$defs/EvidenceClass"
+        },
+        "locator": {
+          "anyOf": [
+            {"type": "string"},
+            {"type": "null"}
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "notes": {
+          "anyOf": [
+            {"type": "string"},
+            {"type": "null"}
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "source_id": {
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "upstream_lineage_id": {
+          "anyOf": [
+            {"type": "string"},
+            {"type": "null"}
+          ],
+          "default": null,
+          "title": "Upstream Lineage Id"
+        }
+      },
+      "required": ["source_id", "evidence_class"],
+      "title": "SourceRef",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "claim_id": {"minLength": 1, "title": "Claim Id", "type": "string"},
+    "downgrade_condition": {
+      "anyOf": [{"type": "string"}, {"type": "null"}],
+      "default": null,
+      "title": "Downgrade Condition"
+    },
+    "evidence_class": {"$ref": "#/$defs/EvidenceClass"},
+    "model_obligation": {
+      "anyOf": [{"type": "string"}, {"type": "null"}],
+      "default": null,
+      "title": "Model Obligation"
+    },
+    "proposition": {"minLength": 1, "title": "Proposition", "type": "string"},
+    "revision": {"minimum": 1, "title": "Revision", "type": "integer"},
+    "rival_interpretations": {
+      "default": [],
+      "items": {"type": "string"},
+      "title": "Rival Interpretations",
+      "type": "array"
+    },
+    "scope": {
+      "anyOf": [{"type": "string"}, {"type": "null"}],
+      "default": null,
+      "title": "Scope"
+    },
+    "sources": {
+      "default": [],
+      "items": {"$ref": "#/$defs/SourceRef"},
+      "title": "Sources",
+      "type": "array"
+    },
+    "supersedes_revision": {
+      "anyOf": [
+        {"minimum": 1, "type": "integer"},
+        {"type": "null"}
+      ],
+      "default": null,
+      "title": "Supersedes Revision"
+    }
+  },
+  "required": ["claim_id", "revision", "proposition", "evidence_class"],
+  "title": "ClaimRecord",
+  "type": "object"
+}
