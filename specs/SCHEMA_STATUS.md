@@ -9,6 +9,7 @@ Date: 2026-09-17
 - `COMPARISON_PROTOCOL_V1.schema.json` — current comparison preregistration contract.
 - `IMPLEMENTATION_COVERAGE_V1.schema.json` — current topology-to-executable coverage contract. Executable validation fails closed on missing/undeclared active relations, digest mismatch, binding drift, and missing endogenous micro-tests; a stored `coverage_status=PASS` is not sufficient by itself.
 - `MECHANISM_ADMISSION_V1.schema.json` — current mechanism-admission evidence packet. F7 composition is additionally guarded in executable code: an F7 candidate must satisfy semantic clarity, identifiability or an explicit hard-invariant exception, survive its preregistered kill test, demonstrate holdout/invariant and ablation value, document structural-rival analysis, justify complexity, pass numerical integrity, and carry no unresolved negative-transfer defect.
+- `MODEL_FAMILY_V1.schema.json` — current causal-family manifest contract. DRAFT family seeds may defer source/topology binding rather than inventing placeholder hashes; every non-DRAFT family requires an exact source commit and topology digest. Predictive benchmarks remain outside this schema and cannot carry causal-topology identity.
 
 ## Superseded
 
