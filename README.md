@@ -78,7 +78,7 @@ The architecture now requires a scientific comparison spine **before** modern-se
 
 ## Review posture
 
-The current branch deliberately treats architecture defects discovered during review as normal project bugs, not as reasons to preserve an earlier clean story. The current exact review subject belongs in PR/Bus review records, while this README points to the durable current contracts and tells reviewers to fresh-read mutable head state.
+Architecture defects discovered during review are treated as normal project bugs, not as reasons to preserve an earlier clean story. Current exact review subjects belong in PR/Bus review records; this README points to durable contracts and requires fresh reads of mutable branch state.
 
 ## Reference implementation boundary
 
