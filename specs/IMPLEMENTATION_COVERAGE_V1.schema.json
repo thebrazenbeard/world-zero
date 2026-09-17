@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/thebrazenbeard/world-zero/specs/IMPLEMENTATION_COVERAGE_V1.schema.json",
+  "title": "World Zero Implementation Coverage V1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "coverage_id",
+    "topology_id",
+    "topology_digest",
+    "source_commit",
+    "bindings",
+    "coverage_status"
+  ],
+  "properties": {
+    "schema_version": {"const": "IMPLEMENTATION_COVERAGE_V1"},
+    "coverage_id": {"type": "string", "minLength": 1},
+    "topology_id": {"type": "string", "minLength": 1},
+    "topology_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["topology_object_id", "object_kind", "module", "symbol", "binding_status", "micro_test_ids"],
+        "properties": {
+          "topology_object_id": {"type": "string"},
+          "object_kind": {"type": "string", "enum": ["NODE", "RELATION"]},
+          "module": {"type": "string", "minLength": 1},
+          "symbol": {"type": "string", "minLength": 1},
+          "behavioral_contract_id": {"type": ["string", "null"]},
+          "binding_status": {"type": "string", "enum": ["BOUND", "INTENTIONALLY_EXTERNAL", "UNBOUND"]},
+          "micro_test_ids": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "undeclared_runtime_relations": {
+      "type": "array",
+      "items": {"type": "string"},
+      "default": []
+    },
+    "missing_declared_relations": {
+      "type": "array",
+      "items": {"type": "string"},
+      "default": []
+    },
+    "coverage_status": {"type": "string", "enum": ["PASS", "FAIL", "INCOMPLETE"]},
+    "notes": {"type": ["string", "null"]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"coverage_status": {"const": "PASS"}}},
+      "then": {
+        "properties": {
+          "undeclared_runtime_relations": {"maxItems": 0},
+          "missing_declared_relations": {"maxItems": 0}
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
