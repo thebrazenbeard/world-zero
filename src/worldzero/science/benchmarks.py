@@ -59,7 +59,7 @@ class BenchmarkManifest(BaseModel):
 
     def hyperparameter_search_observation_ids(
         self,
-        partitions: "PartitionSet",
+        partitions: PartitionSet,
     ) -> frozenset[str]:
         if self.benchmark_id != "B1_REDUCED_FORM_EMPIRICAL":
             raise ValueError("hyperparameter search is defined only for B1")
