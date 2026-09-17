@@ -1,0 +1,18 @@
+{
+  "schema_version": "CAUSAL_TOPOLOGY_V2",
+  "topology_id": "TEST_TOPOLOGY",
+  "model_family": "F1_MARKET_ADAPTIVE",
+  "status": "DRAFT",
+  "nodes": [
+    {"id":"SCARCITY","kind":"AUXILIARY","control_mode":"ENDOGENOUS","evidence_class":"INFERRED","scope":{"spatial":"REGIONAL"},"uncertainty":{"kind":"PARAMETER"}},
+    {"id":"INCOME","kind":"STOCK","control_mode":"ENDOGENOUS","evidence_class":"OBSERVED","scope":{"spatial":"REGIONAL"},"uncertainty":{"kind":"MEASUREMENT"}},
+    {"id":"INVENTORY","kind":"STOCK","control_mode":"ENDOGENOUS","evidence_class":"OBSERVED","scope":{"spatial":"REGIONAL"},"uncertainty":{"kind":"MEASUREMENT"}},
+    {"id":"DEMAND","kind":"FLOW","control_mode":"ENDOGENOUS","evidence_class":"INFERRED","scope":{"spatial":"REGIONAL"},"uncertainty":{"kind":"PARAMETER"}}
+  ],
+  "relations": [
+    {"id":"DEMAND_RESPONSE","inputs":["SCARCITY","INCOME","INVENTORY"],"outputs":["DEMAND"],"relation_type":"JOINT_RESPONSE","functional_form_class":"NONLINEAR","polarity":"MIXED","evidence_class":"HYPOTHESIS","control_mode":"ENDOGENOUS","scope":{"spatial":"REGIONAL"},"uncertainty":{"kind":"STRUCTURAL"},"kill_test_ids":["KT_DEMAND_RESPONSE"]}
+  ],
+  "kill_tests": [
+    {"id":"KT_DEMAND_RESPONSE","claim_or_mechanism":"Demand response depends jointly on scarcity, income, and inventory.","test":"Compare against price-only and no-response nulls on holdout shortages.","failure_meaning":"Joint demand response has not earned inclusion.","holdout_class":"STRUCTURAL"}
+  ]
+}
