@@ -1,0 +1,20 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "comparison_observable_ids": {"default": [], "items": {"type": "string"}, "title": "Comparison Observable Ids", "type": "array"},
+    "enabled_mechanism_ids": {"default": [], "items": {"type": "string"}, "title": "Enabled Mechanism Ids", "type": "array"},
+    "family_id": {"enum": ["F0_WORLD3_CONTROL", "F1_MARKET_ADAPTIVE", "F2_ENDOGENOUS_INNOVATION", "F3_NET_ENERGY_MATERIAL", "F4_INSTITUTIONAL_FRAGILITY", "F5_RESILIENT_REGIONAL", "F6_COMPOUND_RISK", "F7_MINIMAL_ADAPTIVE_SYNTHESIS"], "title": "Family Id", "type": "string"},
+    "family_name": {"minLength": 1, "title": "Family Name", "type": "string"},
+    "forbidden_mechanism_ids": {"default": [], "items": {"type": "string"}, "title": "Forbidden Mechanism Ids", "type": "array"},
+    "hostile_control_ids": {"default": [], "items": {"type": "string"}, "title": "Hostile Control Ids", "type": "array"},
+    "notes": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Notes"},
+    "purpose": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Purpose"},
+    "required_mechanism_ids": {"default": [], "items": {"type": "string"}, "title": "Required Mechanism Ids", "type": "array"},
+    "schema_version": {"const": "MODEL_FAMILY_V1", "title": "Schema Version", "type": "string"},
+    "status": {"default": "DRAFT", "enum": ["DRAFT", "FROZEN_CANDIDATE", "UNDER_TEST", "QUALIFIED_WITHIN_SCOPE", "REJECTED", "SUPERSEDED"], "title": "Status", "type": "string"},
+    "topology_digest": {"anyOf": [{"pattern": "^[0-9a-f]{64}$", "type": "string"}, {"type": "null"}], "default": null, "title": "Topology Digest"}
+  },
+  "required": ["schema_version", "family_id", "family_name"],
+  "title": "ModelFamilyManifest",
+  "type": "object"
+}
