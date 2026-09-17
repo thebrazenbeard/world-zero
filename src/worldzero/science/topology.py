@@ -154,7 +154,7 @@ class CausalTopologyV2(BaseModel):
     kill_tests: tuple[KillTest, ...] = Field(min_length=1)
 
     @model_validator(mode="after")
-    def validate_integrity(self) -> "CausalTopologyV2":
+    def validate_integrity(self) -> CausalTopologyV2:
         node_ids = [node.id for node in self.nodes]
         if len(node_ids) != len(set(node_ids)):
             raise ValueError("duplicate node id")
