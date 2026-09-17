@@ -1,0 +1,18 @@
+schema_version: BENCHMARK_V1
+benchmark_id: B1_REDUCED_FORM_EMPIRICAL
+method_class: REDUCED_FORM_EMPIRICAL
+status: DRAFT
+causal_interpretation: false
+calibration_only_selection: true
+final_holdout_access: FORBIDDEN_UNTIL_FINAL_EVALUATION
+feature_set_frozen_before_final_holdout: true
+feature_ids:
+  - POPULATION
+  - INDUSTRIAL_OUTPUT_PER_CAPITA
+  - FOOD_PER_CAPITA
+  - ENERGY_INTENSITY
+  - MATERIAL_THROUGHPUT
+  - CO2_EMISSIONS
+hyperparameter_policy: NESTED_WITHIN_CALIBRATION
+regularization_policy: PREREGISTERED_OR_CALIBRATION_SELECTED
+notes: Coefficients receive no causal interpretation; actual observation-ID leakage is enforced in Task 7.
