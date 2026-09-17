@@ -1,0 +1,22 @@
+{
+  "schema_version": "OFFLINE_WHEELHOUSE_MANIFEST_V1",
+  "bundle_id": "test-fixture",
+  "target": {
+    "python_abi": "py3",
+    "platform": "any",
+    "architecture": "any"
+  },
+  "source_lock_sha256": null,
+  "allow_undeclared_wheels": false,
+  "artifacts": [
+    {
+      "filename": "demo-1.0-py3-none-any.whl",
+      "size_bytes": 19,
+      "sha256": "0faf00eb282d5d62198e355b14587af334acd7ae838cd6c08e09382bed7c3718",
+      "package": "demo",
+      "version": "1.0"
+    }
+  ],
+  "status": "CANDIDATE",
+  "verification_receipt_ids": []
+}
