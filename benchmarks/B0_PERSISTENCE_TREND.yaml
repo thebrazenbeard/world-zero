@@ -1,0 +1,11 @@
+benchmark_id: B0_PERSISTENCE_TREND
+method: PERSISTENCE
+causal_interpretation: false
+feature_set: []
+allowed_forms:
+  - PERSISTENCE
+  - LINEAR_TREND
+  - LOG_LINEAR_TREND
+  - BOUNDED_LOGISTIC_TREND
+partition_binding_required: true
+notes: Final form must be preregistered before holdout evaluation; no hidden future information or hand-tuned turning points.
