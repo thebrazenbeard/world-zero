@@ -1,0 +1,1 @@
+"""World Zero package."""
