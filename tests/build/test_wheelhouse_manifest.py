@@ -5,7 +5,6 @@ import shutil
 import sys
 from pathlib import Path
 
-
 FIXTURE = Path(__file__).parent / "fixtures" / "wheelhouse"
 
 
