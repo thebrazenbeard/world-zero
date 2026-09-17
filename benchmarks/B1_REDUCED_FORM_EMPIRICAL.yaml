@@ -1,0 +1,10 @@
+benchmark_id: B1_REDUCED_FORM_EMPIRICAL
+method: REGULARIZED_VAR
+causal_interpretation: false
+feature_set:
+  - COMPARISON_OBSERVABLES_V1
+regularization_policy: regularization family and penalty range frozen before final holdout evaluation
+hyperparameter_policy: nested search entirely inside calibration data
+transformation_policy: provenance-bound transformations only
+partition_binding_required: true
+notes: COMPARISON_OBSERVABLES_V1 is a manifest alias resolved by the later observation/partition contract, not a causal topology.
