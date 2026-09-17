@@ -1,7 +1,13 @@
 """Scientific-control primitives for World Zero."""
 
+from .benchmarks import (
+    BenchmarkManifest,
+    BenchmarkRegistry,
+    calibration_only_observation_ids,
+)
 from .canonical import canonical_json_bytes, content_digest
 from .claims import ClaimRecord, ClaimRegistry, SourceRef
+from .families import FamilyRegistry, ModelFamilyManifest
 from .implementation_coverage import (
     ImplementationBinding,
     ImplementationCoverage,
@@ -26,6 +32,8 @@ from .types import (
 
 __all__ = [
     "AdmissionDisposition",
+    "BenchmarkManifest",
+    "BenchmarkRegistry",
     "BenchmarkResultLabel",
     "CausalTopologyV2",
     "ClaimRecord",
@@ -33,6 +41,7 @@ __all__ = [
     "ComplexityCost",
     "ControlMode",
     "EvidenceClass",
+    "FamilyRegistry",
     "IdentifiabilityClass",
     "ImplementationBinding",
     "ImplementationCoverage",
@@ -41,11 +50,13 @@ __all__ = [
     "LineageRegistry",
     "MechanismAdmission",
     "MechanismRegistry",
+    "ModelFamilyManifest",
     "SourceRef",
     "StructuralResultLabel",
     "TopologyNode",
     "TopologyRelation",
     "assert_f7_admissible",
+    "calibration_only_observation_ids",
     "canonical_json_bytes",
     "content_digest",
     "validate_coverage",
