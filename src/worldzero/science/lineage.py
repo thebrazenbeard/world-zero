@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Set
+from collections.abc import Iterable, Set as AbstractSet
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -28,5 +28,5 @@ class LineageRegistry:
         except KeyError as exc:
             raise KeyError(f"unknown source id: {source_id}") from exc
 
-    def independent_source_count(self, source_ids: Set[str]) -> int:
+    def independent_source_count(self, source_ids: AbstractSet[str]) -> int:
         return len({self.get(source_id).upstream_lineage_id for source_id in source_ids})
