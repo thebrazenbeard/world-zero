@@ -1,0 +1,31 @@
+schema_version: MODEL_FAMILY_V1
+family_id: F3_NET_ENERGY_MATERIAL
+family_name: Net-energy and material-bottleneck rival
+status: DRAFT
+purpose: Test whether gross resource accounting hides transition burdens and declining useful surplus.
+enabled_mechanism_ids:
+  - WORLD3_CORE
+  - NET_ENERGY_ACCOUNTING
+  - TRANSITION_ENERGY_BURDEN
+  - MINERAL_BOTTLENECK
+  - RECYCLING_DYNAMICS
+  - RESOURCE_QUALITY_DECLINE
+  - INFRASTRUCTURE_LEAD_TIME
+required_mechanism_ids:
+  - NET_ENERGY_ACCOUNTING
+  - TRANSITION_ENERGY_BURDEN
+  - MINERAL_BOTTLENECK
+  - INFRASTRUCTURE_LEAD_TIME
+forbidden_mechanism_ids: []
+comparison_observable_ids:
+  - GROSS_ENERGY
+  - USEFUL_ENERGY
+  - NET_ENERGY_SURPLUS
+  - MATERIAL_THROUGHPUT
+  - INDUSTRIAL_OUTPUT_PER_CAPITA
+hostile_control_ids:
+  - ALTERNATIVE_EROI_BOUNDARY
+  - HIGH_TRANSITION_ENERGY_BURDEN
+  - LOW_TRANSITION_ENERGY_BURDEN
+  - RAPID_RECYCLING
+  - SLOW_RECYCLING
