@@ -243,3 +243,21 @@ def total_material_stock(state: ModelState, region_id: str) -> float:
             material_lost_stock_id,
         )
     )
+
+
+def available_material_input_rate(
+    state: ModelState,
+    region_id: str,
+    params: MaterialStockParams,
+) -> float:
+    virgin = (
+        state.value(virgin_resource_stock_id(region_id))
+        * params.extraction_fraction
+        * params.processing_yield
+    )
+    recycled = (
+        state.value(material_waste_stock_id(region_id))
+        * params.recycling_rate
+        * params.recycling_yield
+    )
+    return virgin + recycled

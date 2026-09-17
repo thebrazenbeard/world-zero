@@ -6,7 +6,15 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from worldzero.core import ModelState, RK4Solver, SimulationClock, StockFlowModel, solve
+from worldzero.core import (
+    FlowSpec,
+    ModelState,
+    RK4Solver,
+    SimulationClock,
+    StockFlowModel,
+    StockSpec,
+    solve,
+)
 from worldzero.regions.definitions import RegionSet
 from worldzero.sectors.demography import (
     AgeCohort,
@@ -17,6 +25,17 @@ from worldzero.sectors.demography import (
     region_population,
 )
 from worldzero.sectors.distribution import DistributionParams, allocate_income
+from worldzero.sectors.energy import (
+    EnergyBuildParams,
+    EnergyCapacity,
+    build_energy_sector,
+    energy_capacity_from_state,
+)
+from worldzero.sectors.materials import (
+    MaterialStockParams,
+    build_material_sector,
+    total_material_stock,
+)
 from worldzero.sectors.production import (
     ProductionParams,
     build_production_sector,
@@ -35,6 +54,8 @@ class NativeBackboneConfig:
     start: float
     stop: float
     dt: float
+    energy: Mapping[str, EnergyBuildParams] | None = None
+    materials: Mapping[str, MaterialStockParams] | None = None
 
     def __post_init__(self) -> None:
         expected = set(self.regions.ids)
@@ -47,6 +68,18 @@ class NativeBackboneConfig:
             actual = set(mapping)
             if actual != expected:
                 raise ValueError(f"{name} region keys must exactly match region set")
+        if self.energy is not None and set(self.energy) != expected:
+            raise ValueError("energy region keys must exactly match region set")
+        if self.materials is not None and set(self.materials) != expected:
+            raise ValueError("materials region keys must exactly match region set")
+        if self.energy is None and any(
+            params.energy_per_output is not None for params in self.production.values()
+        ):
+            raise ValueError("energy-constrained production requires an energy sector")
+        if self.materials is None and any(
+            params.material_per_output is not None for params in self.production.values()
+        ):
+            raise ValueError("material-constrained production requires a materials sector")
         SimulationClock(self.start, self.stop, self.dt)
 
     @classmethod
@@ -89,6 +122,8 @@ class NativeBackboneResult:
     regions: RegionSet
     production: Mapping[str, ProductionParams]
     distribution: Mapping[str, DistributionParams]
+    energy: Mapping[str, EnergyBuildParams] | None
+    materials: Mapping[str, MaterialStockParams] | None
 
     @property
     def region_set_version(self) -> str:
@@ -104,7 +139,29 @@ class NativeBackboneResult:
 
     def region_real_output(self, region_id: str) -> tuple[float, ...]:
         params = self.production[region_id]
-        return tuple(region_output(state, region_id, params) for state in self.states)
+        energy_params = None if self.energy is None else self.energy[region_id]
+        material_params = None if self.materials is None else self.materials[region_id]
+        return tuple(
+            region_output(
+                state,
+                region_id,
+                params,
+                energy_params=energy_params,
+                material_params=material_params,
+            )
+            for state in self.states
+        )
+
+    def region_energy_capacity(self, region_id: str) -> tuple[EnergyCapacity, ...]:
+        if self.energy is None:
+            raise ValueError("energy sector is not configured")
+        params = self.energy[region_id]
+        return tuple(energy_capacity_from_state(state, region_id, params) for state in self.states)
+
+    def region_total_material(self, region_id: str) -> tuple[float, ...]:
+        if self.materials is None:
+            raise ValueError("materials sector is not configured")
+        return tuple(total_material_stock(state, region_id) for state in self.states)
 
     def region_labor_income(self, region_id: str) -> tuple[float, ...]:
         distribution = self.distribution[region_id]
@@ -128,13 +185,25 @@ def run_native_backbone(config: NativeBackboneConfig) -> NativeBackboneResult:
         rates_by_region=config.demography_rates,
         migration_links=config.migration_links,
     )
+    energy_stocks: tuple[StockSpec, ...] = ()
+    energy_flows: tuple[FlowSpec, ...] = ()
+    if config.energy is not None:
+        energy_stocks, energy_flows = build_energy_sector(config.regions, config.energy)
+
+    material_stocks: tuple[StockSpec, ...] = ()
+    material_flows: tuple[FlowSpec, ...] = ()
+    if config.materials is not None:
+        material_stocks, material_flows = build_material_sector(config.regions, config.materials)
+
     production_stocks, production_flows = build_production_sector(
         config.regions,
         config.production,
+        energy_params_by_region=config.energy,
+        material_params_by_region=config.materials,
     )
     model = StockFlowModel(
-        stocks=demographic_stocks + production_stocks,
-        flows=demographic_flows + production_flows,
+        stocks=demographic_stocks + production_stocks + energy_stocks + material_stocks,
+        flows=demographic_flows + production_flows + energy_flows + material_flows,
     )
     trajectory = solve(
         model,
@@ -147,4 +216,6 @@ def run_native_backbone(config: NativeBackboneConfig) -> NativeBackboneResult:
         regions=config.regions,
         production=MappingProxyType(dict(config.production)),
         distribution=MappingProxyType(dict(config.distribution)),
+        energy=None if config.energy is None else MappingProxyType(dict(config.energy)),
+        materials=None if config.materials is None else MappingProxyType(dict(config.materials)),
     )
