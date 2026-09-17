@@ -1,0 +1,14 @@
+schema_version: BENCHMARK_V1
+benchmark_id: B0_PERSISTENCE_TREND
+method_class: PERSISTENCE_TREND
+status: DRAFT
+causal_interpretation: false
+calibration_only_selection: true
+final_holdout_access: FORBIDDEN_UNTIL_FINAL_EVALUATION
+feature_set_frozen_before_final_holdout: true
+allowed_forms:
+  - LAST_OBSERVATION
+  - LINEAR_TREND
+  - LOG_LINEAR_TREND
+  - BOUNDED_LOGISTIC_PREREGISTERED
+notes: Form selection must be frozen before final holdout evaluation.
