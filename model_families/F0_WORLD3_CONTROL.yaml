@@ -1,0 +1,22 @@
+schema_version: MODEL_FAMILY_V1
+family_id: F0_WORLD3_CONTROL
+family_name: World3-compatible biophysical control
+status: DRAFT
+purpose: Preserve the classical World3 stock-flow logic as a hostile control subject.
+enabled_mechanism_ids:
+  - WORLD3_CORE
+required_mechanism_ids:
+  - WORLD3_CORE
+forbidden_mechanism_ids:
+  - SCARCITY_PRICE_FEEDBACK
+  - ENDOGENOUS_INNOVATION
+  - NET_ENERGY_ACCOUNTING
+  - NETWORK_CASCADE
+comparison_observable_ids:
+  - POPULATION
+  - INDUSTRIAL_OUTPUT_PER_CAPITA
+  - FOOD_PER_CAPITA
+  - NONRENEWABLE_RESOURCE_FRACTION
+  - PERSISTENT_POLLUTION_INDEX
+hostile_control_ids:
+  - WORLD3_CONTROL_REPRODUCTION
