@@ -4,3 +4,8 @@ from pathlib import Path
 def test_wheel_artifacts_are_never_text_normalized():
     attributes = Path(".gitattributes").read_text(encoding="utf-8")
     assert "*.whl -text" in attributes
+
+
+def test_frozen_csv_fixtures_are_lf_normalized():
+    attributes = Path(".gitattributes").read_text(encoding="utf-8")
+    assert "tests/baseline/fixtures/*.csv text eol=lf" in attributes

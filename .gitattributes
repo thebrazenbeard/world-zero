@@ -1,1 +1,2 @@
 *.whl -text
+tests/baseline/fixtures/*.csv text eol=lf
