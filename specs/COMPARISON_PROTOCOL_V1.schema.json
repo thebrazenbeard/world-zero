@@ -82,6 +82,7 @@
         "properties": {"frozen_before_execution": {"const": false}}
       },
       "then": {
+        "required": ["exploratory"],
         "properties": {"exploratory": {"const": true}}
       }
     }

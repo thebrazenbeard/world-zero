@@ -9,9 +9,9 @@ def test_offline_workflow_invokes_verifier_and_bootstrap_as_modules():
     assert "python tools/bootstrap_offline.py" not in workflow
 
 
-def test_offline_workflow_binds_verification_to_trigger_sha_and_cancels_stale_runs():
+def test_offline_workflow_binds_verification_to_candidate_head_and_cancels_stale_runs():
     workflow = Path(".github/workflows/build-offline-bundles.yml").read_text(encoding="utf-8")
-    assert "ref: ${{ github.sha }}" in workflow
+    assert "ref: ${{ github.event.pull_request.head.sha || github.sha }}" in workflow
     assert "cancel-in-progress: true" in workflow
 
 
@@ -28,3 +28,8 @@ def test_offline_workflow_qualifies_both_committed_platform_bundles():
     assert "third_party/wheels/cp312-win_amd64" in workflow
     assert "qualify-linux:" in workflow
     assert "qualify-windows:" in workflow
+
+
+def test_offline_pr_verification_checks_literal_candidate_head_not_synthetic_merge_ref():
+    workflow = Path(".github/workflows/build-offline-bundles.yml").read_text(encoding="utf-8")
+    assert "github.event.pull_request.head.sha || github.sha" in workflow

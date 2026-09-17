@@ -77,3 +77,19 @@ def test_static_comparison_schema_represents_posthoc_exploration():
         is False
         for rule in schema.get("allOf", [])
     )
+
+
+def test_static_schema_requires_explicit_exploratory_for_posthoc_protocol():
+    import json
+    from pathlib import Path
+
+    schema_path = Path(__file__).parents[2] / "specs" / "COMPARISON_PROTOCOL_V1.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    posthoc_rules = [
+        rule
+        for rule in schema.get("allOf", [])
+        if rule.get("if", {}).get("properties", {}).get("frozen_before_execution", {}).get("const")
+        is False
+    ]
+    assert posthoc_rules
+    assert "exploratory" in posthoc_rules[0].get("then", {}).get("required", [])
