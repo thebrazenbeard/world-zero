@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/thebrazenbeard/world-zero/specs/CAUSAL_TOPOLOGY_V1.schema.json",
+  "title": "World Zero Causal Topology V1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "topology_id",
+    "model_family",
+    "source_commit",
+    "nodes",
+    "relations",
+    "kill_tests"
+  ],
+  "properties": {
+    "schema_version": {"const": "CAUSAL_TOPOLOGY_V1"},
+    "topology_id": {"type": "string", "minLength": 1},
+    "model_family": {
+      "type": "string",
+      "enum": ["F0_WORLD3_CONTROL", "F1_MARKET_ADAPTIVE", "F2_ENDOGENOUS_INNOVATION", "F3_NET_ENERGY_MATERIAL", "F4_INSTITUTIONAL_FRAGILITY", "F5_RESILIENT_REGIONAL", "F6_COMPOUND_RISK", "F7_MINIMAL_ADAPTIVE_SYNTHESIS"]
+    },
+    "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "FROZEN_CANDIDATE", "UNDER_TEST", "QUALIFIED_WITHIN_SCOPE", "REJECTED", "SUPERSEDED"]
+    },
+    "description": {"type": "string"},
+    "region_definition_id": {"type": ["string", "null"]},
+    "nodes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/node"},
+      "minItems": 1
+    },
+    "relations": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/relation"}
+    },
+    "kill_tests": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/killTest"},
+      "minItems": 1
+    },
+    "known_conflicts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/conflict"},
+      "default": []
+    }
+  },
+  "$defs": {
+    "evidenceClass": {
+      "type": "string",
+      "enum": ["OBSERVED", "DERIVED", "INFERRED", "HYPOTHESIS", "DISPUTED", "UNKNOWN", "SUPERSEDED"]
+    },
+    "controlMode": {
+      "type": "string",
+      "enum": ["ENDOGENOUS", "EXOGENOUS_TRAJECTORY", "INTERVENTION_CONTROLLED", "ABSENT"]
+    },
+    "scope": {
+      "type": "object",
+      "required": ["spatial"],
+      "properties": {
+        "spatial": {"type": "string", "enum": ["GLOBAL", "REGIONAL", "BILATERAL_NETWORK", "LOCAL_AGGREGATED"]},
+        "regions": {"type": "array", "items": {"type": "string"}},
+        "time_start": {"type": ["number", "null"]},
+        "time_end": {"type": ["number", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "sourceRef": {
+      "type": "object",
+      "required": ["id", "evidence_class"],
+      "properties": {
+        "id": {"type": "string"},
+        "evidence_class": {"$ref": "#/$defs/evidenceClass"},
+        "locator": {"type": ["string", "null"]},
+        "claim": {"type": ["string", "null"]},
+        "notes": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "uncertainty": {
+      "type": "object",
+      "properties": {
+        "kind": {"type": "string", "enum": ["PARAMETER", "MEASUREMENT", "STRUCTURAL", "SCENARIO", "DEEP_UNCERTAINTY", "NONE_DECLARED"]},
+        "distribution": {"type": ["string", "null"]},
+        "range": {
+          "type": ["array", "null"],
+          "items": {"type": "number"},
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "notes": {"type": ["string", "null"]}
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "kind", "control_mode", "evidence_class", "scope"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Z0-9_]+$"},
+        "label": {"type": "string"},
+        "kind": {
+          "type": "string",
+          "enum": ["STOCK", "FLOW", "AUXILIARY", "OBSERVATION", "POLICY", "SHOCK", "THRESHOLD_STATE", "NETWORK_STATE", "PRICE", "TECHNOLOGY_STATE"]
+        },
+        "control_mode": {"$ref": "#/$defs/controlMode"},
+        "evidence_class": {"$ref": "#/$defs/evidenceClass"},
+        "units": {"type": ["string", "null"]},
+        "scope": {"$ref": "#/$defs/scope"},
+        "conservation_group": {"type": ["string", "null"]},
+        "observation_mapping": {"type": ["string", "null"]},
+        "uncertainty": {"$ref": "#/$defs/uncertainty"},
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/sourceRef"}, "default": []},
+        "notes": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "relation": {
+      "type": "object",
+      "required": ["id", "from", "to", "relation_type", "polarity", "evidence_class", "control_mode", "uncertainty"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Z0-9_]+$"},
+        "from": {"type": "string"},
+        "to": {"type": "string"},
+        "relation_type": {
+          "type": "string",
+          "enum": ["CAUSES", "CONSTRAINS", "ALLOCATES", "OBSERVES", "MODULATES", "SUBSTITUTES", "ENABLES", "DAMAGES", "DEPLETES", "REPLENISHES", "TRANSMITS", "TRIGGERS", "PRICES", "LEARNED_RESPONSE"]
+        },
+        "polarity": {"type": "string", "enum": ["POSITIVE", "NEGATIVE", "NON_MONOTONIC", "CONDITIONAL", "UNKNOWN"]},
+        "evidence_class": {"$ref": "#/$defs/evidenceClass"},
+        "control_mode": {"$ref": "#/$defs/controlMode"},
+        "lag_model": {"type": ["string", "null"]},
+        "equation_ref": {"type": ["string", "null"]},
+        "scope": {"$ref": "#/$defs/scope"},
+        "uncertainty": {"$ref": "#/$defs/uncertainty"},
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/sourceRef"}, "default": []},
+        "rival_relation_ids": {"type": "array", "items": {"type": "string"}, "default": []},
+        "kill_test_ids": {"type": "array", "items": {"type": "string"}, "default": []},
+        "notes": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "killTest": {
+      "type": "object",
+      "required": ["id", "claim_or_mechanism", "test", "failure_meaning"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Z0-9_]+$"},
+        "claim_or_mechanism": {"type": "string"},
+        "test": {"type": "string"},
+        "minimum_evidence": {"type": ["string", "null"]},
+        "failure_meaning": {"type": "string"},
+        "holdout_class": {"type": ["string", "null"], "enum": [null, "TEMPORAL", "REGIONAL", "VARIABLE", "STRUCTURAL", "SHOCK", "NEGATIVE_CONTROL"]}
+      },
+      "additionalProperties": false
+    },
+    "conflict": {
+      "type": "object",
+      "required": ["id", "description", "status"],
+      "properties": {
+        "id": {"type": "string"},
+        "description": {"type": "string"},
+        "status": {"type": "string", "enum": ["OPEN", "RESOLVED", "SUPERSEDED", "UNRESOLVED_BY_DATA"]},
+        "rival_claims": {"type": "array", "items": {"type": "string"}},
+        "resolution_basis": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
