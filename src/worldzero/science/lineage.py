@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Iterable, Set as AbstractSet
+from collections.abc import Iterable
+from collections.abc import Set as AbstractSet
 
 from pydantic import BaseModel, ConfigDict, Field
 
