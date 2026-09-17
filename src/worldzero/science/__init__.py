@@ -2,6 +2,11 @@
 
 from .canonical import canonical_json_bytes, content_digest
 from .claims import ClaimRecord, ClaimRegistry, SourceRef
+from .implementation_coverage import (
+    ImplementationBinding,
+    ImplementationCoverage,
+    validate_coverage,
+)
 from .lineage import LineageRef, LineageRegistry
 from .topology import CausalTopologyV2, KillTest, TopologyNode, TopologyRelation
 from .types import (
@@ -22,6 +27,8 @@ __all__ = [
     "ControlMode",
     "EvidenceClass",
     "IdentifiabilityClass",
+    "ImplementationBinding",
+    "ImplementationCoverage",
     "KillTest",
     "LineageRef",
     "LineageRegistry",
@@ -31,4 +38,5 @@ __all__ = [
     "TopologyRelation",
     "canonical_json_bytes",
     "content_digest",
+    "validate_coverage",
 ]
