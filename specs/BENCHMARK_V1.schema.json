@@ -1,0 +1,80 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "allowed_forms": {
+      "default": [],
+      "items": {"type": "string"},
+      "title": "Allowed Forms",
+      "type": "array"
+    },
+    "benchmark_id": {
+      "enum": ["B0_PERSISTENCE_TREND", "B1_REDUCED_FORM_EMPIRICAL"],
+      "title": "Benchmark Id",
+      "type": "string"
+    },
+    "calibration_only_selection": {
+      "const": true,
+      "default": true,
+      "title": "Calibration Only Selection",
+      "type": "boolean"
+    },
+    "causal_interpretation": {
+      "const": false,
+      "default": false,
+      "title": "Causal Interpretation",
+      "type": "boolean"
+    },
+    "feature_ids": {
+      "default": [],
+      "items": {"type": "string"},
+      "title": "Feature Ids",
+      "type": "array"
+    },
+    "feature_set_frozen_before_final_holdout": {
+      "const": true,
+      "default": true,
+      "title": "Feature Set Frozen Before Final Holdout",
+      "type": "boolean"
+    },
+    "final_holdout_access": {
+      "const": "FORBIDDEN_UNTIL_FINAL_EVALUATION",
+      "default": "FORBIDDEN_UNTIL_FINAL_EVALUATION",
+      "title": "Final Holdout Access",
+      "type": "string"
+    },
+    "hyperparameter_policy": {
+      "anyOf": [{"type": "string"}, {"type": "null"}],
+      "default": null,
+      "title": "Hyperparameter Policy"
+    },
+    "method_class": {
+      "enum": ["PERSISTENCE_TREND", "REDUCED_FORM_EMPIRICAL"],
+      "title": "Method Class",
+      "type": "string"
+    },
+    "notes": {
+      "anyOf": [{"type": "string"}, {"type": "null"}],
+      "default": null,
+      "title": "Notes"
+    },
+    "regularization_policy": {
+      "anyOf": [{"type": "string"}, {"type": "null"}],
+      "default": null,
+      "title": "Regularization Policy"
+    },
+    "schema_version": {
+      "const": "BENCHMARK_V1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "default": "DRAFT",
+      "enum": ["DRAFT", "FROZEN_CANDIDATE", "UNDER_TEST", "QUALIFIED_WITHIN_SCOPE", "REJECTED", "SUPERSEDED"],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": ["schema_version", "benchmark_id", "method_class"],
+  "title": "BenchmarkManifest",
+  "type": "object"
+}
