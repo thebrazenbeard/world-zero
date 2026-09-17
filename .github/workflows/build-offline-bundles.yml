@@ -16,6 +16,7 @@ permissions:
   contents: write
 
 concurrency:
+  # Exact-head builds plus cancellation prevent stale moving-branch qualification.
   group: world-zero-offline-bootstrap
   cancel-in-progress: true
 
