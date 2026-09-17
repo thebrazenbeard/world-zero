@@ -7,7 +7,6 @@
     "schema_version",
     "topology_id",
     "model_family",
-    "source_commit",
     "nodes",
     "relations",
     "kill_tests"
@@ -19,13 +18,17 @@
       "type": "string",
       "enum": ["F0_WORLD3_CONTROL", "F1_MARKET_ADAPTIVE", "F2_ENDOGENOUS_INNOVATION", "F3_NET_ENERGY_MATERIAL", "F4_INSTITUTIONAL_FRAGILITY", "F5_RESILIENT_REGIONAL", "F6_COMPOUND_RISK", "F7_MINIMAL_ADAPTIVE_SYNTHESIS"]
     },
-    "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "status": {
       "type": "string",
       "enum": ["DRAFT", "FROZEN_CANDIDATE", "UNDER_TEST", "QUALIFIED_WITHIN_SCOPE", "REJECTED", "SUPERSEDED"]
     },
     "description": {"type": "string"},
     "region_definition_id": {"type": ["string", "null"]},
+    "provenance_refs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "default": []
+    },
     "nodes": {
       "type": "array",
       "items": {"$ref": "#/$defs/node"},
@@ -73,7 +76,7 @@
         "id": {"type": "string"},
         "evidence_class": {"$ref": "#/$defs/evidenceClass"},
         "locator": {"type": ["string", "null"]},
-        "claim": {"type": ["string", "null"]},
+        "claim_id": {"type": ["string", "null"]},
         "notes": {"type": ["string", "null"]}
       },
       "additionalProperties": false
@@ -94,6 +97,16 @@
       "required": ["kind"],
       "additionalProperties": false
     },
+    "implementationBinding": {
+      "type": "object",
+      "required": ["module", "symbol"],
+      "properties": {
+        "module": {"type": "string", "minLength": 1},
+        "symbol": {"type": "string", "minLength": 1},
+        "behavioral_contract_id": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
     "node": {
       "type": "object",
       "required": ["id", "kind", "control_mode", "evidence_class", "scope"],
@@ -112,13 +125,14 @@
         "observation_mapping": {"type": ["string", "null"]},
         "uncertainty": {"$ref": "#/$defs/uncertainty"},
         "sources": {"type": "array", "items": {"$ref": "#/$defs/sourceRef"}, "default": []},
+        "implementation_binding": {"anyOf": [{"$ref": "#/$defs/implementationBinding"}, {"type": "null"}]},
         "notes": {"type": ["string", "null"]}
       },
       "additionalProperties": false
     },
     "relation": {
       "type": "object",
-      "required": ["id", "from", "to", "relation_type", "polarity", "evidence_class", "control_mode", "uncertainty"],
+      "required": ["id", "from", "to", "relation_type", "polarity", "evidence_class", "control_mode", "scope", "uncertainty"],
       "properties": {
         "id": {"type": "string", "pattern": "^[A-Z0-9_]+$"},
         "from": {"type": "string"},
@@ -137,6 +151,7 @@
         "sources": {"type": "array", "items": {"$ref": "#/$defs/sourceRef"}, "default": []},
         "rival_relation_ids": {"type": "array", "items": {"type": "string"}, "default": []},
         "kill_test_ids": {"type": "array", "items": {"type": "string"}, "default": []},
+        "implementation_binding": {"anyOf": [{"$ref": "#/$defs/implementationBinding"}, {"type": "null"}]},
         "notes": {"type": ["string", "null"]}
       },
       "additionalProperties": false
