@@ -20,6 +20,8 @@ from .mechanisms import (
     MechanismRegistry,
     assert_f7_admissible,
 )
+from .observations import ObservationMapping, summarize_independence
+from .partitions import EvidencePartition, PartitionSet, assert_no_holdout_leakage
 from .topology import CausalTopologyV2, KillTest, TopologyNode, TopologyRelation
 from .types import (
     AdmissionDisposition,
@@ -41,6 +43,7 @@ __all__ = [
     "ComplexityCost",
     "ControlMode",
     "EvidenceClass",
+    "EvidencePartition",
     "FamilyRegistry",
     "IdentifiabilityClass",
     "ImplementationBinding",
@@ -51,13 +54,17 @@ __all__ = [
     "MechanismAdmission",
     "MechanismRegistry",
     "ModelFamilyManifest",
+    "ObservationMapping",
+    "PartitionSet",
     "SourceRef",
     "StructuralResultLabel",
     "TopologyNode",
     "TopologyRelation",
     "assert_f7_admissible",
+    "assert_no_holdout_leakage",
     "calibration_only_observation_ids",
     "canonical_json_bytes",
     "content_digest",
+    "summarize_independence",
     "validate_coverage",
 ]
