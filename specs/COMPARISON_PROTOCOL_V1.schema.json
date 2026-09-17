@@ -72,9 +72,21 @@
     "missing_subject_policy": {"type": "string", "enum": ["FAIL_COMPARISON", "DOWNGRADE_TO_EXPLORATORY"]},
     "identifiability_gate_id": {"type": ["string", "null"]},
     "complexity_reporting_required": {"type": "boolean", "default": true},
-    "frozen_before_execution": {"const": true},
+    "frozen_before_execution": {"type": "boolean"},
     "exploratory": {"type": "boolean", "default": false},
     "notes": {"type": ["string", "null"]}
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"frozen_before_execution": {"const": false}},
+        "required": ["frozen_before_execution"]
+      },
+      "then": {
+        "properties": {"exploratory": {"const": true}},
+        "required": ["exploratory"]
+      }
+    }
+  ],
   "additionalProperties": false
 }
