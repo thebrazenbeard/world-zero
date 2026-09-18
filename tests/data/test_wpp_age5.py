@@ -1,11 +1,13 @@
 import csv
 import gzip
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 import yaml
 
 from worldzero.data.cohorts import load_age_cohort_manifest
+from worldzero.data.manifests import load_dataset_manifest
 from worldzero.data.observations import ObservationClass
 from worldzero.data.wpp_age5 import (
     COHORT_POPULATION_CSV_FIELDS,
@@ -14,6 +16,7 @@ from worldzero.data.wpp_age5 import (
     extract_macroregion_cohort_population_bytes,
     inspect_wpp_age5,
     render_cohort_population_csv,
+    validate_wpp_age5_mapping_compatibility,
 )
 from worldzero.regions.definitions import load_region_set_manifest
 from worldzero.regions.mapping import load_region_mapping_manifest
@@ -22,6 +25,10 @@ from worldzero.sectors.demography import AgeCohort
 COHORTS = Path("data/cohorts/WZ_AGE_COHORT_V0.yaml")
 REGIONS = Path("regions/WZ_MACROREGION_V0.yaml")
 MAPPING = Path("regions/mappings/WPP2024_PARENT_TO_WZ_MACROREGION_V0.yaml")
+RAW_MANIFEST = Path("data/manifests/UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1.yaml")
+MAPPING_SOURCE_MANIFEST = Path(
+    "data/manifests/UN_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_V1.yaml"
+)
 
 
 def _write_fixture(path: Path) -> None:
@@ -117,6 +124,31 @@ def _write_modified_cohort_manifest(path: Path, mutate) -> None:
     assert isinstance(payload, dict)
     mutate(payload)
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+
+def test_age5_mapping_reuse_is_bound_to_admitted_sibling_source():
+    mapping = load_region_mapping_manifest(MAPPING)
+    mapping_source = load_dataset_manifest(MAPPING_SOURCE_MANIFEST)
+    age5_source = load_dataset_manifest(RAW_MANIFEST)
+
+    validate_wpp_age5_mapping_compatibility(
+        mapping_source_manifest=mapping_source,
+        age5_manifest=age5_source,
+        region_mapping=mapping,
+    )
+
+    with pytest.raises(ValueError, match="source digest"):
+        validate_wpp_age5_mapping_compatibility(
+            mapping_source_manifest=mapping_source,
+            age5_manifest=age5_source,
+            region_mapping=replace(mapping, source_content_sha256="0" * 64),
+        )
+    with pytest.raises(ValueError, match="must use ParentID"):
+        validate_wpp_age5_mapping_compatibility(
+            mapping_source_manifest=mapping_source,
+            age5_manifest=age5_source,
+            region_mapping=replace(mapping, source_group_field="LocID"),
+        )
 
 
 def test_cohort_manifest_freezes_four_contiguous_v0_bands():

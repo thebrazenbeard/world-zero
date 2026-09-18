@@ -53,6 +53,10 @@ class RegionMappingManifest:
             raise ValueError("duplicate source group IDs are not allowed")
         if len(self.source_content_sha256) != 64:
             raise ValueError("source_content_sha256 must be a SHA-256 digest")
+        try:
+            int(self.source_content_sha256, 16)
+        except ValueError as exc:
+            raise ValueError("source_content_sha256 must be hexadecimal") from exc
 
     @property
     def source_to_target(self) -> dict[str, str]:
