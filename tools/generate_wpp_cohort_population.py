@@ -15,10 +15,14 @@ from worldzero.data import (
     render_cohort_population_csv,
     verify_payload_digest,
 )
+from worldzero.data.wpp_age5 import validate_wpp_age5_mapping_compatibility
 from worldzero.regions.definitions import load_region_set_manifest
 from worldzero.regions.mapping import load_region_mapping_manifest
 
 RAW_MANIFEST = Path("data/manifests/UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1.yaml")
+MAPPING_SOURCE_MANIFEST = Path(
+    "data/manifests/UN_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_V1.yaml"
+)
 COHORT_MANIFEST = Path("data/cohorts/WZ_AGE_COHORT_V0.yaml")
 REGION_MANIFEST = Path("regions/WZ_MACROREGION_V0.yaml")
 REGION_MAPPING = Path("regions/mappings/WPP2024_PARENT_TO_WZ_MACROREGION_V0.yaml")
@@ -26,6 +30,7 @@ REGION_MAPPING = Path("regions/mappings/WPP2024_PARENT_TO_WZ_MACROREGION_V0.yaml
 
 def generate(raw_path: Path, *, year: int, output_path: Path) -> dict[str, object]:
     raw_manifest = load_dataset_manifest(RAW_MANIFEST)
+    mapping_source_manifest = load_dataset_manifest(MAPPING_SOURCE_MANIFEST)
     if raw_manifest.admission_status is not DatasetAdmissionStatus.ADMITTED:
         raise ValueError("raw WPP source manifest must be ADMITTED")
     if raw_manifest.content_length_bytes is None:
@@ -39,6 +44,11 @@ def generate(raw_path: Path, *, year: int, output_path: Path) -> dict[str, objec
     region_set = load_region_set_manifest(REGION_MANIFEST).region_set
     mapping = load_region_mapping_manifest(REGION_MAPPING)
     cohort_manifest = load_age_cohort_manifest(COHORT_MANIFEST)
+    validate_wpp_age5_mapping_compatibility(
+        mapping_source_manifest=mapping_source_manifest,
+        age5_manifest=raw_manifest,
+        region_mapping=mapping,
+    )
     if mapping.target_region_set_version != region_set.version:
         raise ValueError("region mapping and region set versions do not match")
 
