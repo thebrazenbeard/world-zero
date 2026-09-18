@@ -1,0 +1,30 @@
+schema_version: WORLD3_ORACLE_EXECUTION_V1
+oracle_id: PYWORLD3_1974_STANDARD
+profile_id: WORLD3_1974_STANDARD_RUN
+implementation_ref: cvanwynsberghe/pyworld3@cdfd0a8f3675c514f27ddc0e00c8d8bd4d1fefb8
+start_year: 1900
+end_year: 2100
+timestep_years: 0.5
+endpoint_inclusive: true
+sample_count: 401
+delay_method: EULER
+run_mode: CHECKED_RESCHEDULE
+constants_mode: IMPLEMENTATION_DEFAULTS
+tables_mode: IMPLEMENTATION_DEFAULTS
+initialization_sequence:
+  - init_world3_constants
+  - init_world3_variables
+  - set_world3_table_functions
+  - set_world3_delay_functions
+  - run_world3
+observable_bindings:
+  - observable_id: POPULATION
+    implementation_name: pop
+  - observable_id: INDUSTRIAL_OUTPUT_PER_CAPITA
+    implementation_name: iopc
+  - observable_id: FOOD_PER_CAPITA
+    implementation_name: fpc
+  - observable_id: NONRENEWABLE_RESOURCE_FRACTION
+    implementation_name: nrfr
+  - observable_id: PERSISTENT_POLLUTION_INDEX
+    implementation_name: ppolx
