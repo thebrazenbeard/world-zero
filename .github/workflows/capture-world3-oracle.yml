@@ -1,0 +1,60 @@
+name: Discover World3 oracle environment
+
+on:
+  push:
+    branches:
+      - impl/world3-f0-core-v1
+    paths:
+      - .github/workflows/capture-world3-oracle.yml
+      - tools/capture_world3_oracle.py
+      - oracle_specs/WORLD3_1974_PYWORLD3_STANDARD.yaml
+      - reference_profiles/WORLD3_1974_STANDARD_RUN.yaml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: world-zero-world3-oracle-discovery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  provisional-capture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout World Zero exact subject
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Checkout pinned PyWorld3 oracle
+        uses: actions/checkout@v4
+        with:
+          repository: cvanwynsberghe/pyworld3
+          ref: cdfd0a8f3675c514f27ddc0e00c8d8bd4d1fefb8
+          path: .oracle/pyworld3
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reconstruct World Zero capture environment
+        run: python -m tools.bootstrap_offline --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --venv .offline-verify/oracle
+      - name: Resolve provisional scientific dependencies
+        run: .offline-verify/oracle/bin/python -m pip install numpy scipy matplotlib
+      - name: Capture provisional oracle
+        env:
+          PYTHONPATH: src
+        run: >
+          .offline-verify/oracle/bin/python -m tools.capture_world3_oracle
+          --spec oracle_specs/WORLD3_1974_PYWORLD3_STANDARD.yaml
+          --profile reference_profiles/WORLD3_1974_STANDARD_RUN.yaml
+          --oracle-checkout .oracle/pyworld3
+          --output-dir oracle_capture
+          --capture-status PROVISIONAL_ENV_DISCOVERY
+      - name: Record resolved environment
+        run: .offline-verify/oracle/bin/python -m pip freeze > oracle_capture/environment.freeze.txt
+      - name: Upload provisional evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: world3-pyworld3-provisional-${{ github.sha }}
+          path: oracle_capture/
+          if-no-files-found: error
+          retention-days: 14
