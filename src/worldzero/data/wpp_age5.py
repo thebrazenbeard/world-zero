@@ -69,16 +69,18 @@ def _reader(path: Path) -> Iterator[csv.DictReader]:
 
 @contextmanager
 def _reader_bytes(payload: bytes) -> Iterator[csv.DictReader]:
-    with gzip.GzipFile(fileobj=io.BytesIO(payload), mode="rb") as compressed:
-        with io.TextIOWrapper(
+    with (
+        gzip.GzipFile(fileobj=io.BytesIO(payload), mode="rb") as compressed,
+        io.TextIOWrapper(
             compressed,
             encoding="utf-8-sig",
             newline="",
-        ) as handle:
-            reader = csv.DictReader(handle)
-            if tuple(reader.fieldnames or ()) != WPP2024_AGE5_FIELDS:
-                raise ValueError("WPP age5 CSV schema does not match frozen contract")
-            yield reader
+        ) as handle,
+    ):
+        reader = csv.DictReader(handle)
+        if tuple(reader.fieldnames or ()) != WPP2024_AGE5_FIELDS:
+            raise ValueError("WPP age5 CSV schema does not match frozen contract")
+        yield reader
 
 
 @dataclass(frozen=True, slots=True)
