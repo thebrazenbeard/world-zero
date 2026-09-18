@@ -1,10 +1,13 @@
 import csv
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
+import pytest
 import yaml
 
+from worldzero.data.derived import load_derived_dataset_manifest
 from worldzero.models.bindings import (
     BaselineDataBundleManifest,
     build_world_zero_v0_config,
@@ -126,23 +129,12 @@ def _write_population_artifacts(tmp_path: Path) -> tuple[Path, Path]:
     return total_manifest, cohort_manifest
 
 
-def test_canonical_data_bundle_remains_fail_closed_until_cohort_artifact_exists():
-    bundle = load_baseline_data_bundle_manifest(CANONICAL_BUNDLE)
-    assert bundle.status == "BINDING_REQUIRED"
-    assert set(bundle.binding_by_role) == {"POPULATION_TOTAL"}
-
-
-def test_provisional_parameter_set_is_explicitly_modeling_assumption_only():
-    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
-    assert parameters.status == "PROVISIONAL_EXECUTION"
-    assert parameters.evidence_class == "MODELING_ASSUMPTION"
-    assert parameters.region_set_version == load_region_set_manifest(REGIONS).region_set.version
-    assert parameters.region_overrides == {}
-
-
-def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
-    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
-
+def _write_ready_bundle(
+    tmp_path: Path,
+    *,
+    total_manifest: Path,
+    cohort_manifest: Path,
+) -> tuple[str, Path]:
     data_manifest_id = "SYNTHETIC_READY_DATA_BUNDLE"
     bundle_payload = {
         "schema_version": "WORLD_ZERO_DATA_BUNDLE_V1",
@@ -172,8 +164,15 @@ def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
         yaml.safe_dump(bundle.model_dump(mode="json"), sort_keys=False),
         encoding="utf-8",
     )
+    return data_manifest_id, bundle_path
 
-    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+
+def _write_synthetic_scenario(
+    tmp_path: Path,
+    *,
+    data_manifest_id: str,
+    parameter_set_id: str,
+) -> Path:
     scenario_path = tmp_path / "scenario.yaml"
     scenario_payload = {
         "schema_version": "WORLD_ZERO_SCENARIO_V1",
@@ -185,7 +184,7 @@ def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
         "dt": 0.25,
         "region_set_version": "WZ_MACROREGION_V0",
         "data_manifest_id": data_manifest_id,
-        "parameter_set_id": parameters.parameter_set_id,
+        "parameter_set_id": parameter_set_id,
         "reference_artifact": None,
         "reference_sha256": None,
         "notes": "Synthetic executable runtime-binding test.",
@@ -193,6 +192,47 @@ def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
     scenario_path.write_text(
         yaml.safe_dump(scenario_payload, sort_keys=False),
         encoding="utf-8",
+    )
+    return scenario_path
+
+
+def _git(*args: str) -> str:
+    completed = subprocess.run(
+        ["git", *args],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout.strip()
+
+
+def test_canonical_data_bundle_remains_fail_closed_until_cohort_artifact_exists():
+    bundle = load_baseline_data_bundle_manifest(CANONICAL_BUNDLE)
+    assert bundle.status == "BINDING_REQUIRED"
+    assert set(bundle.binding_by_role) == {"POPULATION_TOTAL"}
+
+
+def test_provisional_parameter_set_is_explicitly_modeling_assumption_only():
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    assert parameters.status == "PROVISIONAL_EXECUTION"
+    assert parameters.evidence_class == "MODELING_ASSUMPTION"
+    assert parameters.region_set_version == load_region_set_manifest(REGIONS).region_set.version
+    assert parameters.region_overrides == {}
+
+
+def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    data_manifest_id, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    scenario_path = _write_synthetic_scenario(
+        tmp_path,
+        data_manifest_id=data_manifest_id,
+        parameter_set_id=parameters.parameter_set_id,
     )
 
     config = build_world_zero_v0_config(
@@ -213,6 +253,20 @@ def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
 
     output_path = tmp_path / "runs" / "result.json"
     receipt_path = tmp_path / "runs" / "receipt.json"
+    with pytest.raises(ValueError, match="expected commit"):
+        execute_baseline_to_files(
+            root=tmp_path,
+            scenario_path=scenario_path,
+            data_bundle_path=bundle_path,
+            parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+            output_path=output_path,
+            receipt_path=receipt_path,
+            source_root=Path.cwd(),
+            expected_source_commit="0" * 40,
+            region_set_path=REGIONS.resolve(),
+            cohort_set_path=COHORTS.resolve(),
+        )
+
     receipt = execute_baseline_to_files(
         root=tmp_path,
         scenario_path=scenario_path,
@@ -220,16 +274,35 @@ def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
         parameter_set_path=CANONICAL_PARAMETERS.resolve(),
         output_path=output_path,
         receipt_path=receipt_path,
-        source_commit="a" * 40,
-        source_tree="b" * 40,
+        source_root=Path.cwd(),
         region_set_path=REGIONS.resolve(),
         cohort_set_path=COHORTS.resolve(),
     )
     assert receipt.claim_class == "RUNNABLE_SOURCE_REPRODUCIBLE_ONLY"
+    assert receipt.source_commit == _git("rev-parse", "HEAD")
+    assert receipt.source_tree == _git("rev-parse", "HEAD^{tree}")
+    assert receipt.source_worktree_clean is True
     assert receipt.result.sha256 == hashlib.sha256(output_path.read_bytes()).hexdigest()
+
+    by_role = {item.role: item for item in receipt.dataset_inputs}
+    assert set(by_role) == {"POPULATION_TOTAL", "POPULATION_COHORT"}
+    total_source = load_derived_dataset_manifest(total_manifest)
+    cohort_source = load_derived_dataset_manifest(cohort_manifest)
+    assert by_role["POPULATION_TOTAL"].manifest.sha256 == hashlib.sha256(
+        total_manifest.read_bytes()
+    ).hexdigest()
+    assert by_role["POPULATION_TOTAL"].output.sha256 == total_source.output_sha256
+    assert by_role["POPULATION_TOTAL"].output.length_bytes == total_source.output_length_bytes
+    assert by_role["POPULATION_COHORT"].manifest.sha256 == hashlib.sha256(
+        cohort_manifest.read_bytes()
+    ).hexdigest()
+    assert by_role["POPULATION_COHORT"].output.sha256 == cohort_source.output_sha256
+    assert by_role["POPULATION_COHORT"].output.length_bytes == cohort_source.output_length_bytes
+
     result_document = json.loads(output_path.read_text(encoding="utf-8"))
     assert result_document["schema_version"] == "WORLD_ZERO_BASELINE_RESULT_V1"
     assert result_document["scenario_id"] == "SYNTHETIC_2026_RUNTIME"
     receipt_document = json.loads(receipt_path.read_text(encoding="utf-8"))
     assert receipt_document["schema_version"] == "WORLD_ZERO_RUNTIME_RECEIPT_V1"
-    assert receipt_document["source_commit"] == "a" * 40
+    assert receipt_document["source_commit"] == _git("rev-parse", "HEAD")
+    assert len(receipt_document["dataset_inputs"]) == 2
