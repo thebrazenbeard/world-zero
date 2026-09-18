@@ -9,6 +9,7 @@
     "hostile_control_ids": {"default": [], "items": {"type": "string"}, "title": "Hostile Control Ids", "type": "array"},
     "notes": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Notes"},
     "purpose": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Purpose"},
+    "reference_profile_id": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": null, "title": "Reference Profile Id"},
     "required_mechanism_ids": {"default": [], "items": {"type": "string"}, "title": "Required Mechanism Ids", "type": "array"},
     "schema_version": {"const": "MODEL_FAMILY_V1", "title": "Schema Version", "type": "string"},
     "status": {"default": "DRAFT", "enum": ["DRAFT", "FROZEN_CANDIDATE", "UNDER_TEST", "QUALIFIED_WITHIN_SCOPE", "REJECTED", "SUPERSEDED"], "title": "Status", "type": "string"},
@@ -16,5 +17,24 @@
   },
   "required": ["schema_version", "family_id", "family_name"],
   "title": "ModelFamilyManifest",
-  "type": "object"
+  "type": "object",
+  "allOf": [
+    {
+      "if": {
+        "properties": {"family_id": {"const": "F0_WORLD3_CONTROL"}},
+        "required": ["family_id"]
+      },
+      "then": {
+        "required": ["reference_profile_id"],
+        "properties": {
+          "reference_profile_id": {"const": "WORLD3_1974_STANDARD_RUN"}
+        }
+      },
+      "else": {
+        "properties": {
+          "reference_profile_id": {"type": "null"}
+        }
+      }
+    }
+  ]
 }
