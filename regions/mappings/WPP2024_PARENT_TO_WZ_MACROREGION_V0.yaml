@@ -1,0 +1,76 @@
+schema_version: REGION_MAPPING_V1
+mapping_id: WPP2024_PARENT_TO_WZ_MACROREGION_V0
+source_dataset_id: un-wpp-2024-demographic-indicators-medium-v1
+source_content_sha256: 286ac36bb1415e2e1ade03acfef0a29f0e4c087e2f78e38c48f50c5df89082bc
+source_group_field: ParentID
+source_group_count: 22
+target_region_set_version: WZ_MACROREGION_V0
+groups:
+  - source_group_id: "918"
+    source_group_label: Northern America country-parent group
+    target_region_id: north_america
+    notes: Provider country rows use ParentID 918 while the visible Northern America aggregate uses LocID 905.
+  - source_group_id: "915"
+    source_group_label: Caribbean
+    target_region_id: latin_america_caribbean
+  - source_group_id: "916"
+    source_group_label: Central America
+    target_region_id: latin_america_caribbean
+  - source_group_id: "931"
+    source_group_label: South America
+    target_region_id: latin_america_caribbean
+  - source_group_id: "924"
+    source_group_label: Northern Europe
+    target_region_id: western_northern_europe
+  - source_group_id: "926"
+    source_group_label: Western Europe
+    target_region_id: western_northern_europe
+  - source_group_id: "925"
+    source_group_label: Southern Europe
+    target_region_id: western_northern_europe
+    notes: Patrick explicitly grouped Southern Europe with Western/Northern Europe on 2026-09-18.
+  - source_group_id: "923"
+    source_group_label: Eastern Europe
+    target_region_id: eastern_europe_central_asia
+  - source_group_id: "5500"
+    source_group_label: Central Asia
+    target_region_id: eastern_europe_central_asia
+  - source_group_id: "912"
+    source_group_label: Northern Africa
+    target_region_id: middle_east_north_africa
+  - source_group_id: "922"
+    source_group_label: Western Asia
+    target_region_id: middle_east_north_africa
+  - source_group_id: "910"
+    source_group_label: Eastern Africa
+    target_region_id: sub_saharan_africa
+  - source_group_id: "911"
+    source_group_label: Middle Africa
+    target_region_id: sub_saharan_africa
+  - source_group_id: "913"
+    source_group_label: Southern Africa
+    target_region_id: sub_saharan_africa
+  - source_group_id: "914"
+    source_group_label: Western Africa
+    target_region_id: sub_saharan_africa
+  - source_group_id: "5501"
+    source_group_label: Southern Asia
+    target_region_id: south_asia
+  - source_group_id: "906"
+    source_group_label: Eastern Asia
+    target_region_id: east_asia
+  - source_group_id: "920"
+    source_group_label: South-Eastern Asia
+    target_region_id: southeast_asia
+  - source_group_id: "927"
+    source_group_label: Australia/New Zealand
+    target_region_id: oceania
+  - source_group_id: "928"
+    source_group_label: Melanesia
+    target_region_id: oceania
+  - source_group_id: "954"
+    source_group_label: Micronesia
+    target_region_id: oceania
+  - source_group_id: "957"
+    source_group_label: Polynesia
+    target_region_id: oceania

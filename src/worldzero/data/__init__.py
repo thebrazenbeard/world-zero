@@ -1,5 +1,10 @@
 """Immutable data provenance, observations, and transforms."""
 
+from .derived import (
+    DerivedDatasetManifest,
+    DerivedSourceBinding,
+    load_derived_dataset_manifest,
+)
 from .manifests import (
     DatasetAdmissionStatus,
     DatasetManifest,
@@ -17,6 +22,7 @@ from .wpp2024 import (
     WPP2024_ESTIMATE_END_YEAR,
     WPP2024_PROJECTION_START_YEAR,
     extract_midyear_population,
+    extract_parent_group_midyear_population,
     inspect_wpp2024,
 )
 
@@ -25,13 +31,17 @@ __all__ = [
     "WPP2024_PROJECTION_START_YEAR",
     "DatasetAdmissionStatus",
     "DatasetManifest",
+    "DerivedDatasetManifest",
+    "DerivedSourceBinding",
     "ObservationClass",
     "ObservationLineage",
     "ObservationSeries",
     "TransformRecord",
     "extract_midyear_population",
+    "extract_parent_group_midyear_population",
     "inspect_wpp2024",
     "load_dataset_manifest",
+    "load_derived_dataset_manifest",
     "per_capita",
     "verify_payload_digest",
 ]
