@@ -62,7 +62,7 @@ def generate(raw_path: Path, *, year: int, output_path: Path) -> dict[str, objec
         "source_dataset_id": raw_manifest.dataset_id,
         "source_observation_class": cut.observation_class.value,
         "source_sha256": raw_manifest.content_sha256,
-        "total_population_persons": int(round(cut.total_population)),
+        "total_population_persons": round(cut.total_population),
         "validation_eligible": cut.validation_eligible,
         "year": cut.year,
     }
