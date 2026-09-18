@@ -1,0 +1,33 @@
+schema_version: AGE_COHORT_SET_V1
+version: WZ_AGE_COHORT_V0
+status: FROZEN
+cohorts:
+  - id: child
+    label: Child
+    age_min: 0
+    age_max: 14
+    source_age_groups: [0-4, 5-9, 10-14]
+  - id: young_adult
+    label: Young adult
+    age_min: 15
+    age_max: 39
+    source_age_groups: [15-19, 20-24, 25-29, 30-34, 35-39]
+  - id: mature_adult
+    label: Mature adult
+    age_min: 40
+    age_max: 64
+    source_age_groups: [40-44, 45-49, 50-54, 55-59, 60-64]
+  - id: older_adult
+    label: Older adult
+    age_min: 65
+    age_max: null
+    source_age_groups:
+      - 65-69
+      - 70-74
+      - 75-79
+      - 80-84
+      - 85-89
+      - 90-94
+      - 95-99
+      - 100+
+notes: Four-cohort V0 convention. Working age is 15-64 because the model sums young_adult and mature_adult.

@@ -1,0 +1,11 @@
+recipe_id: WZ_RETRIEVE_UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1
+method: HTTP_GET
+source_url: https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
+storage_policy: EXTERNAL_IMMUTABLE_CACHE
+cache_relative_path: data/raw/wpp2024/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
+expected_sha256: a04d7d1486a5eb2832cc812d599448f0a71e8ac9e1e7e6fa4066673d6a2487cd
+expected_size_bytes: 29948947
+expected_content_type: application/x-gzip
+expected_last_modified: 2024-12-13T19:11:50Z
+expected_etag: '"0x8DD1BA9FF59EA82"'
+allow_revision_substitution: false

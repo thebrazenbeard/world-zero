@@ -1,0 +1,31 @@
+schema_id: WORLD_ZERO_DATASET_MANIFEST_V1
+dataset_id: un-wpp-2024-population-age5-sex-medium-v1
+provider: United Nations DESA Population Division
+product: World Population Prospects 2024 - Population by 5-Year Age Groups and Sex - Medium variant CSV bulk file
+release_date: 2024-07-11
+retrieved_at: 2026-09-18T18:12:51.5180261Z
+source_url: https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
+license: Creative Commons Attribution 3.0 IGO (CC BY 3.0 IGO), rights basis inherited from reviewed WPP 2024 source family
+geography: 555 provider locations/aggregates; 237 ISO3 country/area locations
+time_coverage: 1950-2100 annual mid-year population by five-year age group and sex
+frequency: annual
+units: thousands of persons by age group and sex
+transformations: []
+missing_data_policy: fail closed for required country/area age-group population fields
+uncertainty: WPP historical values are official estimates; 2024 onward values are projections and bridge-only for validation
+content_sha256: a04d7d1486a5eb2832cc812d599448f0a71e8ac9e1e7e6fa4066673d6a2487cd
+content_length_bytes: 29948947
+source_http_status: 200
+source_content_type: application/x-gzip
+source_last_modified: 2024-12-13T19:11:50Z
+source_etag: '"0x8DD1BA9FF59EA82"'
+ingest_code_commit: c4fb3c183cb3ea77220c41a91b9640ca4e6664a7
+transform_code_commit: null
+rights_terms_checked_at: 2026-09-18T18:18:28.7954571Z
+rights_terms_summary: Same WPP 2024 source family and UN Population Division CC BY 3.0 IGO rights basis as the already admitted demographic-indicators cut.
+schema_mapping_id: WZ_WPP_2024_POPULATION_AGE5_SEX_MAP_V1
+quality_report_id: WZ_WPP_2024_POPULATION_AGE5_SEX_QA_V1
+admission_record_id: WZ_WPP_2024_POPULATION_AGE5_SEX_ADMISSION_V1
+admission_status: ADMITTED
+supersedes_dataset_id: null
+notes: Raw gzip remains outside Git; exact digest and retrieval recipe prevent silent revision substitution.
