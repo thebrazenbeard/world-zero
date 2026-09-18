@@ -3,6 +3,7 @@ family_id: F0_WORLD3_CONTROL
 family_name: World3-compatible biophysical control
 status: DRAFT
 purpose: Preserve the classical World3 stock-flow logic as a hostile control subject.
+reference_profile_id: WORLD3_1974_STANDARD_RUN
 enabled_mechanism_ids:
   - WORLD3_CORE
 required_mechanism_ids:
