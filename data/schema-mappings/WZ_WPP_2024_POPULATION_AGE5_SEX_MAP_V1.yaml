@@ -1,0 +1,33 @@
+schema_mapping_id: WZ_WPP_2024_POPULATION_AGE5_SEX_MAP_V1
+source_dataset_id: un-wpp-2024-population-age5-sex-medium-v1
+source_schema_contract: worldzero.data.wpp_age5.WPP2024_AGE5_FIELDS
+variant_required: Medium
+country_area_filter:
+  field: ISO3_code
+  rule: non-empty
+source_parent_group:
+  field: ParentID
+  semantics: WPP parent group, later mapped through WPP2024_PARENT_TO_WZ_MACROREGION_V0
+time:
+  field: Time
+  substantive_min: 1950
+  historical_estimate_max: 2023
+  projection_min: 2024
+  substantive_max: 2100
+age:
+  label_field: AgeGrp
+  start_field: AgeGrpStart
+  span_field: AgeGrpSpan
+  frozen_groups: [0-4, 5-9, 10-14, 15-19, 20-24, 25-29, 30-34, 35-39, 40-44, 45-49, 50-54, 55-59, 60-64, 65-69, 70-74, 75-79, 80-84, 85-89, 90-94, 95-99, 100+]
+population:
+  total_field: PopTotal
+  male_field: PopMale
+  female_field: PopFemale
+  source_unit: thousands of persons
+  world_zero_unit: persons
+  conversion: multiply by 1000
+historical_observation_class: OFFICIAL_ESTIMATE
+projection_observation_class: PROJECTION
+projection_validation_eligible: false
+missing_value_rule: required country/area age-group population must be present
+raw_encoding: UTF-8
