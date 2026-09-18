@@ -7,7 +7,10 @@ import json
 import platform
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
+import yaml
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -15,12 +18,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from worldzero.data.derived import load_derived_dataset_manifest
 from worldzero.models.bindings import (
     BaselineDataBundleManifest,
+    BaselineParameterSet,
     build_world_zero_v0_config,
     load_baseline_data_bundle_manifest,
     load_baseline_parameter_set,
 )
-from worldzero.models.scenarios import load_scenario_manifest
-from worldzero.models.world_zero_v0 import run_world_zero_v0
+from worldzero.models.scenarios import ScenarioManifest, load_scenario_manifest
+from worldzero.models.world_zero_v0 import WorldZeroV0Result, run_world_zero_v0
 
 
 class FoodTradeSnapshot(BaseModel):
@@ -189,6 +193,20 @@ def _resolve_runtime_inputs(
     )
 
 
+def _snapshot_artifact(
+    root: Path,
+    source: Path,
+    destination: Path,
+) -> ArtifactBinding:
+    payload = source.read_bytes()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(payload)
+    return ArtifactBinding(
+        path=_display_path(root, source),
+        sha256=hashlib.sha256(payload).hexdigest(),
+    )
+
+
 def _same_existing_file(left: Path, right: Path) -> bool:
     if not left.exists() or not right.exists():
         return False
@@ -310,6 +328,158 @@ def _resolve_dataset_inputs(
     return tuple(resolved)
 
 
+def _snapshot_dataset_inputs(
+    root: Path,
+    bundle: BaselineDataBundleManifest,
+    snapshot_root: Path,
+) -> tuple[tuple[ResolvedDatasetBinding, ...], Path, set[Path]]:
+    resolved: list[ResolvedDatasetBinding] = []
+    runtime_bindings = []
+    protected_paths: set[Path] = set()
+
+    for index, binding in enumerate(bundle.bindings):
+        manifest_path = _resolve(root, Path(binding.manifest_path)).resolve()
+        manifest_bytes = manifest_path.read_bytes()
+        protected_paths.add(manifest_path)
+
+        source_manifest_snapshot = snapshot_root / f"dataset-{index}-source-manifest.yaml"
+        source_manifest_snapshot.write_bytes(manifest_bytes)
+        manifest = load_derived_dataset_manifest(source_manifest_snapshot)
+        if manifest.dataset_id != binding.dataset_id:
+            raise ValueError(f"dataset binding identity mismatch: {binding.role}")
+
+        output_path = _resolve(root, Path(manifest.output_path)).resolve()
+        output_bytes = output_path.read_bytes()
+        protected_paths.add(output_path)
+        output_sha256 = hashlib.sha256(output_bytes).hexdigest()
+        if len(output_bytes) != manifest.output_length_bytes:
+            raise ValueError(f"derived artifact length mismatch: {manifest.dataset_id}")
+        if output_sha256 != manifest.output_sha256:
+            raise ValueError(f"derived artifact digest mismatch: {manifest.dataset_id}")
+
+        runtime_output = snapshot_root / f"dataset-{index}-output"
+        runtime_output.write_bytes(output_bytes)
+        runtime_manifest = manifest.model_copy(update={"output_path": str(runtime_output)})
+        runtime_manifest_path = snapshot_root / f"dataset-{index}-runtime-manifest.yaml"
+        runtime_manifest_path.write_text(
+            yaml.safe_dump(runtime_manifest.model_dump(mode="json"), sort_keys=False),
+            encoding="utf-8",
+        )
+        runtime_bindings.append(
+            binding.model_copy(update={"manifest_path": str(runtime_manifest_path)})
+        )
+
+        resolved.append(
+            ResolvedDatasetBinding(
+                role=binding.role,
+                dataset_id=manifest.dataset_id,
+                manifest=ArtifactBinding(
+                    path=_display_path(root, manifest_path),
+                    sha256=hashlib.sha256(manifest_bytes).hexdigest(),
+                ),
+                output=SizedArtifactBinding(
+                    path=_display_path(root, output_path),
+                    sha256=output_sha256,
+                    length_bytes=len(output_bytes),
+                ),
+                source_lineage=tuple(
+                    SourceLineageBinding(
+                        dataset_id=item.dataset_id,
+                        content_sha256=item.content_sha256,
+                    )
+                    for item in manifest.source_lineage
+                ),
+                transform_id=manifest.transform_id,
+                transform_version=manifest.transform_version,
+                transform_code_commit=manifest.transform_code_commit,
+                region_set_version=manifest.region_set_version,
+                cohort_set_version=manifest.cohort_set_version,
+                source_observation_class=manifest.source_observation_class.value,
+                validation_eligible=manifest.validation_eligible,
+            )
+        )
+
+    runtime_bundle = bundle.model_copy(update={"bindings": tuple(runtime_bindings)})
+    runtime_bundle_path = snapshot_root / "data-bundle-runtime.yaml"
+    runtime_bundle_path.write_text(
+        yaml.safe_dump(runtime_bundle.model_dump(mode="json"), sort_keys=False),
+        encoding="utf-8",
+    )
+    return tuple(resolved), runtime_bundle_path, protected_paths
+
+
+def _run_from_verified_snapshot(
+    *,
+    root: Path,
+    scenario_path: Path,
+    data_bundle_path: Path,
+    parameter_set_path: Path,
+    region_set_path: Path,
+    cohort_set_path: Path,
+    output_path: Path,
+    receipt_path: Path,
+) -> tuple[
+    ScenarioManifest,
+    BaselineDataBundleManifest,
+    BaselineParameterSet,
+    _ResolvedRuntimeInputs,
+    tuple[ResolvedDatasetBinding, ...],
+    WorldZeroV0Result,
+]:
+    with tempfile.TemporaryDirectory(prefix="world-zero-runtime-") as temporary:
+        snapshot_root = Path(temporary)
+        scenario_snapshot = snapshot_root / "scenario.yaml"
+        bundle_source_snapshot = snapshot_root / "data-bundle-source.yaml"
+        parameters_snapshot = snapshot_root / "parameters.yaml"
+        region_snapshot = snapshot_root / "region-set.yaml"
+        cohort_snapshot = snapshot_root / "cohort-set.yaml"
+
+        runtime_inputs = _ResolvedRuntimeInputs(
+            scenario=_snapshot_artifact(root, scenario_path, scenario_snapshot),
+            data_bundle=_snapshot_artifact(root, data_bundle_path, bundle_source_snapshot),
+            parameter_set=_snapshot_artifact(root, parameter_set_path, parameters_snapshot),
+            region_set=_snapshot_artifact(root, region_set_path, region_snapshot),
+            cohort_set=_snapshot_artifact(root, cohort_set_path, cohort_snapshot),
+        )
+        scenario = load_scenario_manifest(scenario_snapshot)
+        bundle = load_baseline_data_bundle_manifest(bundle_source_snapshot)
+        parameters = load_baseline_parameter_set(parameters_snapshot)
+        dataset_inputs, runtime_bundle_path, dataset_paths = _snapshot_dataset_inputs(
+            root,
+            bundle,
+            snapshot_root,
+        )
+
+        protected_input_paths = {
+            scenario_path.resolve(),
+            data_bundle_path.resolve(),
+            parameter_set_path.resolve(),
+            region_set_path.resolve(),
+            cohort_set_path.resolve(),
+            *dataset_paths,
+        }
+        if output_path == receipt_path or _same_existing_file(output_path, receipt_path):
+            raise ValueError("runtime output and receipt paths must differ")
+        if (
+            output_path in protected_input_paths
+            or receipt_path in protected_input_paths
+            or any(_same_existing_file(output_path, item) for item in protected_input_paths)
+            or any(_same_existing_file(receipt_path, item) for item in protected_input_paths)
+        ):
+            raise ValueError("runtime output paths must not overwrite runtime inputs")
+
+        config = build_world_zero_v0_config(
+            root=snapshot_root,
+            scenario_path=scenario_snapshot,
+            data_bundle_path=runtime_bundle_path,
+            parameter_set_path=parameters_snapshot,
+            region_set_path=region_snapshot,
+            cohort_set_path=cohort_snapshot,
+        )
+        result = run_world_zero_v0(config)
+        return scenario, bundle, parameters, runtime_inputs, dataset_inputs, result
+
+
 def execute_baseline_to_files(
     *,
     root: Path,
@@ -335,53 +505,25 @@ def execute_baseline_to_files(
     resolved_region_set = _resolve(root, region_set_path)
     resolved_cohort_set = _resolve(root, cohort_set_path)
 
-    runtime_inputs_before = _resolve_runtime_inputs(
-        root,
-        scenario=resolved_scenario,
-        data_bundle=resolved_bundle,
-        parameter_set=resolved_parameters,
-        region_set=resolved_region_set,
-        cohort_set=resolved_cohort_set,
-    )
-    scenario = load_scenario_manifest(resolved_scenario)
-    bundle = load_baseline_data_bundle_manifest(resolved_bundle)
-    parameters = load_baseline_parameter_set(resolved_parameters)
-    dataset_inputs_before = _resolve_dataset_inputs(root, bundle)
-
     resolved_output = _resolve(root, output_path).resolve()
     resolved_receipt = _resolve(root, receipt_path).resolve()
-    protected_input_paths = {
-        resolved_scenario.resolve(),
-        resolved_bundle.resolve(),
-        resolved_parameters.resolve(),
-        resolved_region_set.resolve(),
-        resolved_cohort_set.resolve(),
-    }
-    for item in dataset_inputs_before:
-        protected_input_paths.add(_resolve(root, Path(item.manifest.path)).resolve())
-        protected_input_paths.add(_resolve(root, Path(item.output.path)).resolve())
-    if (
-        resolved_output == resolved_receipt
-        or _same_existing_file(resolved_output, resolved_receipt)
-    ):
-        raise ValueError("runtime output and receipt paths must differ")
-    if (
-        resolved_output in protected_input_paths
-        or resolved_receipt in protected_input_paths
-        or any(_same_existing_file(resolved_output, item) for item in protected_input_paths)
-        or any(_same_existing_file(resolved_receipt, item) for item in protected_input_paths)
-    ):
-        raise ValueError("runtime output paths must not overwrite runtime inputs")
-
-    config = build_world_zero_v0_config(
+    (
+        scenario,
+        bundle,
+        parameters,
+        runtime_inputs_before,
+        dataset_inputs_before,
+        result,
+    ) = _run_from_verified_snapshot(
         root=root,
         scenario_path=resolved_scenario,
         data_bundle_path=resolved_bundle,
         parameter_set_path=resolved_parameters,
         region_set_path=resolved_region_set,
         cohort_set_path=resolved_cohort_set,
+        output_path=resolved_output,
+        receipt_path=resolved_receipt,
     )
-    result = run_world_zero_v0(config)
 
     dataset_inputs_after = _resolve_dataset_inputs(root, bundle)
     if dataset_inputs_before != dataset_inputs_after:
@@ -455,12 +597,12 @@ def execute_baseline_to_files(
         source_commit=source_identity.commit,
         source_tree=source_identity.tree,
         source_worktree_clean=True,
-        scenario=runtime_inputs_after.scenario,
-        data_bundle=runtime_inputs_after.data_bundle,
-        dataset_inputs=dataset_inputs_after,
-        parameter_set=runtime_inputs_after.parameter_set,
-        region_set=runtime_inputs_after.region_set,
-        cohort_set=runtime_inputs_after.cohort_set,
+        scenario=runtime_inputs_before.scenario,
+        data_bundle=runtime_inputs_before.data_bundle,
+        dataset_inputs=dataset_inputs_before,
+        parameter_set=runtime_inputs_before.parameter_set,
+        region_set=runtime_inputs_before.region_set,
+        cohort_set=runtime_inputs_before.cohort_set,
         solver=SolverIdentity(
             name="RK4Solver",
             version="WORLD_ZERO_RK4_V0",

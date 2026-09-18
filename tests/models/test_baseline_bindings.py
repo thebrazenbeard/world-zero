@@ -323,6 +323,58 @@ def test_runtime_binding_models_reject_nonfinite_numbers(tmp_path: Path):
         )
 
 
+def test_runtime_snapshot_defeats_restored_control_aba(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    data_manifest_id, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    scenario_path = _write_synthetic_scenario(
+        tmp_path,
+        data_manifest_id=data_manifest_id,
+        parameter_set_id=parameters.parameter_set_id,
+    )
+    original_scenario = scenario_path.read_bytes()
+    real_build = execution_module.build_world_zero_v0_config
+
+    def aba_build(**kwargs):
+        payload = yaml.safe_load(original_scenario.decode("utf-8"))
+        payload["stop"] = 2027.0
+        scenario_path.write_text(
+            yaml.safe_dump(payload, sort_keys=False),
+            encoding="utf-8",
+        )
+        try:
+            return real_build(**kwargs)
+        finally:
+            scenario_path.write_bytes(original_scenario)
+
+    monkeypatch.setattr(execution_module, "build_world_zero_v0_config", aba_build)
+
+    output_path = tmp_path / "runs" / "result.json"
+    receipt_path = tmp_path / "runs" / "receipt.json"
+    execute_baseline_to_files(
+        root=tmp_path,
+        scenario_path=scenario_path,
+        data_bundle_path=bundle_path,
+        parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+        output_path=output_path,
+        receipt_path=receipt_path,
+        source_root=Path.cwd(),
+        region_set_path=REGIONS.resolve(),
+        cohort_set_path=COHORTS.resolve(),
+    )
+
+    result_document = json.loads(output_path.read_text(encoding="utf-8"))
+    assert result_document["times"][-1] == 2026.5
+    assert scenario_path.read_bytes() == original_scenario
+
+
 def test_runtime_receipt_rejects_control_change_during_execution(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
