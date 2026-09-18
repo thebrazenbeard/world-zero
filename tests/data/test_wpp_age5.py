@@ -8,9 +8,11 @@ import yaml
 from worldzero.data.cohorts import load_age_cohort_manifest
 from worldzero.data.observations import ObservationClass
 from worldzero.data.wpp_age5 import (
+    COHORT_POPULATION_CSV_FIELDS,
     WPP2024_AGE5_FIELDS,
     extract_macroregion_cohort_population,
     inspect_wpp_age5,
+    render_cohort_population_csv,
 )
 from worldzero.regions.definitions import load_region_set_manifest
 from worldzero.regions.mapping import load_region_mapping_manifest
@@ -122,6 +124,28 @@ def test_age5_inspection_and_historical_cut(tmp_path: Path):
     assert all(set(region) == set(AgeCohort) for region in cut.values.values())
 
 
+def test_cohort_cut_csv_is_deterministic_and_semantically_labeled(tmp_path: Path):
+    path = tmp_path / "age5.csv.gz"
+    _write_fixture(path)
+    cut = extract_macroregion_cohort_population(
+        path,
+        year=2023,
+        dataset_id="age5-test",
+        content_sha256="a" * 64,
+        region_mapping=load_region_mapping_manifest(MAPPING),
+        region_set=load_region_set_manifest(REGIONS).region_set,
+        cohort_manifest=load_age_cohort_manifest(COHORTS),
+    )
+    first = render_cohort_population_csv(cut)
+    second = render_cohort_population_csv(cut)
+    assert first == second
+    lines = first.decode("utf-8").splitlines()
+    assert lines[0] == ",".join(COHORT_POPULATION_CSV_FIELDS)
+    assert len(lines) == 1 + 10 * 4
+    assert lines[1].startswith("north_america,2023,child,")
+    assert lines[1].endswith(",OFFICIAL_ESTIMATE,DERIVED,true")
+
+
 def test_projection_cut_is_bridge_only(tmp_path: Path):
     path = tmp_path / "age5.csv.gz"
     _write_fixture(path)
@@ -136,3 +160,5 @@ def test_projection_cut_is_bridge_only(tmp_path: Path):
     )
     assert cut.observation_class is ObservationClass.PROJECTION
     assert not cut.validation_eligible
+    rendered = render_cohort_population_csv(cut).decode("utf-8")
+    assert ",PROJECTION,DERIVED,false" in rendered

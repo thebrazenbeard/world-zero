@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import gzip
+import io
 from collections import defaultdict
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
@@ -46,6 +47,15 @@ WPP2024_AGE5_FIELDS = (
 )
 
 WPP2024_AGE5_VARIANT = "Medium"
+COHORT_POPULATION_CSV_FIELDS = (
+    "region_id",
+    "year",
+    "cohort_id",
+    "population_persons",
+    "source_observation_class",
+    "observation_class",
+    "validation_eligible",
+)
 
 
 @contextmanager
@@ -205,3 +215,40 @@ def extract_macroregion_cohort_population(
             ),
         ),
     )
+
+
+def render_cohort_population_csv(cut: CohortPopulationCut) -> bytes:
+    """Render a cohort cut as deterministic UTF-8 CSV bytes."""
+
+    expected_cohorts = set(AgeCohort)
+    buffer = io.StringIO(newline="")
+    writer = csv.DictWriter(
+        buffer,
+        fieldnames=COHORT_POPULATION_CSV_FIELDS,
+        lineterminator="\n",
+    )
+    writer.writeheader()
+
+    for region_id, region_values in cut.values.items():
+        if set(region_values) != expected_cohorts:
+            raise ValueError("cohort population cut must contain every frozen cohort")
+        for cohort in AgeCohort:
+            value = float(region_values[cohort])
+            rounded = round(value)
+            if value < 0:
+                raise ValueError("cohort population must be nonnegative")
+            if abs(value - rounded) > 0.001:
+                raise ValueError("cohort population must resolve to whole persons")
+            writer.writerow(
+                {
+                    "region_id": region_id,
+                    "year": cut.year,
+                    "cohort_id": cohort.value,
+                    "population_persons": int(rounded),
+                    "source_observation_class": cut.observation_class.value,
+                    "observation_class": ObservationClass.DERIVED.value,
+                    "validation_eligible": str(cut.validation_eligible).lower(),
+                }
+            )
+
+    return buffer.getvalue().encode("utf-8")
