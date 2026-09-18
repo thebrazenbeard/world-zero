@@ -1,0 +1,24 @@
+schema_version: REGION_SET_V1
+version: WZ_MACROREGION_V0
+status: DRAFT
+regions:
+  - id: north_america
+    label: North America
+  - id: latin_america_caribbean
+    label: Latin America & Caribbean
+  - id: western_northern_europe
+    label: Western & Northern Europe
+  - id: eastern_europe_central_asia
+    label: Eastern Europe & Central Asia
+  - id: middle_east_north_africa
+    label: Middle East & North Africa
+  - id: sub_saharan_africa
+    label: Sub-Saharan Africa
+  - id: south_asia
+    label: South Asia
+  - id: east_asia
+    label: East Asia
+  - id: southeast_asia
+    label: Southeast Asia
+  - id: oceania
+    label: Oceania
