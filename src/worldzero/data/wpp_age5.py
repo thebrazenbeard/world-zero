@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import csv
 import gzip
+import io
+import math
 from collections import defaultdict
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
@@ -46,6 +48,15 @@ WPP2024_AGE5_FIELDS = (
 )
 
 WPP2024_AGE5_VARIANT = "Medium"
+COHORT_POPULATION_FIELDS = (
+    "region_id",
+    "year",
+    "cohort_id",
+    "population_persons",
+    "source_observation_class",
+    "observation_class",
+    "validation_eligible",
+)
 
 
 @contextmanager
@@ -123,6 +134,91 @@ class CohortPopulationCut:
 
     def region_total(self, region_id: str) -> float:
         return sum(self.values[region_id].values())
+
+
+@dataclass(frozen=True, slots=True)
+class CohortPopulationReconciliation:
+    year: int
+    region_differences: Mapping[str, float]
+    global_difference: float
+    max_abs_region_difference: float
+
+
+def _require_frozen_region_order(
+    cut: CohortPopulationCut,
+    region_ids: tuple[str, ...],
+) -> None:
+    if tuple(cut.values) != region_ids:
+        raise ValueError("cohort cut region order must exactly match frozen region set")
+
+
+def _whole_person(value: float) -> int:
+    if not math.isfinite(value) or value < 0:
+        raise ValueError("cohort population must be finite and nonnegative")
+    if not value.is_integer():
+        raise ValueError("cohort population must resolve to whole persons")
+    return int(value)
+
+
+def render_macroregion_cohort_population_csv(
+    cut: CohortPopulationCut,
+    *,
+    region_ids: tuple[str, ...],
+) -> bytes:
+    """Render one cohort cut to canonical UTF-8/LF CSV bytes."""
+
+    _require_frozen_region_order(cut, region_ids)
+    output = io.StringIO(newline="")
+    writer = csv.DictWriter(
+        output,
+        fieldnames=COHORT_POPULATION_FIELDS,
+        lineterminator="\n",
+    )
+    writer.writeheader()
+    validation_eligible = str(cut.validation_eligible).lower()
+    for region_id in region_ids:
+        region_values = cut.values[region_id]
+        if set(region_values) != set(AgeCohort):
+            raise ValueError("cohort cut must contain every frozen age cohort exactly once")
+        for cohort in AgeCohort:
+            writer.writerow(
+                {
+                    "region_id": region_id,
+                    "year": cut.year,
+                    "cohort_id": cohort.value,
+                    "population_persons": _whole_person(float(region_values[cohort])),
+                    "source_observation_class": cut.observation_class.value,
+                    "observation_class": ObservationClass.DERIVED.value,
+                    "validation_eligible": validation_eligible,
+                }
+            )
+    return output.getvalue().encode("utf-8")
+
+
+def reconcile_macroregion_cohort_population(
+    cut: CohortPopulationCut,
+    *,
+    region_ids: tuple[str, ...],
+    expected_region_totals: Mapping[str, float],
+) -> CohortPopulationReconciliation:
+    """Compare cohort sums with an independent regional total-population cut."""
+
+    _require_frozen_region_order(cut, region_ids)
+    if set(expected_region_totals) != set(region_ids):
+        raise ValueError("reconciliation totals must exactly cover frozen regions")
+    differences: dict[str, float] = {}
+    for region_id in region_ids:
+        expected = float(expected_region_totals[region_id])
+        if not math.isfinite(expected) or expected < 0:
+            raise ValueError("reconciliation totals must be finite and nonnegative")
+        differences[region_id] = cut.region_total(region_id) - expected
+    frozen_differences = MappingProxyType(differences)
+    return CohortPopulationReconciliation(
+        year=cut.year,
+        region_differences=frozen_differences,
+        global_difference=sum(differences.values()),
+        max_abs_region_difference=max(abs(value) for value in differences.values()),
+    )
 
 
 def extract_macroregion_cohort_population(
