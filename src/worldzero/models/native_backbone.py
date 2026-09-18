@@ -7,12 +7,10 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 from worldzero.core import (
-    FlowSpec,
     ModelState,
     RK4Solver,
     SimulationClock,
     StockFlowModel,
-    StockSpec,
     solve,
 )
 from worldzero.models.environment import (
@@ -25,6 +23,7 @@ from worldzero.models.environment import (
     soil_condition_stock_id,
     water_allocation_for_region,
 )
+from worldzero.models.registry import ModelContribution, ModuleRegistry
 from worldzero.regions.definitions import RegionSet
 from worldzero.sectors.climate import ClimateState
 from worldzero.sectors.demography import (
@@ -268,21 +267,23 @@ def _fossil_emissions_rate(
 
 
 def run_native_backbone(config: NativeBackboneConfig) -> NativeBackboneResult:
+    registry = ModuleRegistry()
+
     demographic_stocks, demographic_flows = build_demography_sector(
         config.regions,
         initial_population=config.initial_population,
         rates_by_region=config.demography_rates,
         migration_links=config.migration_links,
     )
-    energy_stocks: tuple[StockSpec, ...] = ()
-    energy_flows: tuple[FlowSpec, ...] = ()
-    if config.energy is not None:
-        energy_stocks, energy_flows = build_energy_sector(config.regions, config.energy)
+    registry.add(ModelContribution("demography", demographic_stocks, demographic_flows))
 
-    material_stocks: tuple[StockSpec, ...] = ()
-    material_flows: tuple[FlowSpec, ...] = ()
+    if config.energy is not None:
+        stocks, flows = build_energy_sector(config.regions, config.energy)
+        registry.add(ModelContribution("energy", stocks, flows))
+
     if config.materials is not None:
-        material_stocks, material_flows = build_material_sector(config.regions, config.materials)
+        stocks, flows = build_material_sector(config.regions, config.materials)
+        registry.add(ModelContribution("materials", stocks, flows))
 
     environment_stocks, environment_flows = build_environment_sector(
         config.regions,
@@ -290,6 +291,9 @@ def run_native_backbone(config: NativeBackboneConfig) -> NativeBackboneResult:
         regional=config.environment,
         emissions_rate=None if config.climate is None else _fossil_emissions_rate(config),
     )
+    if environment_stocks or environment_flows:
+        registry.add(ModelContribution("environment", environment_stocks, environment_flows))
+
     production_stocks, production_flows = build_production_sector(
         config.regions,
         config.production,
@@ -297,23 +301,16 @@ def run_native_backbone(config: NativeBackboneConfig) -> NativeBackboneResult:
         material_params_by_region=config.materials,
         output_multiplier=_output_multiplier_callback(config.climate),
     )
-    model = StockFlowModel(
-        stocks=(
-            demographic_stocks
-            + production_stocks
-            + energy_stocks
-            + material_stocks
-            + environment_stocks
-        ),
-        flows=(
-            demographic_flows + production_flows + energy_flows + material_flows + environment_flows
-        ),
-    )
+    registry.add(ModelContribution("production", production_stocks, production_flows))
+
+    stocks, flows = registry.compose()
+    model = StockFlowModel(stocks=stocks, flows=flows)
     trajectory = solve(
         model,
         SimulationClock(config.start, config.stop, config.dt),
         RK4Solver(),
     )
+
     return NativeBackboneResult(
         times=trajectory.times,
         states=trajectory.states,

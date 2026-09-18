@@ -1,0 +1,13 @@
+schema_version: WORLD_ZERO_SCENARIO_V1
+scenario_id: WORLD3_COMPATIBILITY
+scenario_class: EXTERNAL_CONTROL
+status: CONTROL_ONLY
+start: 1900.0
+stop: 2100.0
+dt: 0.5
+region_set_version: null
+data_manifest_id: null
+parameter_set_id: null
+reference_artifact: tests/baseline/fixtures/world3_standard_run.csv
+reference_sha256: 31d3f493e942e3f0eadf8828bf51ec968745e19b12399dc382138e89a67a2d68
+notes: External PyWorld3 control only; no causal or native-model qualification implied.
