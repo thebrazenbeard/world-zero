@@ -2,6 +2,9 @@ import csv
 import gzip
 from pathlib import Path
 
+import pytest
+import yaml
+
 from worldzero.data.cohorts import load_age_cohort_manifest
 from worldzero.data.observations import ObservationClass
 from worldzero.data.wpp_age5 import (
@@ -50,6 +53,13 @@ def _write_fixture(path: Path) -> None:
                     writer.writerow(row)
 
 
+def _write_modified_cohort_manifest(path: Path, mutate) -> None:
+    payload = yaml.safe_load(COHORTS.read_text(encoding="utf-8"))
+    assert isinstance(payload, dict)
+    mutate(payload)
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+
 def test_cohort_manifest_freezes_four_contiguous_v0_bands():
     manifest = load_age_cohort_manifest(COHORTS)
     assert tuple(item.cohort for item in manifest.cohorts) == tuple(AgeCohort)
@@ -62,6 +72,31 @@ def test_cohort_manifest_freezes_four_contiguous_v0_bands():
     assert manifest.cohorts[3].age_min == 65
     assert manifest.cohorts[3].age_max is None
     assert len(manifest.source_group_to_cohort) == 21
+
+
+def test_cohort_manifest_rejects_cross_band_source_group_swap(tmp_path: Path):
+    path = tmp_path / "swapped.yaml"
+
+    def mutate(payload: dict) -> None:
+        cohorts = payload["cohorts"]
+        child_groups = cohorts[0]["source_age_groups"]
+        older_groups = cohorts[3]["source_age_groups"]
+        child_groups[0], older_groups[0] = older_groups[0], child_groups[0]
+
+    _write_modified_cohort_manifest(path, mutate)
+    with pytest.raises(ValueError, match="outside declared cohort bounds"):
+        load_age_cohort_manifest(path)
+
+
+def test_cohort_manifest_requires_exact_frozen_wpp_bin_coverage(tmp_path: Path):
+    path = tmp_path / "missing-bin.yaml"
+
+    def mutate(payload: dict) -> None:
+        payload["cohorts"][0]["source_age_groups"].remove("0-4")
+
+    _write_modified_cohort_manifest(path, mutate)
+    with pytest.raises(ValueError, match="exactly cover the frozen WPP V0 age bins"):
+        load_age_cohort_manifest(path)
 
 
 def test_age5_inspection_and_historical_cut(tmp_path: Path):
