@@ -214,6 +214,48 @@ def test_ready_bundle_rejects_non_person_population_units(tmp_path: Path):
         )
 
 
+def test_ready_bundle_rejects_hash_consistent_nonfinite_population(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    cohort_payload = yaml.safe_load(cohort_manifest.read_text(encoding="utf-8"))
+    cohort_path = Path(cohort_payload["output_path"])
+
+    with cohort_path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+        fieldnames = tuple(reader.fieldnames or ())
+    rows[0]["population_persons"] = "nan"
+    with cohort_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+
+    cohort_bytes = cohort_path.read_bytes()
+    cohort_payload["output_sha256"] = hashlib.sha256(cohort_bytes).hexdigest()
+    cohort_payload["output_length_bytes"] = len(cohort_bytes)
+    cohort_manifest.write_text(
+        yaml.safe_dump(cohort_payload, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    bundle = _ready_bundle(total_manifest, cohort_manifest)
+    regions = load_region_set_manifest(REGIONS).region_set
+    with pytest.raises(ValueError, match="cohort population must be finite"):
+        resolve_baseline_population(
+            root=tmp_path,
+            bundle=bundle,
+            region_ids=regions.ids,
+        )
+
+
+def test_runtime_binding_models_reject_nonfinite_numbers():
+    with pytest.raises(ValueError):
+        _ready_bundle(
+            Path("total.yaml"),
+            Path("cohort.yaml"),
+            tolerance_persons=float("nan"),
+        )
+
+
 def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
     total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
 

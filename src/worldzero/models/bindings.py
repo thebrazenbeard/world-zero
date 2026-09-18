@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import math
 from pathlib import Path
 from typing import Literal
 
@@ -39,7 +40,7 @@ MAX_POPULATION_RECONCILIATION_TOLERANCE_PERSONS = 100.0
 
 
 class DatasetBinding(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     role: Literal["POPULATION_TOTAL", "POPULATION_COHORT"]
     dataset_id: str = Field(min_length=1)
@@ -47,7 +48,7 @@ class DatasetBinding(BaseModel):
 
 
 class BaselineDataBundleManifest(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     schema_version: Literal["WORLD_ZERO_DATA_BUNDLE_V1"]
     data_manifest_id: str = Field(min_length=1)
@@ -79,7 +80,7 @@ class BaselineDataBundleManifest(BaseModel):
 
 
 class CohortRates(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     child: float = Field(ge=0)
     young_adult: float = Field(ge=0)
@@ -96,7 +97,7 @@ class CohortRates(BaseModel):
 
 
 class DemographyExecutionParameters(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     birth_rate_per_young_adult: float = Field(ge=0)
     mortality: CohortRates
@@ -110,7 +111,7 @@ class DemographyExecutionParameters(BaseModel):
 
 
 class ProductionExecutionParameters(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     productive_capital_per_person: float = Field(ge=0)
     service_capital_per_person: float = Field(ge=0)
@@ -123,7 +124,7 @@ class ProductionExecutionParameters(BaseModel):
 
 
 class EnvironmentExecutionParameters(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     productive_land_per_person: float = Field(ge=0)
     bioenergy_land_per_person: float = Field(ge=0)
@@ -151,7 +152,7 @@ class EnvironmentExecutionParameters(BaseModel):
 
 
 class RegionExecutionParameters(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     demography: DemographyExecutionParameters
     production: ProductionExecutionParameters
@@ -161,7 +162,7 @@ class RegionExecutionParameters(BaseModel):
 
 
 class MigrationLinkSpec(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     source_region: str = Field(min_length=1)
     target_region: str = Field(min_length=1)
@@ -169,7 +170,7 @@ class MigrationLinkSpec(BaseModel):
 
 
 class FoodTradeLinkSpec(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     origin: str = Field(min_length=1)
     destination: str = Field(min_length=1)
@@ -179,14 +180,14 @@ class FoodTradeLinkSpec(BaseModel):
 
 
 class InstitutionExecutionParameters(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     response_capacity: float = Field(ge=0, le=1)
     implementation_delay: float = Field(ge=0)
 
 
 class BaselineParameterSet(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
 
     schema_version: Literal["WORLD_ZERO_V0_EXECUTION_PARAMETER_SET_V1"]
     parameter_set_id: str = Field(min_length=1)
@@ -277,6 +278,8 @@ def _load_total_population(
             if region_id in values:
                 raise ValueError(f"duplicate total-population region: {region_id}")
             value = float(row["population_persons"])
+            if not math.isfinite(value):
+                raise ValueError("total population must be finite")
             if value < 0:
                 raise ValueError("total population must be nonnegative")
             values[region_id] = value
@@ -313,6 +316,8 @@ def _load_cohort_population(
             if cohort in values[region_id]:
                 raise ValueError(f"duplicate cohort population row: {region_id}/{cohort.value}")
             value = float(row["population_persons"])
+            if not math.isfinite(value):
+                raise ValueError("cohort population must be finite")
             if value < 0:
                 raise ValueError("cohort population must be nonnegative")
             values[region_id][cohort] = value
