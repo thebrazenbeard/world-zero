@@ -13,6 +13,7 @@ from worldzero.models.bindings import (
     build_world_zero_v0_config,
     load_baseline_data_bundle_manifest,
     load_baseline_parameter_set,
+    resolve_baseline_population,
 )
 from worldzero.models.execution import execute_baseline_to_files
 from worldzero.models.world_zero_v0 import run_world_zero_v0
@@ -218,6 +219,47 @@ def test_provisional_parameter_set_is_explicitly_modeling_assumption_only():
     assert parameters.evidence_class == "MODELING_ASSUMPTION"
     assert parameters.region_set_version == load_region_set_manifest(REGIONS).region_set.version
     assert parameters.region_overrides == {}
+
+
+def test_ready_bundle_rejects_non_admitted_population_manifest(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    payload = yaml.safe_load(total_manifest.read_text(encoding="utf-8"))
+    payload["admission_status"] = "QUALITY_CHECKED"
+    payload["admission_record_id"] = None
+    total_manifest.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    _, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    bundle = load_baseline_data_bundle_manifest(bundle_path)
+    regions = load_region_set_manifest(REGIONS).region_set
+    with pytest.raises(ValueError, match="must be ADMITTED"):
+        resolve_baseline_population(
+            root=tmp_path,
+            bundle=bundle,
+            region_ids=regions.ids,
+        )
+
+
+def test_ready_bundle_rejects_non_person_population_units(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    payload = yaml.safe_load(cohort_manifest.read_text(encoding="utf-8"))
+    payload["unit"] = "thousands of persons"
+    cohort_manifest.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    _, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    bundle = load_baseline_data_bundle_manifest(bundle_path)
+    regions = load_region_set_manifest(REGIONS).region_set
+    with pytest.raises(ValueError, match="unit must be persons"):
+        resolve_baseline_population(
+            root=tmp_path,
+            bundle=bundle,
+            region_ids=regions.ids,
+        )
 
 
 def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
