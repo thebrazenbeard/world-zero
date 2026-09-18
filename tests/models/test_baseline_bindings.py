@@ -2,6 +2,7 @@ import csv
 import hashlib
 from pathlib import Path
 
+import pytest
 import yaml
 
 from worldzero.models.bindings import (
@@ -9,6 +10,7 @@ from worldzero.models.bindings import (
     build_world_zero_v0_config,
     load_baseline_data_bundle_manifest,
     load_baseline_parameter_set,
+    resolve_baseline_population,
 )
 from worldzero.models.world_zero_v0 import run_world_zero_v0
 from worldzero.regions.definitions import load_region_set_manifest
@@ -124,6 +126,36 @@ def _write_population_artifacts(tmp_path: Path) -> tuple[Path, Path]:
     return total_manifest, cohort_manifest
 
 
+def _ready_bundle(
+    total_manifest: Path,
+    cohort_manifest: Path,
+) -> BaselineDataBundleManifest:
+    return BaselineDataBundleManifest.model_validate(
+        {
+            "schema_version": "WORLD_ZERO_DATA_BUNDLE_V1",
+            "data_manifest_id": "SYNTHETIC_READY_DATA_BUNDLE",
+            "status": "READY",
+            "region_set_version": "WZ_MACROREGION_V0",
+            "cohort_set_version": "WZ_AGE_COHORT_V0",
+            "year": 2026,
+            "population_reconciliation_tolerance_persons": 0,
+            "bindings": [
+                {
+                    "role": "POPULATION_TOTAL",
+                    "dataset_id": "synthetic-total-2026",
+                    "manifest_path": str(total_manifest),
+                },
+                {
+                    "role": "POPULATION_COHORT",
+                    "dataset_id": "synthetic-cohort-2026",
+                    "manifest_path": str(cohort_manifest),
+                },
+            ],
+            "notes": "Synthetic READY bundle for runtime-binding tests.",
+        }
+    )
+
+
 def test_canonical_data_bundle_remains_fail_closed_until_cohort_artifact_exists():
     bundle = load_baseline_data_bundle_manifest(CANONICAL_BUNDLE)
     assert bundle.status == "BINDING_REQUIRED"
@@ -138,33 +170,44 @@ def test_provisional_parameter_set_is_explicitly_modeling_assumption_only():
     assert parameters.region_overrides == {}
 
 
+def test_ready_bundle_rejects_non_admitted_population_manifest(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    payload = yaml.safe_load(total_manifest.read_text(encoding="utf-8"))
+    payload["admission_status"] = "QUALITY_CHECKED"
+    payload["admission_record_id"] = None
+    total_manifest.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    bundle = _ready_bundle(total_manifest, cohort_manifest)
+    regions = load_region_set_manifest(REGIONS).region_set
+    with pytest.raises(ValueError, match="must be ADMITTED"):
+        resolve_baseline_population(
+            root=tmp_path,
+            bundle=bundle,
+            region_ids=regions.ids,
+        )
+
+
+def test_ready_bundle_rejects_non_person_population_units(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    payload = yaml.safe_load(cohort_manifest.read_text(encoding="utf-8"))
+    payload["unit"] = "thousands of persons"
+    cohort_manifest.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    bundle = _ready_bundle(total_manifest, cohort_manifest)
+    regions = load_region_set_manifest(REGIONS).region_set
+    with pytest.raises(ValueError, match="unit must be persons"):
+        resolve_baseline_population(
+            root=tmp_path,
+            bundle=bundle,
+            region_ids=regions.ids,
+        )
+
+
 def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
     total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
 
-    data_manifest_id = "SYNTHETIC_READY_DATA_BUNDLE"
-    bundle_payload = {
-        "schema_version": "WORLD_ZERO_DATA_BUNDLE_V1",
-        "data_manifest_id": data_manifest_id,
-        "status": "READY",
-        "region_set_version": "WZ_MACROREGION_V0",
-        "cohort_set_version": "WZ_AGE_COHORT_V0",
-        "year": 2026,
-        "population_reconciliation_tolerance_persons": 0,
-        "bindings": [
-            {
-                "role": "POPULATION_TOTAL",
-                "dataset_id": "synthetic-total-2026",
-                "manifest_path": str(total_manifest),
-            },
-            {
-                "role": "POPULATION_COHORT",
-                "dataset_id": "synthetic-cohort-2026",
-                "manifest_path": str(cohort_manifest),
-            },
-        ],
-        "notes": "Synthetic READY bundle for end-to-end runtime test.",
-    }
-    bundle = BaselineDataBundleManifest.model_validate(bundle_payload)
+    bundle = _ready_bundle(total_manifest, cohort_manifest)
+    data_manifest_id = bundle.data_manifest_id
     bundle_path = tmp_path / "bundle.yaml"
     bundle_path.write_text(
         yaml.safe_dump(bundle.model_dump(mode="json"), sort_keys=False),

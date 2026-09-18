@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from worldzero.data.cohorts import load_age_cohort_manifest
 from worldzero.data.derived import DerivedDatasetManifest, load_derived_dataset_manifest
+from worldzero.data.manifests import DatasetAdmissionStatus
 from worldzero.data.wpp_age5 import COHORT_POPULATION_CSV_FIELDS
 from worldzero.models.environment import RegionalEnvironmentParams
 from worldzero.models.native_backbone import NativeBackboneConfig
@@ -230,6 +231,10 @@ def _load_bound_manifest(
     manifest = load_derived_dataset_manifest(_resolve(root, Path(binding.manifest_path)))
     if manifest.dataset_id != binding.dataset_id:
         raise ValueError(f"dataset binding identity mismatch: {binding.role}")
+    if manifest.admission_status is not DatasetAdmissionStatus.ADMITTED:
+        raise ValueError(f"bound derived dataset must be ADMITTED: {binding.role}")
+    if manifest.unit != "persons":
+        raise ValueError(f"bound population dataset unit must be persons: {binding.role}")
     return manifest
 
 
