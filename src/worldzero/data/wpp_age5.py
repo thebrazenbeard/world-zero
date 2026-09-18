@@ -171,6 +171,7 @@ def _extract_macroregion_cohort_population(
         region_id: {cohort: 0.0 for cohort in AgeCohort} for region_id in region_set.ids
     }
     country_age_groups: defaultdict[str, set[str]] = defaultdict(set)
+    country_parent_ids: dict[str, str] = {}
     seen_parent_groups: set[str] = set()
     seen_age_groups: set[str] = set()
     selected_rows = 0
@@ -187,6 +188,9 @@ def _extract_macroregion_cohort_population(
         if age_group not in age_to_cohort:
             raise ValueError(f"unmapped WPP age group: {age_group}")
         iso3_code = row["ISO3_code"]
+        previous_parent = country_parent_ids.setdefault(iso3_code, parent_id)
+        if previous_parent != parent_id:
+            raise ValueError(f"inconsistent WPP parent group for {iso3_code}")
         if age_group in country_age_groups[iso3_code]:
             raise ValueError(f"duplicate WPP age group for {iso3_code}: {age_group}")
         raw_value = row["PopTotal"]
