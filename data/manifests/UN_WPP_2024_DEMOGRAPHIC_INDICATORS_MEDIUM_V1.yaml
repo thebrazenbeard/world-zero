@@ -1,0 +1,31 @@
+schema_id: WORLD_ZERO_DATASET_MANIFEST_V1
+dataset_id: un-wpp-2024-demographic-indicators-medium-v1
+provider: United Nations DESA Population Division
+product: World Population Prospects 2024 - Demographic Indicators - Medium variant CSV bulk file
+release_date: 2024-07-11
+retrieved_at: 2026-09-18T10:14:54.2643152Z
+source_url: https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/WPP2024_Demographic_Indicators_Medium.csv.gz
+license: Creative Commons Attribution 3.0 IGO (CC BY 3.0 IGO), rights review recorded below
+geography: 555 provider locations/aggregates; 237 ISO3 country/area locations
+time_coverage: 1950-2100 substantive annual values; 2101 contains technical 1-Jan population boundary only
+frequency: annual
+units: heterogeneous by indicator; TPopulation1July is thousands of persons and is converted to persons by ingest code
+transformations: []
+missing_data_policy: fail closed for required population fields; no silent interpolation or revision substitution
+uncertainty: WPP historical values are official estimates; 2024 onward values are projections and are bridge-only for World Zero validation purposes
+content_sha256: 286ac36bb1415e2e1ade03acfef0a29f0e4c087e2f78e38c48f50c5df89082bc
+content_length_bytes: 16557272
+source_http_status: 200
+source_content_type: application/x-gzip
+source_last_modified: 2024-12-13T19:11:17Z
+source_etag: '"0x8DD1BA9EBFD1565"'
+ingest_code_commit: 644cd4f70b39176a987de196affa9b7c2763e780
+transform_code_commit: null
+rights_terms_checked_at: 2026-09-18T12:04:47.4092996Z
+rights_terms_summary: UN Population Division Data Portal/API declares CC BY 3.0 IGO; WPP publication metadata also identifies CC BY 3.0 IGO. Rights record is provenance documentation, not legal advice.
+schema_mapping_id: WZ_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_MAP_V1
+quality_report_id: WZ_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_QA_V1
+admission_record_id: WZ_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_ADMISSION_V1
+admission_status: ADMITTED
+supersedes_dataset_id: null
+notes: Raw gzip is preserved outside Git per DATA_ADMISSION_POLICY_V1; manifest and exact digest prevent silent provider-revision substitution.
