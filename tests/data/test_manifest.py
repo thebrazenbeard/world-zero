@@ -26,6 +26,7 @@ VALID = {
     "missing_data_policy": "fail closed unless declared source missingness",
     "uncertainty": "provider estimates; revision-sensitive",
     "content_sha256": "a" * 64,
+    "ingest_code_commit": "c" * 40,
     "transform_code_commit": "b" * 40,
     "rights_terms_checked_at": datetime(2026, 9, 18, tzinfo=UTC),
     "rights_terms_summary": "open/public-use terms reviewed",

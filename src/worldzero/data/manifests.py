@@ -48,7 +48,8 @@ class DatasetManifest(BaseModel):
     source_content_type: str | None = None
     source_last_modified: datetime | None = None
     source_etag: str | None = None
-    transform_code_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    ingest_code_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    transform_code_commit: str | None = Field(default=None, pattern=r"^[0-9a-f]{40}$")
     rights_terms_checked_at: datetime | None = None
     rights_terms_summary: str | None = None
     schema_mapping_id: str | None = None
@@ -75,6 +76,8 @@ class DatasetManifest(BaseModel):
             raise ValueError("SCHEMA_MAPPED requires schema_mapping_id")
         if rank >= quality_rank and not self.quality_report_id:
             raise ValueError("QUALITY_CHECKED requires quality_report_id")
+        if self.transformations and self.transform_code_commit is None:
+            raise ValueError("declared transformations require transform_code_commit")
         if rank >= admitted_rank and not self.admission_record_id:
             raise ValueError("ADMITTED requires admission_record_id")
         return self
