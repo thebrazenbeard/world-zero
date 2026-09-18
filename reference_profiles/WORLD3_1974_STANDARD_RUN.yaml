@@ -2,10 +2,7 @@ schema_version: WORLD3_REFERENCE_PROFILE_V1
 profile_id: WORLD3_1974_STANDARD_RUN
 variant: WORLD3_1974_DYNAMICS
 role: CANONICAL_F0_CONTROL
-start_year: 1900
-end_year: 2100
-timestep_years: 1.0
-integration_semantics: REFERENCE_BACKWARD_EULER_COMPATIBLE
+scenario_id: STANDARD_RUN
 observable_ids:
   - POPULATION
   - INDUSTRIAL_OUTPUT_PER_CAPITA
@@ -14,6 +11,3 @@ observable_ids:
   - PERSISTENT_POLLUTION_INDEX
 primary_references:
   - Meadows et al. 1974, Dynamics of Growth in a Finite World
-reference_implementations:
-  - cvanwynsberghe/pyworld3@cdfd0a8f3675c514f27ddc0e00c8d8bd4d1fefb8
-  - worlddynamics/WorldDynamics.jl@7315afe159dc23e2af5482c215669b2572545068
