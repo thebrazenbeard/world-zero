@@ -9,10 +9,9 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-
-import yaml
 from typing import Literal
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from worldzero.data.derived import load_derived_dataset_manifest
