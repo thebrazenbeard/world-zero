@@ -170,7 +170,7 @@ def _extract_macroregion_cohort_population(
     totals: dict[str, dict[AgeCohort, float]] = {
         region_id: {cohort: 0.0 for cohort in AgeCohort} for region_id in region_set.ids
     }
-    country_age_counts: defaultdict[str, int] = defaultdict(int)
+    country_age_groups: defaultdict[str, set[str]] = defaultdict(set)
     seen_parent_groups: set[str] = set()
     seen_age_groups: set[str] = set()
     selected_rows = 0
@@ -186,22 +186,26 @@ def _extract_macroregion_cohort_population(
         age_group = row["AgeGrp"]
         if age_group not in age_to_cohort:
             raise ValueError(f"unmapped WPP age group: {age_group}")
+        iso3_code = row["ISO3_code"]
+        if age_group in country_age_groups[iso3_code]:
+            raise ValueError(f"duplicate WPP age group for {iso3_code}: {age_group}")
         raw_value = row["PopTotal"]
         if not raw_value:
-            raise ValueError(f"missing PopTotal for {row['ISO3_code']} {year} {age_group}")
+            raise ValueError(f"missing PopTotal for {iso3_code} {year} {age_group}")
         value = float(raw_value) * 1000.0
         if value < 0:
             raise ValueError("WPP age5 population must be nonnegative")
         totals[source_to_region[parent_id]][age_to_cohort[age_group]] += value
-        country_age_counts[row["ISO3_code"]] += 1
+        country_age_groups[iso3_code].add(age_group)
         seen_parent_groups.add(parent_id)
         seen_age_groups.add(age_group)
         selected_rows += 1
 
-    if len(country_age_counts) != 237:
+    if len(country_age_groups) != 237:
         raise ValueError("WPP age5 extraction must contain 237 country/area locations")
-    expected_age_count = len(age_to_cohort)
-    if any(count != expected_age_count for count in country_age_counts.values()):
+    expected_age_groups = set(age_to_cohort)
+    expected_age_count = len(expected_age_groups)
+    if any(groups != expected_age_groups for groups in country_age_groups.values()):
         raise ValueError("each country/area must contain every frozen age group exactly once")
     if selected_rows != 237 * expected_age_count:
         raise ValueError("unexpected WPP age5 country-row count")

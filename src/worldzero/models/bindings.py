@@ -35,6 +35,7 @@ TOTAL_POPULATION_CSV_FIELDS = (
     "validation_eligible",
 )
 _REQUIRED_POPULATION_ROLES = {"POPULATION_TOTAL", "POPULATION_COHORT"}
+MAX_POPULATION_RECONCILIATION_TOLERANCE_PERSONS = 100.0
 
 
 class DatasetBinding(BaseModel):
@@ -65,6 +66,11 @@ class BaselineDataBundleManifest(BaseModel):
             raise ValueError("data bundle roles must be unique")
         if self.status == "READY" and set(roles) != _REQUIRED_POPULATION_ROLES:
             raise ValueError("READY baseline bundle requires total and cohort population bindings")
+        if (
+            self.population_reconciliation_tolerance_persons
+            > MAX_POPULATION_RECONCILIATION_TOLERANCE_PERSONS
+        ):
+            raise ValueError("population reconciliation tolerance exceeds V0 ceiling")
         return self
 
     @property

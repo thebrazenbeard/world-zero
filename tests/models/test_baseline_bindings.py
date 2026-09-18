@@ -129,6 +129,8 @@ def _write_population_artifacts(tmp_path: Path) -> tuple[Path, Path]:
 def _ready_bundle(
     total_manifest: Path,
     cohort_manifest: Path,
+    *,
+    tolerance_persons: float = 0,
 ) -> BaselineDataBundleManifest:
     return BaselineDataBundleManifest.model_validate(
         {
@@ -138,7 +140,7 @@ def _ready_bundle(
             "region_set_version": "WZ_MACROREGION_V0",
             "cohort_set_version": "WZ_AGE_COHORT_V0",
             "year": 2026,
-            "population_reconciliation_tolerance_persons": 0,
+            "population_reconciliation_tolerance_persons": tolerance_persons,
             "bindings": [
                 {
                     "role": "POPULATION_TOTAL",
@@ -168,6 +170,15 @@ def test_provisional_parameter_set_is_explicitly_modeling_assumption_only():
     assert parameters.evidence_class == "MODELING_ASSUMPTION"
     assert parameters.region_set_version == load_region_set_manifest(REGIONS).region_set.version
     assert parameters.region_overrides == {}
+
+
+def test_ready_bundle_rejects_unbounded_reconciliation_tolerance():
+    with pytest.raises(ValueError, match="tolerance exceeds V0 ceiling"):
+        _ready_bundle(
+            Path("total.yaml"),
+            Path("cohort.yaml"),
+            tolerance_persons=101,
+        )
 
 
 def test_ready_bundle_rejects_non_admitted_population_manifest(tmp_path: Path):
