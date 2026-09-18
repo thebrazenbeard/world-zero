@@ -10,10 +10,13 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 
 from worldzero.regions.definitions import RegionSet
-from worldzero.regions.mapping import RegionMappingManifest
 from worldzero.sectors.demography import AgeCohort
+
+if TYPE_CHECKING:
+    from worldzero.regions.mapping import RegionMappingManifest
 
 from .cohorts import AgeCohortManifest
 from .observations import ObservationClass, ObservationLineage
