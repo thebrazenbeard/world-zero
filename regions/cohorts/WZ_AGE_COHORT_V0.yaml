@@ -1,0 +1,21 @@
+schema_version: AGE_COHORT_MAPPING_V1
+mapping_id: WZ_AGE_COHORT_V0
+status: PROVISIONAL_EXECUTION
+source_age_scheme: UN_WPP_5_YEAR
+notes: >
+  Runnable V0 convention. Boundaries preserve working age as 15-64 and keep
+  child/young-adult/mature-adult/older-adult model semantics explicit.
+  This is not promoted as a final empirically optimal cohort partition.
+cohorts:
+  - cohort_id: child
+    age_start: 0
+    age_end: 14
+  - cohort_id: young_adult
+    age_start: 15
+    age_end: 39
+  - cohort_id: mature_adult
+    age_start: 40
+    age_end: 64
+  - cohort_id: older_adult
+    age_start: 65
+    age_end: null
