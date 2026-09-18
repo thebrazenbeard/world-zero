@@ -1,11 +1,10 @@
 import csv
 import gzip
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 import yaml
-
-from dataclasses import replace
 
 from worldzero.data.cohorts import load_age_cohort_manifest
 from worldzero.data.manifests import load_dataset_manifest
