@@ -11,6 +11,7 @@ from worldzero.data.wpp_age5 import (
     COHORT_POPULATION_CSV_FIELDS,
     WPP2024_AGE5_FIELDS,
     extract_macroregion_cohort_population,
+    extract_macroregion_cohort_population_bytes,
     inspect_wpp_age5,
     render_cohort_population_csv,
 )
@@ -144,6 +145,36 @@ def test_cohort_cut_csv_is_deterministic_and_semantically_labeled(tmp_path: Path
     assert len(lines) == 1 + 10 * 4
     assert lines[1].startswith("north_america,2023,child,")
     assert lines[1].endswith(",OFFICIAL_ESTIMATE,DERIVED,true")
+
+
+def test_verified_payload_bytes_match_path_extraction(tmp_path: Path):
+    path = tmp_path / "age5.csv.gz"
+    _write_fixture(path)
+    payload = path.read_bytes()
+    mapping = load_region_mapping_manifest(MAPPING)
+    regions = load_region_set_manifest(REGIONS).region_set
+    cohorts = load_age_cohort_manifest(COHORTS)
+
+    from_path = extract_macroregion_cohort_population(
+        path,
+        year=2026,
+        dataset_id="age5-test",
+        content_sha256="a" * 64,
+        region_mapping=mapping,
+        region_set=regions,
+        cohort_manifest=cohorts,
+    )
+    from_bytes = extract_macroregion_cohort_population_bytes(
+        payload,
+        year=2026,
+        dataset_id="age5-test",
+        content_sha256="a" * 64,
+        region_mapping=mapping,
+        region_set=regions,
+        cohort_manifest=cohorts,
+    )
+
+    assert render_cohort_population_csv(from_bytes) == render_cohort_population_csv(from_path)
 
 
 def test_projection_cut_is_bridge_only(tmp_path: Path):

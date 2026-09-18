@@ -67,6 +67,20 @@ def _reader(path: Path) -> Iterator[csv.DictReader]:
         yield reader
 
 
+@contextmanager
+def _reader_bytes(payload: bytes) -> Iterator[csv.DictReader]:
+    with gzip.GzipFile(fileobj=io.BytesIO(payload), mode="rb") as compressed:
+        with io.TextIOWrapper(
+            compressed,
+            encoding="utf-8-sig",
+            newline="",
+        ) as handle:
+            reader = csv.DictReader(handle)
+            if tuple(reader.fieldnames or ()) != WPP2024_AGE5_FIELDS:
+                raise ValueError("WPP age5 CSV schema does not match frozen contract")
+            yield reader
+
+
 @dataclass(frozen=True, slots=True)
 class WPPAge5Inspection:
     total_rows: int
@@ -135,8 +149,8 @@ class CohortPopulationCut:
         return sum(self.values[region_id].values())
 
 
-def extract_macroregion_cohort_population(
-    path: Path,
+def _extract_macroregion_cohort_population(
+    reader: csv.DictReader,
     *,
     year: int,
     dataset_id: str,
@@ -159,29 +173,28 @@ def extract_macroregion_cohort_population(
     seen_age_groups: set[str] = set()
     selected_rows = 0
 
-    with _reader(path) as reader:
-        for row in reader:
-            if row["Time"] != str(year) or not row["ISO3_code"]:
-                continue
-            if row["Variant"] != WPP2024_AGE5_VARIANT:
-                raise ValueError("unexpected WPP age5 variant")
-            parent_id = row["ParentID"]
-            if parent_id not in source_to_region:
-                raise ValueError(f"unmapped WPP parent group: {parent_id}")
-            age_group = row["AgeGrp"]
-            if age_group not in age_to_cohort:
-                raise ValueError(f"unmapped WPP age group: {age_group}")
-            raw_value = row["PopTotal"]
-            if not raw_value:
-                raise ValueError(f"missing PopTotal for {row['ISO3_code']} {year} {age_group}")
-            value = float(raw_value) * 1000.0
-            if value < 0:
-                raise ValueError("WPP age5 population must be nonnegative")
-            totals[source_to_region[parent_id]][age_to_cohort[age_group]] += value
-            country_age_counts[row["ISO3_code"]] += 1
-            seen_parent_groups.add(parent_id)
-            seen_age_groups.add(age_group)
-            selected_rows += 1
+    for row in reader:
+        if row["Time"] != str(year) or not row["ISO3_code"]:
+            continue
+        if row["Variant"] != WPP2024_AGE5_VARIANT:
+            raise ValueError("unexpected WPP age5 variant")
+        parent_id = row["ParentID"]
+        if parent_id not in source_to_region:
+            raise ValueError(f"unmapped WPP parent group: {parent_id}")
+        age_group = row["AgeGrp"]
+        if age_group not in age_to_cohort:
+            raise ValueError(f"unmapped WPP age group: {age_group}")
+        raw_value = row["PopTotal"]
+        if not raw_value:
+            raise ValueError(f"missing PopTotal for {row['ISO3_code']} {year} {age_group}")
+        value = float(raw_value) * 1000.0
+        if value < 0:
+            raise ValueError("WPP age5 population must be nonnegative")
+        totals[source_to_region[parent_id]][age_to_cohort[age_group]] += value
+        country_age_counts[row["ISO3_code"]] += 1
+        seen_parent_groups.add(parent_id)
+        seen_age_groups.add(age_group)
+        selected_rows += 1
 
     if len(country_age_counts) != 237:
         raise ValueError("WPP age5 extraction must contain 237 country/area locations")
@@ -215,6 +228,52 @@ def extract_macroregion_cohort_population(
             ),
         ),
     )
+
+
+def extract_macroregion_cohort_population(
+    path: Path,
+    *,
+    year: int,
+    dataset_id: str,
+    content_sha256: str,
+    region_mapping: RegionMappingManifest,
+    region_set: RegionSet,
+    cohort_manifest: AgeCohortManifest,
+) -> CohortPopulationCut:
+    with _reader(path) as reader:
+        return _extract_macroregion_cohort_population(
+            reader,
+            year=year,
+            dataset_id=dataset_id,
+            content_sha256=content_sha256,
+            region_mapping=region_mapping,
+            region_set=region_set,
+            cohort_manifest=cohort_manifest,
+        )
+
+
+def extract_macroregion_cohort_population_bytes(
+    payload: bytes,
+    *,
+    year: int,
+    dataset_id: str,
+    content_sha256: str,
+    region_mapping: RegionMappingManifest,
+    region_set: RegionSet,
+    cohort_manifest: AgeCohortManifest,
+) -> CohortPopulationCut:
+    """Extract a cohort cut from the exact already-verified gzip payload bytes."""
+
+    with _reader_bytes(payload) as reader:
+        return _extract_macroregion_cohort_population(
+            reader,
+            year=year,
+            dataset_id=dataset_id,
+            content_sha256=content_sha256,
+            region_mapping=region_mapping,
+            region_set=region_set,
+            cohort_manifest=cohort_manifest,
+        )
 
 
 def render_cohort_population_csv(cut: CohortPopulationCut) -> bytes:

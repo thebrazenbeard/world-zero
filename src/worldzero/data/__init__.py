@@ -48,6 +48,7 @@ __all__ = [
     "ObservationSeries",
     "TransformRecord",
     "extract_macroregion_cohort_population",
+    "extract_macroregion_cohort_population_bytes",
     "extract_midyear_population",
     "extract_parent_group_midyear_population",
     "inspect_wpp2024",
@@ -65,6 +66,7 @@ from .wpp_age5 import (
     WPP2024_AGE5_FIELDS,
     CohortPopulationCut,
     extract_macroregion_cohort_population,
+    extract_macroregion_cohort_population_bytes,
     inspect_wpp_age5,
     render_cohort_population_csv,
 )
