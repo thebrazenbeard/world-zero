@@ -46,7 +46,7 @@ class ModelFamilyManifest(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def validate_manifest(self) -> "ModelFamilyManifest":
+    def validate_manifest(self) -> ModelFamilyManifest:
         if self.status != "DRAFT" and self.topology_digest is None:
             raise ValueError("topology_digest is required once a family leaves DRAFT")
 
