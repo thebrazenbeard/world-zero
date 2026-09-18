@@ -34,7 +34,7 @@ def test_canonical_macroregion_manifest_is_data_controlled_and_versioned():
     from worldzero.regions.definitions import RegionSetStatus, load_region_set_manifest
 
     manifest = load_region_set_manifest(Path("regions/WZ_MACROREGION_V0.yaml"))
-    assert manifest.status is RegionSetStatus.DRAFT
+    assert manifest.status is RegionSetStatus.FROZEN
     assert manifest.region_set.version == "WZ_MACROREGION_V0"
     assert len(manifest.region_set.ids) == 10
     assert "north_america" in manifest.region_set.ids

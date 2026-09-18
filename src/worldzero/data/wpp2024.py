@@ -221,3 +221,73 @@ def extract_midyear_population(
             else "UN WPP 2024 projection bridge; not validation evidence"
         ),
     )
+
+
+def extract_parent_group_midyear_population(
+    path: Path,
+    *,
+    years: tuple[int, ...],
+    dataset_id: str,
+    content_sha256: str,
+) -> ObservationSeries:
+    if not years:
+        raise ValueError("parent-group population extraction requires at least one year")
+    if len(years) != len(set(years)):
+        raise ValueError("parent-group extraction years must be unique")
+    classes = {classify_wpp2024_year(year) for year in years}
+    if len(classes) != 1:
+        raise ValueError("WPP estimate and projection years must be extracted separately")
+    observation_class = classes.pop()
+    requested_years = set(years)
+    totals: dict[tuple[str, int], float] = {}
+    with _reader(path) as reader:
+        for row in reader:
+            if not row["ISO3_code"]:
+                continue
+            year = int(row["Time"])
+            if year not in requested_years:
+                continue
+            parent_id = row["ParentID"]
+            if not parent_id:
+                raise ValueError(
+                    f"country/area row lacks ParentID: {row['ISO3_code']} {year}"
+                )
+            raw_value = row["TPopulation1July"]
+            if not raw_value:
+                raise ValueError(
+                    f"missing mid-year population for {row['ISO3_code']} {year}"
+                )
+            key = (parent_id, year)
+            totals[key] = totals.get(key, 0.0) + float(raw_value) * 1000.0
+
+    if not totals:
+        raise ValueError("parent-group population extraction matched no rows")
+    selected = sorted(
+        ((parent_id, year, value) for (parent_id, year), value in totals.items()),
+        key=lambda item: (item[1], item[0]),
+    )
+    return ObservationSeries(
+        observable_id="population_midyear_wpp_parent_group",
+        observation_class=observation_class,
+        unit="persons",
+        geography=tuple(item[0] for item in selected),
+        time=tuple(item[1] for item in selected),
+        values=tuple(item[2] for item in selected),
+        lineage=(
+            ObservationLineage(
+                dataset_id=dataset_id,
+                content_sha256=content_sha256,
+            ),
+        ),
+        validation_eligible=(
+            observation_class is ObservationClass.OFFICIAL_ESTIMATE
+        ),
+        notes=(
+            "Aggregated from WPP country/area rows by ParentID; "
+            + (
+                "official-estimate period"
+                if observation_class is ObservationClass.OFFICIAL_ESTIMATE
+                else "projection bridge; not validation evidence"
+            )
+        ),
+    )

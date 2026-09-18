@@ -17,6 +17,7 @@ from .wpp2024 import (
     WPP2024_ESTIMATE_END_YEAR,
     WPP2024_PROJECTION_START_YEAR,
     extract_midyear_population,
+    extract_parent_group_midyear_population,
     inspect_wpp2024,
 )
 
@@ -30,6 +31,7 @@ __all__ = [
     "ObservationSeries",
     "TransformRecord",
     "extract_midyear_population",
+    "extract_parent_group_midyear_population",
     "inspect_wpp2024",
     "load_dataset_manifest",
     "per_capita",

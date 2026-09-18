@@ -1,13 +1,13 @@
 schema_version: REGION_SET_V1
 version: WZ_MACROREGION_V0
-status: DRAFT
+status: FROZEN
 regions:
   - id: north_america
     label: North America
   - id: latin_america_caribbean
     label: Latin America & Caribbean
   - id: western_northern_europe
-    label: Western & Northern Europe
+    label: Western, Northern & Southern Europe
   - id: eastern_europe_central_asia
     label: Eastern Europe & Central Asia
   - id: middle_east_north_africa

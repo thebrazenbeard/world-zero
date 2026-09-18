@@ -103,3 +103,20 @@ def test_inspection_exposes_2101_as_boundary_rows(tmp_path: Path):
     assert inspection.country_rows_2101 == 2
     assert "TPopulation1Jan" in inspection.boundary_2101_nonempty_fields
     assert "TPopulation1July" not in inspection.boundary_2101_nonempty_fields
+
+
+def test_parent_group_extraction_sums_country_rows(tmp_path: Path):
+    from worldzero.data.wpp2024 import extract_parent_group_midyear_population
+
+    path = tmp_path / "wpp.csv.gz"
+    _write_fixture(path)
+    series = extract_parent_group_midyear_population(
+        path,
+        years=(2023,),
+        dataset_id="wpp-test",
+        content_sha256="a" * 64,
+    )
+    assert series.geography == ("10", "20")
+    assert series.time == (2023, 2023)
+    assert series.values == (10_500.0, 20_000.0)
+    assert series.validation_eligible
