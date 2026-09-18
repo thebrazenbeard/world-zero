@@ -8,6 +8,7 @@ on:
       - .github/workflows/qualify-world3-f0.yml
       - src/**
       - tests/**
+      - tools/**
       - model_families/**
       - reference_profiles/**
       - oracle_specs/**
