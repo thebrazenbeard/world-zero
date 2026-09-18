@@ -83,6 +83,35 @@ def _write_duplicate_missing_age_fixture(path: Path) -> None:
         writer.writerows(rows)
 
 
+def _write_inconsistent_parent_fixture(path: Path) -> None:
+    _write_fixture(path)
+    mapping = load_region_mapping_manifest(MAPPING)
+    parent_ids = tuple(entry.source_group_id for entry in mapping.entries)
+    assert len(parent_ids) >= 2
+
+    with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+        fieldnames = tuple(reader.fieldnames or ())
+
+    changed = False
+    original_parent: str | None = None
+    for row in rows:
+        if row["ISO3_code"] == "X00" and row["Time"] == "2026":
+            if original_parent is None:
+                original_parent = row["ParentID"]
+                continue
+            row["ParentID"] = next(parent for parent in parent_ids if parent != original_parent)
+            changed = True
+            break
+    assert changed
+
+    with gzip.open(path, "wt", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def _write_modified_cohort_manifest(path: Path, mutate) -> None:
     payload = yaml.safe_load(COHORTS.read_text(encoding="utf-8"))
     assert isinstance(payload, dict)
@@ -157,6 +186,22 @@ def test_extraction_rejects_duplicate_and_missing_country_age_groups(tmp_path: P
     _write_duplicate_missing_age_fixture(path)
 
     with pytest.raises(ValueError, match="duplicate WPP age group"):
+        extract_macroregion_cohort_population(
+            path,
+            year=2026,
+            dataset_id="age5-test",
+            content_sha256="a" * 64,
+            region_mapping=load_region_mapping_manifest(MAPPING),
+            region_set=load_region_set_manifest(REGIONS).region_set,
+            cohort_manifest=load_age_cohort_manifest(COHORTS),
+        )
+
+
+def test_extraction_rejects_country_split_across_parent_groups(tmp_path: Path):
+    path = tmp_path / "age5-parent-split.csv.gz"
+    _write_inconsistent_parent_fixture(path)
+
+    with pytest.raises(ValueError, match="inconsistent WPP parent group"):
         extract_macroregion_cohort_population(
             path,
             year=2026,
