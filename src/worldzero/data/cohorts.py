@@ -87,9 +87,10 @@ class AgeCohortManifest:
         for index, item in enumerate(self.cohorts):
             if item.age_max is None and index != len(self.cohorts) - 1:
                 raise ValueError("only the final cohort may be open-ended")
-            if index > 0:
-                if previous_max is None or item.age_min != previous_max + 1:
-                    raise ValueError("cohort ages must be contiguous and non-overlapping")
+            if index > 0 and (
+                previous_max is None or item.age_min != previous_max + 1
+            ):
+                raise ValueError("cohort ages must be contiguous and non-overlapping")
 
             item_groups = set(item.source_age_groups)
             if seen_groups & item_groups:
