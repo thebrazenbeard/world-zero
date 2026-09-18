@@ -68,12 +68,15 @@ def region_output(
     *,
     energy_params: EnergyBuildParams | None = None,
     material_params: MaterialStockParams | None = None,
+    output_multiplier: float = 1.0,
 ) -> float:
+    if not 0 <= output_multiplier <= 1:
+        raise ValueError("output_multiplier must be within [0, 1]")
     capital_capacity = (
         state.value(productive_capital_stock_id(region_id)) / params.capital_output_ratio
     )
     labor_capacity = working_age_population(state, region_id) * params.labor_productivity
-    output = min(capital_capacity, labor_capacity)
+    output = min(capital_capacity, labor_capacity) * output_multiplier
 
     if params.energy_per_output is not None:
         if energy_params is None:
@@ -99,8 +102,10 @@ def _output_fraction_rate(
     fraction: float,
     energy_params: EnergyBuildParams | None,
     material_params: MaterialStockParams | None,
+    output_multiplier: Callable[[ModelState], float] | None,
 ) -> Callable[[ModelState, float], float]:
     def rate(state: ModelState, _t: float) -> float:
+        multiplier = 1.0 if output_multiplier is None else output_multiplier(state)
         return (
             region_output(
                 state,
@@ -108,6 +113,7 @@ def _output_fraction_rate(
                 params,
                 energy_params=energy_params,
                 material_params=material_params,
+                output_multiplier=multiplier,
             )
             * fraction
         )
@@ -130,6 +136,7 @@ def build_production_sector(
     *,
     energy_params_by_region: Mapping[str, EnergyBuildParams] | None = None,
     material_params_by_region: Mapping[str, MaterialStockParams] | None = None,
+    output_multiplier: Callable[[ModelState], float] | None = None,
 ) -> tuple[tuple[StockSpec, ...], tuple[FlowSpec, ...]]:
     stocks: list[StockSpec] = []
     flows: list[FlowSpec] = []
@@ -185,6 +192,7 @@ def build_production_sector(
                         params.investment_share * productive_fraction,
                         energy_params,
                         material_params,
+                        output_multiplier,
                     ),
                 ),
                 FlowSpec(
@@ -198,6 +206,7 @@ def build_production_sector(
                         params.investment_share * params.service_investment_fraction,
                         energy_params,
                         material_params,
+                        output_multiplier,
                     ),
                 ),
             )
