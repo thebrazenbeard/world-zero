@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 from worldzero.data import (
-    extract_macroregion_cohort_population,
+    extract_macroregion_cohort_population_bytes,
     load_age_cohort_manifest,
     load_dataset_manifest,
     render_cohort_population_csv,
@@ -40,8 +40,8 @@ def generate(raw_path: Path, *, year: int, output_path: Path) -> dict[str, objec
     if mapping.target_region_set_version != region_set.version:
         raise ValueError("region mapping and region set versions do not match")
 
-    cut = extract_macroregion_cohort_population(
-        raw_path,
+    cut = extract_macroregion_cohort_population_bytes(
+        raw_bytes,
         year=year,
         dataset_id=raw_manifest.dataset_id,
         content_sha256=raw_manifest.content_sha256,
