@@ -35,7 +35,7 @@ class World3ReferenceProfile(BaseModel):
     reference_implementations: tuple[str, ...]
 
     @model_validator(mode="after")
-    def validate_profile(self) -> "World3ReferenceProfile":
+    def validate_profile(self) -> World3ReferenceProfile:
         if self.role == "CANONICAL_F0_CONTROL" and self.variant != "WORLD3_1974_DYNAMICS":
             raise ValueError("canonical F0 control must use WORLD3_1974_DYNAMICS")
         if self.end_year <= self.start_year:
