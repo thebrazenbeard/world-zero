@@ -1,5 +1,6 @@
 import csv
 import hashlib
+import json
 from pathlib import Path
 
 import yaml
@@ -10,6 +11,7 @@ from worldzero.models.bindings import (
     load_baseline_data_bundle_manifest,
     load_baseline_parameter_set,
 )
+from worldzero.models.execution import execute_baseline_to_files
 from worldzero.models.world_zero_v0 import run_world_zero_v0
 from worldzero.regions.definitions import load_region_set_manifest
 from worldzero.sectors.demography import AgeCohort
@@ -208,3 +210,26 @@ def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
     assert len(result.native.times) > 1
     assert len(result.food_trade) == len(result.native.times)
     assert all(abs(item.mass_balance_difference) <= 1e-9 for item in result.food_trade)
+
+    output_path = tmp_path / "runs" / "result.json"
+    receipt_path = tmp_path / "runs" / "receipt.json"
+    receipt = execute_baseline_to_files(
+        root=tmp_path,
+        scenario_path=scenario_path,
+        data_bundle_path=bundle_path,
+        parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+        output_path=output_path,
+        receipt_path=receipt_path,
+        source_commit="a" * 40,
+        source_tree="b" * 40,
+        region_set_path=REGIONS.resolve(),
+        cohort_set_path=COHORTS.resolve(),
+    )
+    assert receipt.claim_class == "RUNNABLE_SOURCE_REPRODUCIBLE_ONLY"
+    assert receipt.result.sha256 == hashlib.sha256(output_path.read_bytes()).hexdigest()
+    result_document = json.loads(output_path.read_text(encoding="utf-8"))
+    assert result_document["schema_version"] == "WORLD_ZERO_BASELINE_RESULT_V1"
+    assert result_document["scenario_id"] == "SYNTHETIC_2026_RUNTIME"
+    receipt_document = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt_document["schema_version"] == "WORLD_ZERO_RUNTIME_RECEIPT_V1"
+    assert receipt_document["source_commit"] == "a" * 40
