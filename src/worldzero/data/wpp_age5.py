@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from worldzero.regions.mapping import RegionMappingManifest
 
 from .cohorts import AgeCohortManifest
+from .manifests import DatasetAdmissionStatus, DatasetManifest
 from .observations import ObservationClass, ObservationLineage
 from .wpp2024 import classify_wpp2024_year
 
@@ -129,6 +130,30 @@ def _age_group_sort_key(label: str) -> int:
     if label == "100+":
         return 100
     return int(label.split("-", maxsplit=1)[0])
+
+
+def validate_wpp_age5_mapping_compatibility(
+    *,
+    mapping_source_manifest: DatasetManifest,
+    age5_manifest: DatasetManifest,
+    region_mapping: RegionMappingManifest,
+) -> None:
+    """Validate governed reuse of the WPP ParentID mapping on the age5 source."""
+
+    if mapping_source_manifest.admission_status is not DatasetAdmissionStatus.ADMITTED:
+        raise ValueError("region-mapping source manifest must be ADMITTED")
+    if age5_manifest.admission_status is not DatasetAdmissionStatus.ADMITTED:
+        raise ValueError("WPP age5 source manifest must be ADMITTED")
+    if region_mapping.source_dataset_id != mapping_source_manifest.dataset_id:
+        raise ValueError("region mapping source dataset does not match its admitted manifest")
+    if region_mapping.source_content_sha256 != mapping_source_manifest.content_sha256:
+        raise ValueError("region mapping source digest does not match its admitted manifest")
+    if region_mapping.source_group_field != "ParentID":
+        raise ValueError("WPP age5 region mapping must use ParentID")
+    if mapping_source_manifest.provider != age5_manifest.provider:
+        raise ValueError("WPP mapping and age5 sources must share the same provider")
+    if mapping_source_manifest.release_date != age5_manifest.release_date:
+        raise ValueError("WPP mapping and age5 sources must share the same release date")
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -42,6 +43,12 @@ def test_wpp_parent_mapping_covers_exact_source_parent_groups():
         "southeast_asia",
         "oceania",
     }
+
+
+def test_mapping_rejects_nonhex_source_digest():
+    mapping = load_region_mapping_manifest(MAPPING_PATH)
+    with pytest.raises(ValueError, match="must be hexadecimal"):
+        replace(mapping, source_content_sha256="z" * 64)
 
 
 def test_southern_europe_maps_to_western_northern_europe():
