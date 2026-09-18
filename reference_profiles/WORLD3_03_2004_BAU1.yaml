@@ -1,0 +1,19 @@
+schema_version: WORLD3_REFERENCE_PROFILE_V1
+profile_id: WORLD3_03_2004_BAU1
+variant: WORLD3_03_2004
+role: COMPATIBILITY_REFERENCE
+start_year: 1900
+end_year: 2100
+timestep_years: 1.0
+integration_semantics: REFERENCE_BACKWARD_EULER_COMPATIBLE
+observable_ids:
+  - POPULATION
+  - INDUSTRIAL_OUTPUT_PER_CAPITA
+  - FOOD_PER_CAPITA
+  - NONRENEWABLE_RESOURCE_FRACTION
+  - PERSISTENT_POLLUTION_INDEX
+primary_references:
+  - Meadows, Randers, Meadows 2004/2005, Limits to Growth - The 30-Year Update, World3-03
+reference_implementations:
+  - TimSchell98/PyWorld3-03@1f1b2f40637e2c77202df8ed12d7f9fb225340d7
+  - worlddynamics/WorldDynamics.jl@7315afe159dc23e2af5482c215669b2572545068
