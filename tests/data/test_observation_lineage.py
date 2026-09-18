@@ -71,3 +71,51 @@ def test_per_capita_rejects_nonmatching_axes():
             transform_version="1.0.0",
             transform_code_commit="c" * 40,
         )
+
+
+def test_projection_cannot_be_marked_validation_eligible():
+    import pytest
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError, match="validation eligible"):
+        ObservationSeries(
+            observable_id="population_2026",
+            observation_class=ObservationClass.PROJECTION,
+            unit="persons",
+            geography=("north",),
+            time=(2026,),
+            values=(1.0,),
+            lineage=(ObservationLineage(dataset_id="wpp", content_sha256="a" * 64),),
+            validation_eligible=True,
+        )
+
+
+def test_transform_inherits_bridge_only_status():
+    projected_population = ObservationSeries(
+        observable_id="population",
+        observation_class=ObservationClass.PROJECTION,
+        unit="persons",
+        geography=("north", "north"),
+        time=(2026, 2027),
+        values=(10.0, 11.0),
+        lineage=(ObservationLineage(dataset_id="population-projection", content_sha256="b" * 64),),
+        validation_eligible=False,
+    )
+    energy = ObservationSeries(
+        observable_id="energy",
+        observation_class=ObservationClass.DIRECT,
+        unit="PJ",
+        geography=("north", "north"),
+        time=(2026, 2027),
+        values=(100.0, 110.0),
+        lineage=(ObservationLineage(dataset_id="energy-raw", content_sha256="a" * 64),),
+    )
+    result = per_capita(
+        energy,
+        projected_population,
+        output_observable_id="energy_per_capita",
+        output_unit="PJ/person",
+        transform_version="1.0.0",
+        transform_code_commit="c" * 40,
+    )
+    assert not result.validation_eligible

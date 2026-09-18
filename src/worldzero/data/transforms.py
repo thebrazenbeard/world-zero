@@ -50,5 +50,6 @@ def per_capita(
         time=numerator.time,
         values=values,
         lineage=_merge_lineage(numerator, denominator),
+        validation_eligible=(numerator.validation_eligible and denominator.validation_eligible),
         transform=transform,
     )

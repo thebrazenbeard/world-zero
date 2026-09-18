@@ -10,6 +10,9 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 class ObservationClass(StrEnum):
     DIRECT = "DIRECT"
+    OFFICIAL_ESTIMATE = "OFFICIAL_ESTIMATE"
+    NOWCAST = "NOWCAST"
+    PROJECTION = "PROJECTION"
     DERIVED = "DERIVED"
     COMPOSITE = "COMPOSITE"
     SCENARIO_INPUT = "SCENARIO_INPUT"
@@ -41,6 +44,7 @@ class ObservationSeries(BaseModel):
     time: tuple[int, ...] = Field(min_length=1)
     values: tuple[float, ...] = Field(min_length=1)
     lineage: tuple[ObservationLineage, ...] = Field(min_length=1)
+    validation_eligible: bool = True
     transform: TransformRecord | None = None
     notes: str | None = None
 
@@ -55,6 +59,18 @@ class ObservationSeries(BaseModel):
             raise ValueError("observation values must be finite")
         if self.observation_class is ObservationClass.DIRECT and self.transform is not None:
             raise ValueError("DIRECT observations cannot declare a transform")
+        if (
+            self.observation_class
+            in {
+                ObservationClass.NOWCAST,
+                ObservationClass.PROJECTION,
+                ObservationClass.SCENARIO_INPUT,
+            }
+            and self.validation_eligible
+        ):
+            raise ValueError(
+                "bridge/projection/scenario-input observations cannot be validation eligible"
+            )
         if (
             self.observation_class in {ObservationClass.DERIVED, ObservationClass.COMPOSITE}
             and self.transform is None

@@ -5,8 +5,10 @@ from __future__ import annotations
 import hashlib
 from datetime import date, datetime
 from enum import StrEnum
+from pathlib import Path
 from typing import Literal
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -41,6 +43,11 @@ class DatasetManifest(BaseModel):
     missing_data_policy: str = Field(min_length=1)
     uncertainty: str = Field(min_length=1)
     content_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    content_length_bytes: int | None = Field(default=None, ge=1)
+    source_http_status: int | None = Field(default=None, ge=100, le=599)
+    source_content_type: str | None = None
+    source_last_modified: datetime | None = None
+    source_etag: str | None = None
     transform_code_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
     rights_terms_checked_at: datetime | None = None
     rights_terms_summary: str | None = None
@@ -81,3 +88,10 @@ def verify_payload_digest(payload: bytes, expected_sha256: str) -> bool:
     except ValueError as exc:
         raise ValueError("expected SHA-256 must be hexadecimal") from exc
     return hashlib.sha256(payload).hexdigest() == expected_sha256.lower()
+
+
+def load_dataset_manifest(path: Path) -> DatasetManifest:
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise TypeError("dataset manifest must be a mapping")
+    return DatasetManifest.model_validate(payload)
