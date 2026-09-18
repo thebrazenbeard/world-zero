@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 import yaml
-from pydantic import ValidationError
 
 from worldzero.reference.world3 import (
     World3OracleExecutionSpec,
@@ -123,17 +122,17 @@ def test_pyworld3_standard_run_uses_half_year_inclusive_grid():
 
 
 def test_stale_one_year_assumption_is_rejected():
-    with pytest.raises(ValidationError, match="sample_count"):
+    with pytest.raises(ValueError, match="sample_count"):
         pyworld3_oracle(timestep_years=1.0)
 
 
 def test_moving_upstream_oracle_ref_is_rejected():
-    with pytest.raises(ValidationError, match="exact GitHub commit"):
+    with pytest.raises(ValueError, match="exact GitHub commit"):
         pyworld3_oracle(implementation_ref="cvanwynsberghe/pyworld3@main")
 
 
 def test_oracle_must_bind_all_five_comparison_series():
-    with pytest.raises(ValidationError, match="five F0 observables"):
+    with pytest.raises(ValueError, match="five F0 observables"):
         pyworld3_oracle(
             observable_bindings=(
                 {"observable_id": "POPULATION", "implementation_name": "pop"},
