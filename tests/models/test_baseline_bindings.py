@@ -1,6 +1,7 @@
 import csv
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -387,6 +388,37 @@ def test_runtime_receipt_refuses_output_aliasing_an_input(tmp_path: Path):
             data_bundle_path=bundle_path,
             parameter_set_path=CANONICAL_PARAMETERS.resolve(),
             output_path=scenario_path,
+            receipt_path=tmp_path / "runs" / "receipt.json",
+            source_root=Path.cwd(),
+            region_set_path=REGIONS.resolve(),
+            cohort_set_path=COHORTS.resolve(),
+        )
+
+
+def test_runtime_receipt_refuses_hardlink_aliasing_an_input(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    data_manifest_id, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    scenario_path = _write_synthetic_scenario(
+        tmp_path,
+        data_manifest_id=data_manifest_id,
+        parameter_set_id=parameters.parameter_set_id,
+    )
+
+    output_path = tmp_path / "hardlinked-result.json"
+    os.link(scenario_path, output_path)
+
+    with pytest.raises(ValueError, match="must not overwrite runtime inputs"):
+        execute_baseline_to_files(
+            root=tmp_path,
+            scenario_path=scenario_path,
+            data_bundle_path=bundle_path,
+            parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+            output_path=output_path,
             receipt_path=tmp_path / "runs" / "receipt.json",
             source_root=Path.cwd(),
             region_set_path=REGIONS.resolve(),

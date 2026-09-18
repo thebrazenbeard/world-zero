@@ -189,6 +189,15 @@ def _resolve_runtime_inputs(
     )
 
 
+def _same_existing_file(left: Path, right: Path) -> bool:
+    if not left.exists() or not right.exists():
+        return False
+    try:
+        return left.samefile(right)
+    except OSError as exc:
+        raise ValueError("runtime path identity could not be established") from exc
+
+
 def _canonical_json_bytes(model: BaseModel) -> bytes:
     payload = model.model_dump(mode="json")
     return (
@@ -339,8 +348,8 @@ def execute_baseline_to_files(
     parameters = load_baseline_parameter_set(resolved_parameters)
     dataset_inputs_before = _resolve_dataset_inputs(root, bundle)
 
-    resolved_output = _resolve(root, output_path)
-    resolved_receipt = _resolve(root, receipt_path)
+    resolved_output = _resolve(root, output_path).resolve()
+    resolved_receipt = _resolve(root, receipt_path).resolve()
     protected_input_paths = {
         resolved_scenario.resolve(),
         resolved_bundle.resolve(),
@@ -351,11 +360,16 @@ def execute_baseline_to_files(
     for item in dataset_inputs_before:
         protected_input_paths.add(_resolve(root, Path(item.manifest.path)).resolve())
         protected_input_paths.add(_resolve(root, Path(item.output.path)).resolve())
-    if resolved_output.resolve() == resolved_receipt.resolve():
+    if (
+        resolved_output == resolved_receipt
+        or _same_existing_file(resolved_output, resolved_receipt)
+    ):
         raise ValueError("runtime output and receipt paths must differ")
     if (
-        resolved_output.resolve() in protected_input_paths
-        or resolved_receipt.resolve() in protected_input_paths
+        resolved_output in protected_input_paths
+        or resolved_receipt in protected_input_paths
+        or any(_same_existing_file(resolved_output, item) for item in protected_input_paths)
+        or any(_same_existing_file(resolved_receipt, item) for item in protected_input_paths)
     ):
         raise ValueError("runtime output paths must not overwrite runtime inputs")
 
