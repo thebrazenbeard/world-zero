@@ -10,6 +10,7 @@ on:
       - tests/**
       - model_families/**
       - reference_profiles/**
+      - oracle_specs/**
       - specs/**
       - docs/research/WORLD3_F0_REFERENCE_CONTRACT_V1.md
 
