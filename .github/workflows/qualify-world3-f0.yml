@@ -1,0 +1,54 @@
+name: Qualify World3 F0 branch
+
+on:
+  push:
+    branches:
+      - impl/world3-f0-core-v1
+    paths:
+      - .github/workflows/qualify-world3-f0.yml
+      - src/**
+      - tests/**
+      - model_families/**
+      - reference_profiles/**
+      - specs/**
+      - docs/research/WORLD3_F0_REFERENCE_CONTRACT_V1.md
+
+permissions:
+  contents: read
+
+concurrency:
+  group: world-zero-f0-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            wheelhouse: third_party/wheels/cp312-manylinux_x86_64
+            python: .offline-verify/f0/bin/python
+            ruff: .offline-verify/f0/bin/ruff
+            mypy: .offline-verify/f0/bin/mypy
+          - os: windows-latest
+            wheelhouse: third_party/wheels/cp312-win_amd64
+            python: .offline-verify/f0/Scripts/python.exe
+            ruff: .offline-verify/f0/Scripts/ruff.exe
+            mypy: .offline-verify/f0/Scripts/mypy.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reconstruct from vendored wheelhouse
+        run: python -m tools.bootstrap_offline --wheelhouse ${{ matrix.wheelhouse }} --venv .offline-verify/f0
+      - name: Test
+        run: ${{ matrix.python }} -m pytest -q
+      - name: Ruff
+        run: ${{ matrix.ruff }} check src tests tools
+      - name: Mypy
+        run: ${{ matrix.mypy }} src/worldzero
