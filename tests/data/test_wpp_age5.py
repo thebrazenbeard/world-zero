@@ -56,6 +56,33 @@ def _write_fixture(path: Path) -> None:
                     writer.writerow(row)
 
 
+def _write_duplicate_missing_age_fixture(path: Path) -> None:
+    _write_fixture(path)
+    with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+        fieldnames = tuple(reader.fieldnames or ())
+
+    ages = tuple(load_age_cohort_manifest(COHORTS).source_group_to_cohort)
+    assert len(ages) >= 2
+    changed = False
+    for row in rows:
+        if (
+            row["ISO3_code"] == "X00"
+            and row["Time"] == "2026"
+            and row["AgeGrp"] == ages[1]
+        ):
+            row["AgeGrp"] = ages[0]
+            changed = True
+            break
+    assert changed
+
+    with gzip.open(path, "wt", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def _write_modified_cohort_manifest(path: Path, mutate) -> None:
     payload = yaml.safe_load(COHORTS.read_text(encoding="utf-8"))
     assert isinstance(payload, dict)
@@ -123,6 +150,22 @@ def test_age5_inspection_and_historical_cut(tmp_path: Path):
     assert cut.total_population == 237 * 21 * 1000.0
     assert set(cut.values) == set(load_region_set_manifest(REGIONS).region_set.ids)
     assert all(set(region) == set(AgeCohort) for region in cut.values.values())
+
+
+def test_extraction_rejects_duplicate_and_missing_country_age_groups(tmp_path: Path):
+    path = tmp_path / "age5-duplicate.csv.gz"
+    _write_duplicate_missing_age_fixture(path)
+
+    with pytest.raises(ValueError, match="duplicate WPP age group"):
+        extract_macroregion_cohort_population(
+            path,
+            year=2026,
+            dataset_id="age5-test",
+            content_sha256="a" * 64,
+            region_mapping=load_region_mapping_manifest(MAPPING),
+            region_set=load_region_set_manifest(REGIONS).region_set,
+            cohort_manifest=load_age_cohort_manifest(COHORTS),
+        )
 
 
 def test_cohort_cut_csv_is_deterministic_and_semantically_labeled(tmp_path: Path):
