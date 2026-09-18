@@ -37,6 +37,7 @@ class ModelFamilyManifest(BaseModel):
     status: FamilyStatus = "DRAFT"
     purpose: str | None = None
     topology_digest: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    reference_profile_id: str | None = None
     enabled_mechanism_ids: tuple[str, ...] = ()
     required_mechanism_ids: tuple[str, ...] = ()
     forbidden_mechanism_ids: tuple[str, ...] = ()
@@ -45,9 +46,20 @@ class ModelFamilyManifest(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def validate_manifest(self) -> ModelFamilyManifest:
+    def validate_manifest(self) -> "ModelFamilyManifest":
         if self.status != "DRAFT" and self.topology_digest is None:
             raise ValueError("topology_digest is required once a family leaves DRAFT")
+
+        if self.family_id == "F0_WORLD3_CONTROL":
+            if self.reference_profile_id != "WORLD3_1974_STANDARD_RUN":
+                raise ValueError(
+                    "F0_WORLD3_CONTROL requires reference_profile_id "
+                    "WORLD3_1974_STANDARD_RUN"
+                )
+        elif self.reference_profile_id is not None:
+            raise ValueError(
+                "reference_profile_id is reserved for F0_WORLD3_CONTROL in MODEL_FAMILY_V1"
+            )
 
         for field_name, values in (
             ("enabled_mechanism_ids", self.enabled_mechanism_ids),
