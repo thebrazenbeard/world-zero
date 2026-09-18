@@ -1,0 +1,11 @@
+region_id,year,population_persons,source_observation_class,observation_class,validation_eligible
+north_america,2026,389628823,PROJECTION,DERIVED,false
+latin_america_caribbean,2026,672135562,PROJECTION,DERIVED,false
+western_northern_europe,2026,459777391,PROJECTION,DERIVED,false
+eastern_europe_central_asia,2026,368628513,PROJECTION,DERIVED,false
+middle_east_north_africa,2026,599872196,PROJECTION,DERIVED,false
+sub_saharan_africa,2026,1304244790,PROJECTION,DERIVED,false
+south_asia,2026,2106270433,PROJECTION,DERIVED,false
+east_asia,2026,1648245779,PROJECTION,DERIVED,false
+southeast_asia,2026,704755916,PROJECTION,DERIVED,false
+oceania,2026,47118992,PROJECTION,DERIVED,false
