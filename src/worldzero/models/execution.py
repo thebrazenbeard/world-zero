@@ -138,6 +138,16 @@ class _ResolvedSourceIdentity(BaseModel):
     tree: str = Field(pattern=r"^[0-9a-f]{40}$")
 
 
+class _ResolvedRuntimeInputs(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    scenario: ArtifactBinding
+    data_bundle: ArtifactBinding
+    parameter_set: ArtifactBinding
+    region_set: ArtifactBinding
+    cohort_set: ArtifactBinding
+
+
 def _resolve(root: Path, path: Path) -> Path:
     return path if path.is_absolute() else root / path
 
@@ -152,6 +162,31 @@ def _display_path(root: Path, path: Path) -> str:
         return resolved.relative_to(root.resolve()).as_posix()
     except ValueError:
         return resolved.as_posix()
+
+
+def _artifact_binding(root: Path, path: Path) -> ArtifactBinding:
+    return ArtifactBinding(
+        path=_display_path(root, path),
+        sha256=_sha256(path),
+    )
+
+
+def _resolve_runtime_inputs(
+    root: Path,
+    *,
+    scenario: Path,
+    data_bundle: Path,
+    parameter_set: Path,
+    region_set: Path,
+    cohort_set: Path,
+) -> _ResolvedRuntimeInputs:
+    return _ResolvedRuntimeInputs(
+        scenario=_artifact_binding(root, scenario),
+        data_bundle=_artifact_binding(root, data_bundle),
+        parameter_set=_artifact_binding(root, parameter_set),
+        region_set=_artifact_binding(root, region_set),
+        cohort_set=_artifact_binding(root, cohort_set),
+    )
 
 
 def _canonical_json_bytes(model: BaseModel) -> bytes:
@@ -291,10 +326,38 @@ def execute_baseline_to_files(
     resolved_region_set = _resolve(root, region_set_path)
     resolved_cohort_set = _resolve(root, cohort_set_path)
 
+    runtime_inputs_before = _resolve_runtime_inputs(
+        root,
+        scenario=resolved_scenario,
+        data_bundle=resolved_bundle,
+        parameter_set=resolved_parameters,
+        region_set=resolved_region_set,
+        cohort_set=resolved_cohort_set,
+    )
     scenario = load_scenario_manifest(resolved_scenario)
     bundle = load_baseline_data_bundle_manifest(resolved_bundle)
     parameters = load_baseline_parameter_set(resolved_parameters)
     dataset_inputs_before = _resolve_dataset_inputs(root, bundle)
+
+    resolved_output = _resolve(root, output_path)
+    resolved_receipt = _resolve(root, receipt_path)
+    protected_input_paths = {
+        resolved_scenario.resolve(),
+        resolved_bundle.resolve(),
+        resolved_parameters.resolve(),
+        resolved_region_set.resolve(),
+        resolved_cohort_set.resolve(),
+    }
+    for item in dataset_inputs_before:
+        protected_input_paths.add(_resolve(root, Path(item.manifest.path)).resolve())
+        protected_input_paths.add(_resolve(root, Path(item.output.path)).resolve())
+    if resolved_output.resolve() == resolved_receipt.resolve():
+        raise ValueError("runtime output and receipt paths must differ")
+    if (
+        resolved_output.resolve() in protected_input_paths
+        or resolved_receipt.resolve() in protected_input_paths
+    ):
+        raise ValueError("runtime output paths must not overwrite runtime inputs")
 
     config = build_world_zero_v0_config(
         root=root,
@@ -309,6 +372,23 @@ def execute_baseline_to_files(
     dataset_inputs_after = _resolve_dataset_inputs(root, bundle)
     if dataset_inputs_before != dataset_inputs_after:
         raise ValueError("resolved runtime data inputs changed during execution")
+    runtime_inputs_after = _resolve_runtime_inputs(
+        root,
+        scenario=resolved_scenario,
+        data_bundle=resolved_bundle,
+        parameter_set=resolved_parameters,
+        region_set=resolved_region_set,
+        cohort_set=resolved_cohort_set,
+    )
+    if runtime_inputs_before != runtime_inputs_after:
+        raise ValueError("resolved runtime control inputs changed during execution")
+    source_identity_after = _resolve_source_identity(
+        source_root,
+        expected_commit=source_identity.commit,
+        expected_tree=source_identity.tree,
+    )
+    if source_identity_after != source_identity:
+        raise ValueError("resolved source identity changed during execution")
 
     states = tuple(
         {str(stock_id): value for stock_id, value in state.values.items()}
@@ -349,7 +429,6 @@ def execute_baseline_to_files(
         policy=policy,
     )
 
-    resolved_output = _resolve(root, output_path)
     resolved_output.parent.mkdir(parents=True, exist_ok=True)
     output_bytes = _canonical_json_bytes(document)
     resolved_output.write_bytes(output_bytes)
@@ -362,27 +441,12 @@ def execute_baseline_to_files(
         source_commit=source_identity.commit,
         source_tree=source_identity.tree,
         source_worktree_clean=True,
-        scenario=ArtifactBinding(
-            path=_display_path(root, resolved_scenario),
-            sha256=_sha256(resolved_scenario),
-        ),
-        data_bundle=ArtifactBinding(
-            path=_display_path(root, resolved_bundle),
-            sha256=_sha256(resolved_bundle),
-        ),
+        scenario=runtime_inputs_after.scenario,
+        data_bundle=runtime_inputs_after.data_bundle,
         dataset_inputs=dataset_inputs_after,
-        parameter_set=ArtifactBinding(
-            path=_display_path(root, resolved_parameters),
-            sha256=_sha256(resolved_parameters),
-        ),
-        region_set=ArtifactBinding(
-            path=_display_path(root, resolved_region_set),
-            sha256=_sha256(resolved_region_set),
-        ),
-        cohort_set=ArtifactBinding(
-            path=_display_path(root, resolved_cohort_set),
-            sha256=_sha256(resolved_cohort_set),
-        ),
+        parameter_set=runtime_inputs_after.parameter_set,
+        region_set=runtime_inputs_after.region_set,
+        cohort_set=runtime_inputs_after.cohort_set,
         solver=SolverIdentity(
             name="RK4Solver",
             version="WORLD_ZERO_RK4_V0",
@@ -399,7 +463,6 @@ def execute_baseline_to_files(
         ),
     )
 
-    resolved_receipt = _resolve(root, receipt_path)
     resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
     resolved_receipt.write_bytes(_canonical_json_bytes(receipt))
     return receipt

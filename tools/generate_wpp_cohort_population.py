@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from worldzero.data import (
+    DatasetAdmissionStatus,
     extract_macroregion_cohort_population_bytes,
     load_age_cohort_manifest,
     load_dataset_manifest,
@@ -25,11 +26,12 @@ REGION_MAPPING = Path("regions/mappings/WPP2024_PARENT_TO_WZ_MACROREGION_V0.yaml
 
 def generate(raw_path: Path, *, year: int, output_path: Path) -> dict[str, object]:
     raw_manifest = load_dataset_manifest(RAW_MANIFEST)
+    if raw_manifest.admission_status is not DatasetAdmissionStatus.ADMITTED:
+        raise ValueError("raw WPP source manifest must be ADMITTED")
+    if raw_manifest.content_length_bytes is None:
+        raise ValueError("admitted raw WPP source manifest must bind content length")
     raw_bytes = raw_path.read_bytes()
-    if (
-        raw_manifest.content_length_bytes is not None
-        and len(raw_bytes) != raw_manifest.content_length_bytes
-    ):
+    if len(raw_bytes) != raw_manifest.content_length_bytes:
         raise ValueError("raw WPP payload length does not match admitted manifest")
     if not verify_payload_digest(raw_bytes, raw_manifest.content_sha256):
         raise ValueError("raw WPP payload digest does not match admitted manifest")

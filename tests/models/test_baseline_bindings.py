@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+import worldzero.models.execution as execution_module
 from worldzero.data.derived import load_derived_dataset_manifest
 from worldzero.models.bindings import (
     BaselineDataBundleManifest,
@@ -135,6 +136,7 @@ def _write_ready_bundle(
     *,
     total_manifest: Path,
     cohort_manifest: Path,
+    tolerance_persons: float = 0,
 ) -> tuple[str, Path]:
     data_manifest_id = "SYNTHETIC_READY_DATA_BUNDLE"
     bundle_payload = {
@@ -144,7 +146,7 @@ def _write_ready_bundle(
         "region_set_version": "WZ_MACROREGION_V0",
         "cohort_set_version": "WZ_AGE_COHORT_V0",
         "year": 2026,
-        "population_reconciliation_tolerance_persons": 0,
+        "population_reconciliation_tolerance_persons": tolerance_persons,
         "bindings": [
             {
                 "role": "POPULATION_TOTAL",
@@ -221,6 +223,16 @@ def test_provisional_parameter_set_is_explicitly_modeling_assumption_only():
     assert parameters.region_overrides == {}
 
 
+def test_ready_bundle_rejects_unbounded_reconciliation_tolerance(tmp_path: Path):
+    with pytest.raises(ValueError, match="tolerance exceeds V0 ceiling"):
+        _write_ready_bundle(
+            tmp_path,
+            total_manifest=Path("total.yaml"),
+            cohort_manifest=Path("cohort.yaml"),
+            tolerance_persons=101,
+        )
+
+
 def test_ready_bundle_rejects_non_admitted_population_manifest(tmp_path: Path):
     total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
     payload = yaml.safe_load(total_manifest.read_text(encoding="utf-8"))
@@ -259,6 +271,78 @@ def test_ready_bundle_rejects_non_person_population_units(tmp_path: Path):
             root=tmp_path,
             bundle=bundle,
             region_ids=regions.ids,
+        )
+
+
+def test_runtime_receipt_rejects_control_change_during_execution(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    data_manifest_id, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    scenario_path = _write_synthetic_scenario(
+        tmp_path,
+        data_manifest_id=data_manifest_id,
+        parameter_set_id=parameters.parameter_set_id,
+    )
+
+    real_run = execution_module.run_world_zero_v0
+
+    def mutating_run(config):
+        result = real_run(config)
+        payload = yaml.safe_load(scenario_path.read_text(encoding="utf-8"))
+        payload["notes"] = "mutated during execution"
+        scenario_path.write_text(
+            yaml.safe_dump(payload, sort_keys=False),
+            encoding="utf-8",
+        )
+        return result
+
+    monkeypatch.setattr(execution_module, "run_world_zero_v0", mutating_run)
+    with pytest.raises(ValueError, match="control inputs changed during execution"):
+        execute_baseline_to_files(
+            root=tmp_path,
+            scenario_path=scenario_path,
+            data_bundle_path=bundle_path,
+            parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+            output_path=tmp_path / "runs" / "result.json",
+            receipt_path=tmp_path / "runs" / "receipt.json",
+            source_root=Path.cwd(),
+            region_set_path=REGIONS.resolve(),
+            cohort_set_path=COHORTS.resolve(),
+        )
+
+
+def test_runtime_receipt_refuses_output_aliasing_an_input(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    data_manifest_id, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    scenario_path = _write_synthetic_scenario(
+        tmp_path,
+        data_manifest_id=data_manifest_id,
+        parameter_set_id=parameters.parameter_set_id,
+    )
+
+    with pytest.raises(ValueError, match="must not overwrite runtime inputs"):
+        execute_baseline_to_files(
+            root=tmp_path,
+            scenario_path=scenario_path,
+            data_bundle_path=bundle_path,
+            parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+            output_path=scenario_path,
+            receipt_path=tmp_path / "runs" / "receipt.json",
+            source_root=Path.cwd(),
+            region_set_path=REGIONS.resolve(),
+            cohort_set_path=COHORTS.resolve(),
         )
 
 
