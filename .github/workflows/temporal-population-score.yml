@@ -1,0 +1,75 @@
+name: Execute frozen temporal population score
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/temporal-population-score.yml
+      - data/bundles/WORLD_ZERO_2022_TEMPORAL_VALIDATION_DATA_V1.yaml
+      - data/derived/wpp2024/WZ_MACROREGION_V0_cohort_population_2022.csv
+      - data/derived/wpp2024/WZ_MACROREGION_V0_cohort_population_2023.csv
+      - data/manifests/WZ_WPP_2024_MACROREGION_COHORT_POPULATION_2022_V1.yaml
+      - data/manifests/WZ_WPP_2024_MACROREGION_POPULATION_2022_V1.yaml
+      - scenarios/2022_to_2023_temporal_score_v1.yaml
+      - scenarios/parameters/WORLD_ZERO_2022_TEMPORAL_SCORE_PROVISIONAL_V1.yaml
+      - science/evidence/WZ_DEMOGRAPHY_2022_2023_TEMPORAL_EVIDENCE_V1.yaml
+      - science/partitions/WZ_DEMOGRAPHY_2022_2023_TEMPORAL_HOLDOUT_V1.yaml
+      - science/scoring/WZ_DEMOGRAPHY_2022_TO_2023_TEMPORAL_SCORE_CONTRACT_V1.yaml
+      - src/worldzero/models/execution.py
+      - src/worldzero/validation/temporal_population.py
+      - tools/run_temporal_population_score.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: world-zero-temporal-score-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  score-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify committed Linux wheelhouse
+        run: python -m tools.verify_wheelhouse third_party/wheels/cp312-manylinux_x86_64
+      - name: Reconstruct Linux environment offline
+        run: python -m tools.bootstrap_offline --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --venv "${{ runner.temp }}/wz-temporal"
+      - name: Execute and score frozen subject
+        run: '"${{ runner.temp }}/wz-temporal/bin/python" -m tools.run_temporal_population_score --expected-source-commit "${{ github.event.pull_request.head.sha || github.sha }}"'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wz-temporal-score-linux
+          path: runs/WORLD_ZERO_2022_TO_2023_TEMPORAL_SCORE_V1
+          if-no-files-found: error
+
+  score-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify committed Windows wheelhouse
+        run: python -m tools.verify_wheelhouse third_party/wheels/cp312-win_amd64
+      - name: Reconstruct Windows environment offline
+        run: python -m tools.bootstrap_offline --wheelhouse third_party/wheels/cp312-win_amd64 --venv "${{ runner.temp }}\wz-temporal"
+      - name: Execute and score frozen subject
+        shell: pwsh
+        run: |
+          $python = Join-Path "${{ runner.temp }}" "wz-temporal\Scripts\python.exe"
+          & $python -m tools.run_temporal_population_score --expected-source-commit "${{ github.event.pull_request.head.sha || github.sha }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wz-temporal-score-windows
+          path: runs/WORLD_ZERO_2022_TO_2023_TEMPORAL_SCORE_V1
+          if-no-files-found: error
