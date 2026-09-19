@@ -47,7 +47,7 @@ class TemporalPopulationComparisonContract(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def validate_contract(self) -> "TemporalPopulationComparisonContract":
+    def validate_contract(self) -> TemporalPopulationComparisonContract:
         if self.target_year <= self.max_fit_evidence_year:
             raise ValueError(
                 "target year must be strictly after every fitting-evidence year"
