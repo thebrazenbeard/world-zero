@@ -1,0 +1,13 @@
+schema_version: WORLD_ZERO_SCENARIO_V1
+scenario_id: WORLD_ZERO_2022_2023_PROVISIONAL_TEMPORAL_BENCHMARK_V1
+scenario_class: NATIVE_BASELINE
+status: EXECUTABLE
+start: 2022.0
+stop: 2023.0
+dt: 0.25
+region_set_version: WZ_MACROREGION_V0
+data_manifest_id: WORLD_ZERO_2022_TEMPORAL_BENCHMARK_DATA_V1
+parameter_set_id: WORLD_ZERO_2026_PROVISIONAL_EXECUTION_V1
+reference_artifact: null
+reference_sha256: null
+notes: Pre-holdout benchmark trajectory. Initializes only from admitted 2022 population evidence and reuses the already-frozen provisional V0 parameter set without tuning. Execution must complete and freeze its result digest before any 2023 temporal holdout evidence is loaded for scoring.
