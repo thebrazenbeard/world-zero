@@ -32,7 +32,7 @@ class PopulationEvidenceObservation(BaseModel):
     evidence_covariance_group_id: str = Field(min_length=1)
 
     @model_validator(mode="after")
-    def validate_role_coordinates(self) -> "PopulationEvidenceObservation":
+    def validate_role_coordinates(self) -> PopulationEvidenceObservation:
         if self.role == "POPULATION_TOTAL" and self.cohort_id is not None:
             raise ValueError("total-population observation cannot bind cohort_id")
         if self.role == "POPULATION_COHORT":
@@ -54,7 +54,7 @@ class PopulationEvidenceCatalog(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def validate_unique_observation_ids(self) -> "PopulationEvidenceCatalog":
+    def validate_unique_observation_ids(self) -> PopulationEvidenceCatalog:
         ids = [item.observation_id for item in self.observations]
         duplicates = sorted({item for item in ids if ids.count(item) > 1})
         if duplicates:
