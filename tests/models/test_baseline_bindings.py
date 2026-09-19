@@ -17,7 +17,10 @@ from worldzero.models.bindings import (
     load_baseline_parameter_set,
     resolve_baseline_population,
 )
-from worldzero.models.execution import execute_baseline_to_files
+from worldzero.models.execution import (
+    _execute_baseline_to_files_in_process,
+    execute_baseline_to_files,
+)
 from worldzero.models.world_zero_v0 import run_world_zero_v0
 from worldzero.regions.definitions import load_region_set_manifest
 from worldzero.sectors.demography import AgeCohort
@@ -366,7 +369,7 @@ def test_runtime_snapshot_defeats_restored_control_aba(
 
     output_path = tmp_path / "runs" / "result.json"
     receipt_path = tmp_path / "runs" / "receipt.json"
-    execute_baseline_to_files(
+    _execute_baseline_to_files_in_process(
         root=tmp_path,
         scenario_path=scenario_path,
         data_bundle_path=bundle_path,
@@ -376,6 +379,8 @@ def test_runtime_snapshot_defeats_restored_control_aba(
         source_root=Path.cwd(),
         region_set_path=REGIONS.resolve(),
         cohort_set_path=COHORTS.resolve(),
+        _attested_fresh_source=True,
+        _output_policy_source_root=Path.cwd(),
     )
 
     result_document = json.loads(output_path.read_text(encoding="utf-8"))
@@ -414,7 +419,7 @@ def test_runtime_receipt_rejects_control_change_during_execution(
 
     monkeypatch.setattr(execution_module, "run_world_zero_v0", mutating_run)
     with pytest.raises(ValueError, match="control inputs changed during execution"):
-        execute_baseline_to_files(
+        _execute_baseline_to_files_in_process(
             root=tmp_path,
             scenario_path=scenario_path,
             data_bundle_path=bundle_path,
@@ -424,6 +429,8 @@ def test_runtime_receipt_rejects_control_change_during_execution(
             source_root=Path.cwd(),
             region_set_path=REGIONS.resolve(),
             cohort_set_path=COHORTS.resolve(),
+            _attested_fresh_source=True,
+            _output_policy_source_root=Path.cwd(),
         )
 
 
@@ -548,6 +555,7 @@ def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
     assert receipt.source_commit == _git("rev-parse", "HEAD")
     assert receipt.source_tree == _git("rev-parse", "HEAD^{tree}")
     assert receipt.source_worktree_clean is True
+    assert receipt.execution_source_mode == "FRESH_LOCAL_CLONE"
     assert receipt.result.sha256 == hashlib.sha256(output_path.read_bytes()).hexdigest()
 
     by_role = {item.role: item for item in receipt.dataset_inputs}
@@ -573,6 +581,43 @@ def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
     assert receipt_document["source_commit"] == _git("rev-parse", "HEAD")
     assert len(receipt_document["dataset_inputs"]) == 2
 
+
+
+def test_strong_receipt_ignores_poisoned_caller_execution_module(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    data_manifest_id, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    scenario_path = _write_synthetic_scenario(
+        tmp_path,
+        data_manifest_id=data_manifest_id,
+        parameter_set_id=parameters.parameter_set_id,
+    )
+
+    def poisoned_run(_config):
+        raise AssertionError("caller-cached World Zero code must not execute")
+
+    monkeypatch.setattr(execution_module, "run_world_zero_v0", poisoned_run)
+
+    receipt = execute_baseline_to_files(
+        root=tmp_path,
+        scenario_path=scenario_path,
+        data_bundle_path=bundle_path,
+        parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+        output_path=tmp_path / "runs" / "result.json",
+        receipt_path=tmp_path / "runs" / "receipt.json",
+        source_root=Path.cwd(),
+        region_set_path=REGIONS.resolve(),
+        cohort_set_path=COHORTS.resolve(),
+    )
+
+    assert receipt.execution_source_mode == "FRESH_LOCAL_CLONE"
 
 def test_canonical_baseline_builds_and_runs_with_provisional_bindings():
     config = build_world_zero_v0_config(
@@ -609,6 +654,7 @@ def test_canonical_runtime_receipt_binds_real_projection_inputs(tmp_path: Path):
 
     assert receipt.claim_class == "RUNNABLE_SOURCE_REPRODUCIBLE_ONLY"
     assert receipt.source_worktree_clean is True
+    assert receipt.execution_source_mode == "FRESH_LOCAL_CLONE"
     assert receipt.scenario.path == "scenarios/2026_baseline.yaml"
     assert receipt.data_bundle.path == CANONICAL_BUNDLE.as_posix()
 
