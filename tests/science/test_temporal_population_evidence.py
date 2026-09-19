@@ -96,7 +96,6 @@ def test_partition_object_rejects_initialization_holdout_overlap() -> None:
         )
 
 
-
 def test_2022_cohort_total_reconciliation_is_exact_and_descriptive() -> None:
     total_path = Path("data/derived/wpp2024/WZ_MACROREGION_V0_population_2022.csv")
     cohort_path = Path(
