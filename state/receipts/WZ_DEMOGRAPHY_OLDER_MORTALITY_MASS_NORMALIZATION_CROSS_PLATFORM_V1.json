@@ -1,0 +1,40 @@
+{
+  "schema_id": "WZ_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_CROSS_PLATFORM_V1",
+  "exact_head": "9acf067d6c445d1dbd402f7e86d65d1acbd31b01",
+  "scientific_workflow_run": 35470778478,
+  "standard_ci_run": 35470778449,
+  "offline_qualification_run": 35470778463,
+  "standard_ci": {
+    "tests": "347/347 PASS",
+    "ruff": "PASS",
+    "mypy": "PASS (89 source files)"
+  },
+  "offline": {
+    "linux": "PASS",
+    "windows": "PASS"
+  },
+  "scientific": {
+    "linux_job": 105971236958,
+    "windows_job": 105971236888,
+    "linux": "PASS",
+    "windows": "PASS"
+  },
+  "artifacts": {
+    "linux": {
+      "id": 10592648131,
+      "zip_sha256": "c6b7035352733ec7beb85d8f3bf33cb5d22454f535491141bc9182e4b57f91bd"
+    },
+    "windows": {
+      "id": 10592463468,
+      "zip_sha256": "adc41aab564bab1cac06f5f45f4059382515b746b390a8fa15d4d84d5a914a50"
+    }
+  },
+  "payload_sha256": {
+    "baseline-terminal.json": "c790b9049661cfe9e29ce5e1383893a11545b71f287e4254dfb55842f4089d7d",
+    "candidate-terminal.json": "4ab315eb2f9b5ccc6d350250053dfe3f29c20c4496658e98f6cb73cd616bb9de",
+    "comparison-report.json": "15541cc66d55f8c6c028af7ac0dc349634d256323555b9abc749e28472e2432e",
+    "derivation-receipt.json": "108419f86841258b042d0463c11b8fd78b414b340c7d627be8df83b0a86efdf6",
+    "execution-receipt.json": "1933194fbf4693adbd3d682821beb8f11c3ed2ae367898eb46ffa115eb38a30c"
+  },
+  "scientific_payloads_byte_identical": true
+}
