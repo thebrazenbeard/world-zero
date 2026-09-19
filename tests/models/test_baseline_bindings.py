@@ -158,10 +158,18 @@ def _ready_bundle(
     )
 
 
-def test_canonical_data_bundle_remains_fail_closed_until_cohort_artifact_exists():
+def test_canonical_data_bundle_is_ready_with_both_population_bindings():
     bundle = load_baseline_data_bundle_manifest(CANONICAL_BUNDLE)
-    assert bundle.status == "BINDING_REQUIRED"
-    assert set(bundle.binding_by_role) == {"POPULATION_TOTAL"}
+    assert bundle.status == "READY"
+    assert set(bundle.binding_by_role) == {"POPULATION_TOTAL", "POPULATION_COHORT"}
+
+    regions = load_region_set_manifest(REGIONS).region_set
+    population = resolve_baseline_population(
+        root=Path("."),
+        bundle=bundle,
+        region_ids=regions.ids,
+    )
+    assert sum(sum(values.values()) for values in population.values()) == 8_300_678_587
 
 
 def test_provisional_parameter_set_is_explicitly_modeling_assumption_only():
@@ -301,6 +309,23 @@ def test_ready_bundle_builds_and_runs_native_v0_end_to_end(tmp_path: Path):
 
     assert result.native.global_population[0] == 40_000
     assert result.native.global_population[-1] == 40_000
+    assert len(result.native.times) > 1
+    assert len(result.food_trade) == len(result.native.times)
+    assert all(abs(item.mass_balance_difference) <= 1e-9 for item in result.food_trade)
+
+
+def test_canonical_baseline_builds_and_runs_with_provisional_bindings():
+    config = build_world_zero_v0_config(
+        root=Path("."),
+        scenario_path=Path("scenarios/2026_baseline.yaml"),
+        data_bundle_path=CANONICAL_BUNDLE,
+        parameter_set_path=CANONICAL_PARAMETERS,
+        region_set_path=REGIONS,
+        cohort_set_path=COHORTS,
+    )
+    result = run_world_zero_v0(config)
+
+    assert result.native.global_population[0] == 8_300_678_587
     assert len(result.native.times) > 1
     assert len(result.food_trade) == len(result.native.times)
     assert all(abs(item.mass_balance_difference) <= 1e-9 for item in result.food_trade)

@@ -1,6 +1,6 @@
 schema_version: WORLD_ZERO_DATA_BUNDLE_V1
 data_manifest_id: WORLD_ZERO_2026_BASELINE_DATA_V0
-status: BINDING_REQUIRED
+status: READY
 region_set_version: WZ_MACROREGION_V0
 cohort_set_version: WZ_AGE_COHORT_V0
 year: 2026
@@ -9,7 +9,10 @@ bindings:
 - role: POPULATION_TOTAL
   dataset_id: wz-wpp2024-macroregion-population-2026-v1
   manifest_path: data/manifests/WZ_WPP_2024_MACROREGION_POPULATION_2026_V1.yaml
-notes: The total-population bridge is admitted. The required 2026 cohort-population
-  artifact is intentionally absent until it is generated from the exact admitted WPP
-  age5 payload and admitted with full provenance. This bundle must remain BINDING_REQUIRED
-  until then.
+- role: POPULATION_COHORT
+  dataset_id: wz-wpp2024-macroregion-cohort-population-2026-v1
+  manifest_path: data/manifests/WZ_WPP_2024_MACROREGION_COHORT_POPULATION_2026_V1.yaml
+notes: Both required 2026 population bridge inputs are admitted and reconcile within
+  the frozen 100-person regional ceiling. READY means the data bundle is complete for
+  provisional execution only; all 2026 population evidence remains WPP projection
+  evidence and is not validation evidence.

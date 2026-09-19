@@ -1,13 +1,15 @@
 schema_version: WORLD_ZERO_SCENARIO_V1
 scenario_id: WORLD_ZERO_2026_BASELINE
 scenario_class: NATIVE_BASELINE
-status: DATA_BINDING_REQUIRED
+status: EXECUTABLE
 start: 2026.0
 stop: 2100.0
 dt: 0.25
 region_set_version: WZ_MACROREGION_V0
-data_manifest_id: null
-parameter_set_id: null
+data_manifest_id: WORLD_ZERO_2026_BASELINE_DATA_V0
+parameter_set_id: WORLD_ZERO_2026_PROVISIONAL_EXECUTION_V1
 reference_artifact: null
 reference_sha256: null
-notes: Native V0 baseline definition is intentionally non-executable until frozen data and parameter bindings exist.
+notes: Native V0 baseline is executable with fully bound 2026 population bridge data
+  and the explicit provisional execution parameter set. Executable does not mean
+  calibrated, validated, predictive, or forecast-qualified.
