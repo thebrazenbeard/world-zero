@@ -85,6 +85,17 @@ def test_holdout_selection_requires_governed_observation_binding():
         select_holdout(_partitions(), "holdout", observations={})
 
 
+def test_holdout_selection_rejects_mismatched_observation_identity():
+    from worldzero.validation.holdouts import select_holdout
+
+    with pytest.raises(ValueError, match="binding identity mismatch"):
+        select_holdout(
+            _partitions(),
+            "holdout",
+            observations={"h1": _observation("other")},
+        )
+
+
 def test_holdout_selection_rejects_validation_ineligible_observation():
     from worldzero.validation.holdouts import select_holdout
 
