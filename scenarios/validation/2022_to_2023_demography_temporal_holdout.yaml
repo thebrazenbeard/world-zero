@@ -1,0 +1,19 @@
+schema_version: WORLD_ZERO_SCENARIO_V1
+scenario_id: WORLD_ZERO_DEMOGRAPHY_2022_TO_2023_TEMPORAL_VALIDATION_V1
+scenario_class: NATIVE_BASELINE
+status: DATA_BINDING_REQUIRED
+start: 2022.0
+stop: 2023.0
+dt: 0.25
+region_set_version: WZ_MACROREGION_V0
+data_manifest_id: null
+parameter_set_id: null
+reference_artifact: null
+reference_sha256: null
+notes: >-
+  Temporal validation candidate only. The evaluated trajectory must initialize
+  from an admitted 2022 population bundle and reserve the governed 2023 cohort
+  cut for post-initialization comparison. This scenario is intentionally not
+  executable until the exact admitted 2022 cohort artifact and a compatible
+  2022 total-population artifact are frozen and bound. Executability would not
+  itself establish calibration, predictive validity, or forecast skill.
