@@ -1,5 +1,8 @@
+from pathlib import Path
+
 import pytest
 
+from worldzero.models.scenarios import load_scenario_manifest
 from worldzero.science.population_evidence import (
     PopulationEvidenceCatalog,
     PopulationEvidenceObservation,
@@ -92,14 +95,11 @@ def test_temporal_subject_accepts_complete_disjoint_2022_to_2023_cohort_cuts():
 
 
 def test_temporal_subject_requires_holdout_after_initialization():
+    payload = _subject().model_dump()
+    payload["initialization_year"] = 2023
+    payload["holdout_year"] = 2022
     with pytest.raises(ValueError, match="strictly after"):
-        _subject().model_copy(
-            update={"initialization_year": 2023, "holdout_year": 2022}
-        ).model_validate(
-            _subject()
-            .model_dump()
-            | {"initialization_year": 2023, "holdout_year": 2022}
-        )
+        TemporalPopulationValidationSubject.model_validate(payload)
 
 
 def test_temporal_subject_rejects_incomplete_initialization_cut():
@@ -149,3 +149,16 @@ def test_temporal_subject_rejects_direct_observation_id_overlap():
     payload["holdout_observation_ids"] = ("cohort-2022-north-child",)
     with pytest.raises(ValueError, match="initialization/temporal-holdout overlap"):
         TemporalPopulationValidationSubject.model_validate(payload)
+
+
+def test_2022_to_2023_candidate_scenario_stays_non_executable_until_binding_exists():
+    scenario = load_scenario_manifest(
+        Path("scenarios/validation/2022_to_2023_demography_temporal_holdout.yaml")
+    )
+    assert scenario.scenario_class == "NATIVE_BASELINE"
+    assert scenario.status == "DATA_BINDING_REQUIRED"
+    assert not scenario.executable
+    assert scenario.start == 2022.0
+    assert scenario.stop == 2023.0
+    assert scenario.data_manifest_id is None
+    assert scenario.parameter_set_id is None
