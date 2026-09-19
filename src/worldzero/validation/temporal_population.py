@@ -56,7 +56,7 @@ class TemporalPopulationScoringContract(BaseModel):
     notes: str | None = None
 
     @model_validator(mode="after")
-    def validate_contract(self) -> "TemporalPopulationScoringContract":
+    def validate_contract(self) -> TemporalPopulationScoringContract:
         if self.target_year <= self.initialization_year:
             raise ValueError("target year must be strictly after initialization year")
         if self.metrics != _METRICS:
