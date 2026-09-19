@@ -1,3 +1,4 @@
 *.whl -text
 tests/baseline/fixtures/*.csv text eol=lf
 data/derived/**/*.csv text eol=lf
+data/manifests/**/*.yaml text eol=lf
