@@ -30,6 +30,7 @@ class DerivedDatasetManifest(BaseModel):
     transform_version: str = Field(min_length=1)
     transform_code_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
     region_set_version: str = Field(min_length=1)
+    cohort_set_version: str | None = Field(default=None, min_length=1)
     years: tuple[int, ...] = Field(min_length=1)
     unit: str = Field(min_length=1)
     observation_class: Literal["DERIVED"]

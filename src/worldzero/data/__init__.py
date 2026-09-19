@@ -32,6 +32,7 @@ from .wpp2024 import (
 )
 
 __all__ = [
+    "COHORT_POPULATION_CSV_FIELDS",
     "WPP2024_AGE5_FIELDS",
     "WPP2024_ESTIMATE_END_YEAR",
     "WPP2024_PROJECTION_START_YEAR",
@@ -47,6 +48,7 @@ __all__ = [
     "ObservationSeries",
     "TransformRecord",
     "extract_macroregion_cohort_population",
+    "extract_macroregion_cohort_population_bytes",
     "extract_midyear_population",
     "extract_parent_group_midyear_population",
     "inspect_wpp2024",
@@ -55,12 +57,16 @@ __all__ = [
     "load_dataset_manifest",
     "load_derived_dataset_manifest",
     "per_capita",
+    "render_cohort_population_csv",
     "verify_payload_digest",
 ]
 
 from .wpp_age5 import (
+    COHORT_POPULATION_CSV_FIELDS,
     WPP2024_AGE5_FIELDS,
     CohortPopulationCut,
     extract_macroregion_cohort_population,
+    extract_macroregion_cohort_population_bytes,
     inspect_wpp_age5,
+    render_cohort_population_csv,
 )

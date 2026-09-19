@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import gzip
+import io
 from collections import defaultdict
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
     from worldzero.regions.mapping import RegionMappingManifest
 
 from .cohorts import AgeCohortManifest
+from .manifests import DatasetAdmissionStatus, DatasetManifest
 from .observations import ObservationClass, ObservationLineage
 from .wpp2024 import classify_wpp2024_year
 
@@ -46,11 +48,36 @@ WPP2024_AGE5_FIELDS = (
 )
 
 WPP2024_AGE5_VARIANT = "Medium"
+COHORT_POPULATION_CSV_FIELDS = (
+    "region_id",
+    "year",
+    "cohort_id",
+    "population_persons",
+    "source_observation_class",
+    "observation_class",
+    "validation_eligible",
+)
 
 
 @contextmanager
 def _reader(path: Path) -> Iterator[csv.DictReader]:
     with gzip.open(path, "rt", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if tuple(reader.fieldnames or ()) != WPP2024_AGE5_FIELDS:
+            raise ValueError("WPP age5 CSV schema does not match frozen contract")
+        yield reader
+
+
+@contextmanager
+def _reader_bytes(payload: bytes) -> Iterator[csv.DictReader]:
+    with (
+        gzip.GzipFile(fileobj=io.BytesIO(payload), mode="rb") as compressed,
+        io.TextIOWrapper(
+            compressed,
+            encoding="utf-8-sig",
+            newline="",
+        ) as handle,
+    ):
         reader = csv.DictReader(handle)
         if tuple(reader.fieldnames or ()) != WPP2024_AGE5_FIELDS:
             raise ValueError("WPP age5 CSV schema does not match frozen contract")
@@ -105,6 +132,30 @@ def _age_group_sort_key(label: str) -> int:
     return int(label.split("-", maxsplit=1)[0])
 
 
+def validate_wpp_age5_mapping_compatibility(
+    *,
+    mapping_source_manifest: DatasetManifest,
+    age5_manifest: DatasetManifest,
+    region_mapping: RegionMappingManifest,
+) -> None:
+    """Validate governed reuse of the WPP ParentID mapping on the age5 source."""
+
+    if mapping_source_manifest.admission_status is not DatasetAdmissionStatus.ADMITTED:
+        raise ValueError("region-mapping source manifest must be ADMITTED")
+    if age5_manifest.admission_status is not DatasetAdmissionStatus.ADMITTED:
+        raise ValueError("WPP age5 source manifest must be ADMITTED")
+    if region_mapping.source_dataset_id != mapping_source_manifest.dataset_id:
+        raise ValueError("region mapping source dataset does not match its admitted manifest")
+    if region_mapping.source_content_sha256 != mapping_source_manifest.content_sha256:
+        raise ValueError("region mapping source digest does not match its admitted manifest")
+    if region_mapping.source_group_field != "ParentID":
+        raise ValueError("WPP age5 region mapping must use ParentID")
+    if mapping_source_manifest.provider != age5_manifest.provider:
+        raise ValueError("WPP mapping and age5 sources must share the same provider")
+    if mapping_source_manifest.release_date != age5_manifest.release_date:
+        raise ValueError("WPP mapping and age5 sources must share the same release date")
+
+
 @dataclass(frozen=True, slots=True)
 class CohortPopulationCut:
     year: int
@@ -125,8 +176,8 @@ class CohortPopulationCut:
         return sum(self.values[region_id].values())
 
 
-def extract_macroregion_cohort_population(
-    path: Path,
+def _extract_macroregion_cohort_population(
+    reader: csv.DictReader,
     *,
     year: int,
     dataset_id: str,
@@ -144,39 +195,46 @@ def extract_macroregion_cohort_population(
     totals: dict[str, dict[AgeCohort, float]] = {
         region_id: {cohort: 0.0 for cohort in AgeCohort} for region_id in region_set.ids
     }
-    country_age_counts: defaultdict[str, int] = defaultdict(int)
+    country_age_groups: defaultdict[str, set[str]] = defaultdict(set)
+    country_parent_ids: dict[str, str] = {}
     seen_parent_groups: set[str] = set()
     seen_age_groups: set[str] = set()
     selected_rows = 0
 
-    with _reader(path) as reader:
-        for row in reader:
-            if row["Time"] != str(year) or not row["ISO3_code"]:
-                continue
-            if row["Variant"] != WPP2024_AGE5_VARIANT:
-                raise ValueError("unexpected WPP age5 variant")
-            parent_id = row["ParentID"]
-            if parent_id not in source_to_region:
-                raise ValueError(f"unmapped WPP parent group: {parent_id}")
-            age_group = row["AgeGrp"]
-            if age_group not in age_to_cohort:
-                raise ValueError(f"unmapped WPP age group: {age_group}")
-            raw_value = row["PopTotal"]
-            if not raw_value:
-                raise ValueError(f"missing PopTotal for {row['ISO3_code']} {year} {age_group}")
-            value = float(raw_value) * 1000.0
-            if value < 0:
-                raise ValueError("WPP age5 population must be nonnegative")
-            totals[source_to_region[parent_id]][age_to_cohort[age_group]] += value
-            country_age_counts[row["ISO3_code"]] += 1
-            seen_parent_groups.add(parent_id)
-            seen_age_groups.add(age_group)
-            selected_rows += 1
+    for row in reader:
+        if row["Time"] != str(year) or not row["ISO3_code"]:
+            continue
+        if row["Variant"] != WPP2024_AGE5_VARIANT:
+            raise ValueError("unexpected WPP age5 variant")
+        parent_id = row["ParentID"]
+        if parent_id not in source_to_region:
+            raise ValueError(f"unmapped WPP parent group: {parent_id}")
+        age_group = row["AgeGrp"]
+        if age_group not in age_to_cohort:
+            raise ValueError(f"unmapped WPP age group: {age_group}")
+        iso3_code = row["ISO3_code"]
+        previous_parent = country_parent_ids.setdefault(iso3_code, parent_id)
+        if previous_parent != parent_id:
+            raise ValueError(f"inconsistent WPP parent group for {iso3_code}")
+        if age_group in country_age_groups[iso3_code]:
+            raise ValueError(f"duplicate WPP age group for {iso3_code}: {age_group}")
+        raw_value = row["PopTotal"]
+        if not raw_value:
+            raise ValueError(f"missing PopTotal for {iso3_code} {year} {age_group}")
+        value = float(raw_value) * 1000.0
+        if value < 0:
+            raise ValueError("WPP age5 population must be nonnegative")
+        totals[source_to_region[parent_id]][age_to_cohort[age_group]] += value
+        country_age_groups[iso3_code].add(age_group)
+        seen_parent_groups.add(parent_id)
+        seen_age_groups.add(age_group)
+        selected_rows += 1
 
-    if len(country_age_counts) != 237:
+    if len(country_age_groups) != 237:
         raise ValueError("WPP age5 extraction must contain 237 country/area locations")
-    expected_age_count = len(age_to_cohort)
-    if any(count != expected_age_count for count in country_age_counts.values()):
+    expected_age_groups = set(age_to_cohort)
+    expected_age_count = len(expected_age_groups)
+    if any(groups != expected_age_groups for groups in country_age_groups.values()):
         raise ValueError("each country/area must contain every frozen age group exactly once")
     if selected_rows != 237 * expected_age_count:
         raise ValueError("unexpected WPP age5 country-row count")
@@ -205,3 +263,86 @@ def extract_macroregion_cohort_population(
             ),
         ),
     )
+
+
+def extract_macroregion_cohort_population(
+    path: Path,
+    *,
+    year: int,
+    dataset_id: str,
+    content_sha256: str,
+    region_mapping: RegionMappingManifest,
+    region_set: RegionSet,
+    cohort_manifest: AgeCohortManifest,
+) -> CohortPopulationCut:
+    with _reader(path) as reader:
+        return _extract_macroregion_cohort_population(
+            reader,
+            year=year,
+            dataset_id=dataset_id,
+            content_sha256=content_sha256,
+            region_mapping=region_mapping,
+            region_set=region_set,
+            cohort_manifest=cohort_manifest,
+        )
+
+
+def extract_macroregion_cohort_population_bytes(
+    payload: bytes,
+    *,
+    year: int,
+    dataset_id: str,
+    content_sha256: str,
+    region_mapping: RegionMappingManifest,
+    region_set: RegionSet,
+    cohort_manifest: AgeCohortManifest,
+) -> CohortPopulationCut:
+    """Extract a cohort cut from the exact already-verified gzip payload bytes."""
+
+    with _reader_bytes(payload) as reader:
+        return _extract_macroregion_cohort_population(
+            reader,
+            year=year,
+            dataset_id=dataset_id,
+            content_sha256=content_sha256,
+            region_mapping=region_mapping,
+            region_set=region_set,
+            cohort_manifest=cohort_manifest,
+        )
+
+
+def render_cohort_population_csv(cut: CohortPopulationCut) -> bytes:
+    """Render a cohort cut as deterministic UTF-8 CSV bytes."""
+
+    expected_cohorts = set(AgeCohort)
+    buffer = io.StringIO(newline="")
+    writer = csv.DictWriter(
+        buffer,
+        fieldnames=COHORT_POPULATION_CSV_FIELDS,
+        lineterminator="\n",
+    )
+    writer.writeheader()
+
+    for region_id, region_values in cut.values.items():
+        if set(region_values) != expected_cohorts:
+            raise ValueError("cohort population cut must contain every frozen cohort")
+        for cohort in AgeCohort:
+            value = float(region_values[cohort])
+            rounded = round(value)
+            if value < 0:
+                raise ValueError("cohort population must be nonnegative")
+            if abs(value - rounded) > 0.001:
+                raise ValueError("cohort population must resolve to whole persons")
+            writer.writerow(
+                {
+                    "region_id": region_id,
+                    "year": cut.year,
+                    "cohort_id": cohort.value,
+                    "population_persons": int(rounded),
+                    "source_observation_class": cut.observation_class.value,
+                    "observation_class": ObservationClass.DERIVED.value,
+                    "validation_eligible": str(cut.validation_eligible).lower(),
+                }
+            )
+
+    return buffer.getvalue().encode("utf-8")

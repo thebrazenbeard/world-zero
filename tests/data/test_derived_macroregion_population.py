@@ -24,6 +24,7 @@ def test_2023_derived_manifest_is_validation_eligible_and_exact():
     manifest = load_derived_dataset_manifest(MANIFEST_2023)
     assert manifest.source_observation_class is ObservationClass.OFFICIAL_ESTIMATE
     assert manifest.validation_eligible
+    assert manifest.cohort_set_version is None
     assert manifest.transform_code_commit == ("9956829a326b533670dd01eaa9cb4d1ce852fcb3")
     _verify_output(
         Path(manifest.output_path),
@@ -36,11 +37,20 @@ def test_2026_derived_manifest_is_bridge_only_and_exact():
     manifest = load_derived_dataset_manifest(MANIFEST_2026)
     assert manifest.source_observation_class is ObservationClass.PROJECTION
     assert not manifest.validation_eligible
+    assert manifest.cohort_set_version is None
     _verify_output(
         Path(manifest.output_path),
         manifest.output_sha256,
         manifest.output_length_bytes,
     )
+
+
+def test_derived_manifest_accepts_explicit_cohort_set_binding():
+    manifest = load_derived_dataset_manifest(MANIFEST_2023)
+    payload = manifest.model_dump(mode="python")
+    payload["cohort_set_version"] = "WZ_AGE_COHORT_V0"
+    rebound = DerivedDatasetManifest.model_validate(payload)
+    assert rebound.cohort_set_version == "WZ_AGE_COHORT_V0"
 
 
 def test_projection_derived_manifest_cannot_be_validation_eligible():
