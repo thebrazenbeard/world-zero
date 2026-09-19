@@ -1,11 +1,10 @@
+from tools.materialize_demography_temporal_split import render_macroregion_population_csv
 from worldzero.data.observations import (
     ObservationClass,
     ObservationLineage,
     ObservationSeries,
     TransformRecord,
 )
-
-from tools.materialize_demography_temporal_split import render_macroregion_population_csv
 
 
 def _series(
