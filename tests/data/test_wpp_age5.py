@@ -353,9 +353,22 @@ def test_cohort_reconciliation_reports_deltas_without_setting_acceptance_policy(
 
     bad = dict(expected)
     bad[regions.ids[0]] = float("nan")
-    with pytest.raises(ValueError, match="finite and nonnegative"):
+    with pytest.raises(ValueError, match="reconciliation totals must be finite and nonnegative"):
         reconcile_macroregion_cohort_population(
             cut,
             region_ids=regions.ids,
             expected_region_totals=bad,
+        )
+
+    poisoned_values = {
+        region_id: dict(region_values)
+        for region_id, region_values in cut.values.items()
+    }
+    poisoned_values[regions.ids[0]][AgeCohort.CHILD] = float("nan")
+    poisoned_cut = replace(cut, values=poisoned_values)
+    with pytest.raises(ValueError, match="cohort totals must be finite and nonnegative"):
+        reconcile_macroregion_cohort_population(
+            poisoned_cut,
+            region_ids=regions.ids,
+            expected_region_totals=expected,
         )
