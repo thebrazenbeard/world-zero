@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from worldzero.data.acquisition import _copy_verified_candidate
+from worldzero.data.acquisition import _copy_verified_candidate, fetch_admitted_dataset
 
 
 def _sha(payload: bytes) -> str:
@@ -80,3 +80,21 @@ def test_truncated_candidate_fails_before_publication(tmp_path: Path):
         )
 
     assert not output.exists()
+
+
+def test_fetch_refuses_to_overwrite_governed_manifest(tmp_path: Path):
+    manifest = tmp_path / "manifest.yaml"
+    manifest.write_text("not parsed because alias check runs first\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="must not overwrite"):
+        fetch_admitted_dataset(manifest, manifest)
+
+
+def test_fetch_refuses_manifest_hardlink_alias(tmp_path: Path):
+    manifest = tmp_path / "manifest.yaml"
+    manifest.write_text("not parsed because alias check runs first\n", encoding="utf-8")
+    output = tmp_path / "hardlink.bin"
+    output.hardlink_to(manifest)
+
+    with pytest.raises(ValueError, match="must not overwrite"):
+        fetch_admitted_dataset(manifest, output)

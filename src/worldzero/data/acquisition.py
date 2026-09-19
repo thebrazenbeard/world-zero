@@ -80,6 +80,17 @@ def _copy_verified_candidate(
             temporary_path.unlink(missing_ok=True)
 
 
+def _paths_alias(left: Path, right: Path) -> bool:
+    if left.resolve() == right.resolve():
+        return True
+    if not left.exists() or not right.exists():
+        return False
+    try:
+        return left.samefile(right)
+    except OSError as exc:
+        raise ValueError("dataset acquisition path identity could not be established") from exc
+
+
 def fetch_admitted_dataset(
     manifest_path: Path,
     output_path: Path,
@@ -88,6 +99,9 @@ def fetch_admitted_dataset(
     timeout_seconds: float = 120.0,
 ) -> VerifiedFetchResult:
     """Retrieve candidate bytes and publish them only after exact manifest verification."""
+
+    if _paths_alias(manifest_path, output_path):
+        raise ValueError("output path must not overwrite the governed source manifest")
 
     manifest = load_dataset_manifest(manifest_path)
     if manifest.admission_status is not DatasetAdmissionStatus.ADMITTED:
