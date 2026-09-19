@@ -50,11 +50,12 @@ jobs:
         run: python -m tools.verify_wheelhouse third_party/wheels/cp312-manylinux_x86_64
       - name: Reconstruct Linux environment offline
         run: python -m tools.bootstrap_offline --wheelhouse third_party/wheels/cp312-manylinux_x86_64 --venv .offline-verify/linux
-      - name: Qualify Linux reconstruction
-        run: |
-          .offline-verify/linux/bin/python -m pytest -q
-          .offline-verify/linux/bin/ruff check src tests tools
-          .offline-verify/linux/bin/mypy src/worldzero tools
+      - name: Test Linux reconstruction
+        run: .offline-verify/linux/bin/python -m pytest -q
+      - name: Lint Linux reconstruction
+        run: .offline-verify/linux/bin/ruff check src tests tools
+      - name: Type-check Linux reconstruction
+        run: .offline-verify/linux/bin/mypy src/worldzero tools
 
   qualify-windows:
     runs-on: windows-latest
@@ -69,9 +70,12 @@ jobs:
         run: python -m tools.verify_wheelhouse third_party/wheels/cp312-win_amd64
       - name: Reconstruct Windows environment offline
         run: python -m tools.bootstrap_offline --wheelhouse third_party/wheels/cp312-win_amd64 --venv .offline-verify/windows
-      - name: Qualify Windows reconstruction
+      - name: Test Windows reconstruction
         shell: pwsh
-        run: |
-          .\.offline-verify\windows\Scripts\python.exe -m pytest -q
-          .\.offline-verify\windows\Scripts\ruff.exe check src tests tools
-          .\.offline-verify\windows\Scripts\mypy.exe src/worldzero tools
+        run: .\.offline-verify\windows\Scripts\python.exe -m pytest -q
+      - name: Lint Windows reconstruction
+        shell: pwsh
+        run: .\.offline-verify\windows\Scripts\ruff.exe check src tests tools
+      - name: Type-check Windows reconstruction
+        shell: pwsh
+        run: .\.offline-verify\windows\Scripts\mypy.exe src/worldzero tools
