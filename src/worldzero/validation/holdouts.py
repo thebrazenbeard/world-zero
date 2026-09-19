@@ -40,6 +40,15 @@ def select_holdout(
                 "holdout observation(s) missing governed evidence binding: "
                 + ", ".join(missing)
             )
+        mismatched = sorted(
+            observation_id
+            for observation_id in partition.observation_ids
+            if observations[observation_id].observable_id != observation_id
+        )
+        if mismatched:
+            raise ValueError(
+                "holdout observation binding identity mismatch: " + ", ".join(mismatched)
+            )
         ineligible = sorted(
             observation_id
             for observation_id in partition.observation_ids
