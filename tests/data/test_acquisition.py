@@ -6,7 +6,6 @@ import pytest
 import yaml
 
 import worldzero.data.acquisition as acquisition_module
-
 from worldzero.data.acquisition import _copy_verified_candidate, fetch_admitted_dataset
 
 
