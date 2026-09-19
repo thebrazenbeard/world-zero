@@ -6,10 +6,10 @@ import hashlib
 import json
 import os
 import platform
-from importlib.metadata import version
 import subprocess
 import sys
 import tempfile
+from importlib.metadata import version
 from pathlib import Path
 from typing import Literal
 
