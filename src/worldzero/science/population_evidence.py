@@ -12,7 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from worldzero.data.derived import DerivedDatasetManifest, load_derived_dataset_manifest
 from worldzero.data.manifests import DatasetAdmissionStatus
-from worldzero.science.partitions import PartitionSet
+from worldzero.science.partitions import PartitionSet, assert_no_initialization_holdout_leakage
 from worldzero.sectors.demography import AgeCohort
 
 
@@ -160,7 +160,7 @@ def verify_population_evidence_partition(
     partition_set: PartitionSet,
 ) -> PartitionSet:
     catalog_by_id = {item.observation_id: item for item in catalog.observations}
-    assigned_ids = partition_set.calibration_ids | partition_set.final_holdout_ids
+    assigned_ids = partition_set.observation_ids
     catalog_ids = set(catalog_by_id)
 
     unknown_ids = sorted(assigned_ids - catalog_ids)
@@ -175,6 +175,11 @@ def verify_population_evidence_partition(
             "population evidence catalog contains unassigned observation ID(s): "
             + ", ".join(missing_ids)
         )
+
+    assert_no_initialization_holdout_leakage(
+        partition_set.initialization_ids,
+        partition_set.final_holdout_ids,
+    )
 
     ineligible_holdouts = sorted(
         observation_id
