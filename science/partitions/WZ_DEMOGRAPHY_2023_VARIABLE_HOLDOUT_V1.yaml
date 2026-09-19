@@ -1,0 +1,62 @@
+partition_set_id: WZ_DEMOGRAPHY_2023_VARIABLE_HOLDOUT_V1
+frozen_before_execution: true
+partitions:
+  - partition_id: WZ_DEMOGRAPHY_2023_TOTAL_CALIBRATION
+    partition_class: CALIBRATION
+    observation_ids:
+      - wz-pop-2023-total-north_america
+      - wz-pop-2023-total-latin_america_caribbean
+      - wz-pop-2023-total-western_northern_europe
+      - wz-pop-2023-total-eastern_europe_central_asia
+      - wz-pop-2023-total-middle_east_north_africa
+      - wz-pop-2023-total-sub_saharan_africa
+      - wz-pop-2023-total-south_asia
+      - wz-pop-2023-total-east_asia
+      - wz-pop-2023-total-southeast_asia
+      - wz-pop-2023-total-oceania
+    notes: Only regional total-population observations are permitted for this bounded calibration partition.
+  - partition_id: WZ_DEMOGRAPHY_2023_COHORT_VARIABLE_HOLDOUT
+    partition_class: VARIABLE_HOLDOUT
+    observation_ids:
+      - wz-pop-2023-cohort-north_america-child
+      - wz-pop-2023-cohort-north_america-young_adult
+      - wz-pop-2023-cohort-north_america-mature_adult
+      - wz-pop-2023-cohort-north_america-older_adult
+      - wz-pop-2023-cohort-latin_america_caribbean-child
+      - wz-pop-2023-cohort-latin_america_caribbean-young_adult
+      - wz-pop-2023-cohort-latin_america_caribbean-mature_adult
+      - wz-pop-2023-cohort-latin_america_caribbean-older_adult
+      - wz-pop-2023-cohort-western_northern_europe-child
+      - wz-pop-2023-cohort-western_northern_europe-young_adult
+      - wz-pop-2023-cohort-western_northern_europe-mature_adult
+      - wz-pop-2023-cohort-western_northern_europe-older_adult
+      - wz-pop-2023-cohort-eastern_europe_central_asia-child
+      - wz-pop-2023-cohort-eastern_europe_central_asia-young_adult
+      - wz-pop-2023-cohort-eastern_europe_central_asia-mature_adult
+      - wz-pop-2023-cohort-eastern_europe_central_asia-older_adult
+      - wz-pop-2023-cohort-middle_east_north_africa-child
+      - wz-pop-2023-cohort-middle_east_north_africa-young_adult
+      - wz-pop-2023-cohort-middle_east_north_africa-mature_adult
+      - wz-pop-2023-cohort-middle_east_north_africa-older_adult
+      - wz-pop-2023-cohort-sub_saharan_africa-child
+      - wz-pop-2023-cohort-sub_saharan_africa-young_adult
+      - wz-pop-2023-cohort-sub_saharan_africa-mature_adult
+      - wz-pop-2023-cohort-sub_saharan_africa-older_adult
+      - wz-pop-2023-cohort-south_asia-child
+      - wz-pop-2023-cohort-south_asia-young_adult
+      - wz-pop-2023-cohort-south_asia-mature_adult
+      - wz-pop-2023-cohort-south_asia-older_adult
+      - wz-pop-2023-cohort-east_asia-child
+      - wz-pop-2023-cohort-east_asia-young_adult
+      - wz-pop-2023-cohort-east_asia-mature_adult
+      - wz-pop-2023-cohort-east_asia-older_adult
+      - wz-pop-2023-cohort-southeast_asia-child
+      - wz-pop-2023-cohort-southeast_asia-young_adult
+      - wz-pop-2023-cohort-southeast_asia-mature_adult
+      - wz-pop-2023-cohort-southeast_asia-older_adult
+      - wz-pop-2023-cohort-oceania-child
+      - wz-pop-2023-cohort-oceania-young_adult
+      - wz-pop-2023-cohort-oceania-mature_adult
+      - wz-pop-2023-cohort-oceania-older_adult
+    notes: Age-cohort composition remains untouched by calibration under this partition.
+notes: Frozen before any calibration execution; no calibration or holdout PASS is implied.
