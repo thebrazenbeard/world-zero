@@ -144,7 +144,7 @@ def test_fetch_rejects_https_to_http_redirect(
     monkeypatch.setattr(
         acquisition_module,
         "urlopen",
-        lambda request, timeout: _FakeResponse(
+        lambda request, timeout_seconds: _FakeResponse(
             payload,
             url="http://mirror.example.invalid/source.bin",
         ),
@@ -165,10 +165,96 @@ def test_fetch_records_effective_https_redirect(
     monkeypatch.setattr(
         acquisition_module,
         "urlopen",
-        lambda request, timeout: _FakeResponse(payload, url=resolved_url),
+        lambda request, timeout_seconds: _FakeResponse(payload, url=resolved_url),
     )
 
     result = fetch_admitted_dataset(manifest, tmp_path / "source.bin")
 
     assert result.requested_url == "https://origin.example.invalid/source.bin"
     assert result.resolved_url == resolved_url
+
+
+
+def test_fetch_rejects_existing_output_without_explicit_replace(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    payload = b"fixture"
+    manifest = _write_admitted_fixture_manifest(tmp_path, payload)
+    output = tmp_path / "source.bin"
+    output.write_bytes(b"existing")
+
+    def unexpected_open(*args, **kwargs):
+        raise AssertionError("network should not be opened before overwrite policy is checked")
+
+    monkeypatch.setattr(acquisition_module, "_open_candidate", unexpected_open)
+    with pytest.raises(ValueError, match="explicit replace_existing=True"):
+        fetch_admitted_dataset(manifest, output)
+
+    assert output.read_bytes() == b"existing"
+
+
+def test_fetch_explicit_replace_still_requires_exact_candidate(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    payload = b"fixture"
+    manifest = _write_admitted_fixture_manifest(tmp_path, payload)
+    output = tmp_path / "source.bin"
+    output.write_bytes(b"existing")
+
+    monkeypatch.setattr(
+        acquisition_module,
+        "_open_candidate",
+        lambda request, timeout_seconds: _FakeResponse(
+            payload,
+            url="https://mirror.example.invalid/source.bin",
+        ),
+    )
+
+    result = fetch_admitted_dataset(manifest, output, replace_existing=True)
+    assert output.read_bytes() == payload
+    assert result.content_sha256 == _sha(payload)
+
+
+@pytest.mark.parametrize("timeout_seconds", [0.0, -1.0, float("inf"), float("nan")])
+def test_fetch_rejects_nonpositive_or_nonfinite_timeout(
+    tmp_path: Path,
+    timeout_seconds: float,
+):
+    payload = b"fixture"
+    manifest = _write_admitted_fixture_manifest(tmp_path, payload)
+
+    with pytest.raises(ValueError, match="finite and positive"):
+        fetch_admitted_dataset(
+            manifest,
+            tmp_path / "source.bin",
+            timeout_seconds=timeout_seconds,
+        )
+
+
+def test_fetch_rejects_url_credentials(tmp_path: Path):
+    payload = b"fixture"
+    manifest = _write_admitted_fixture_manifest(tmp_path, payload)
+
+    with pytest.raises(ValueError, match="must not contain URL credentials"):
+        fetch_admitted_dataset(
+            manifest,
+            tmp_path / "source.bin",
+            candidate_url="https://user:secret@example.invalid/source.bin",
+        )
+
+
+def test_redirect_handler_rejects_intermediate_http_downgrade():
+    handler = acquisition_module._HTTPSOnlyRedirectHandler()
+    request = acquisition_module.Request("https://origin.example.invalid/source.bin")
+
+    with pytest.raises(ValueError, match="redirect target"):
+        handler.redirect_request(
+            request,
+            None,
+            302,
+            "Found",
+            {},
+            "http://mirror.example.invalid/source.bin",
+        )

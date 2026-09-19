@@ -20,6 +20,11 @@ def main() -> int:
         help="Optional HTTPS mirror; exact admitted length and SHA-256 still govern acceptance",
     )
     parser.add_argument("--timeout-seconds", type=float, default=120.0)
+    parser.add_argument(
+        "--replace-existing",
+        action="store_true",
+        help="Allow replacement of an existing output only after exact length/SHA verification",
+    )
     args = parser.parse_args()
 
     result = fetch_admitted_dataset(
@@ -27,6 +32,7 @@ def main() -> int:
         args.output_path,
         candidate_url=args.candidate_url,
         timeout_seconds=args.timeout_seconds,
+        replace_existing=args.replace_existing,
     )
     print(
         json.dumps(

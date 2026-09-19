@@ -3,17 +3,37 @@
 from __future__ import annotations
 
 import hashlib
+import math
 import os
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import BinaryIO
 from urllib.parse import urlparse
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .manifests import DatasetAdmissionStatus, load_dataset_manifest
 
 _CHUNK_BYTES = 1024 * 1024
+
+
+def _validate_https_url(url: str, *, label: str) -> None:
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.netloc:
+        raise ValueError(f"{label} must be an absolute HTTPS URL")
+    if parsed.username is not None or parsed.password is not None:
+        raise ValueError(f"{label} must not contain URL credentials")
+
+
+class _HTTPSOnlyRedirectHandler(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        _validate_https_url(newurl, label="candidate redirect target")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def _open_candidate(request: Request, *, timeout_seconds: float):
+    opener = build_opener(_HTTPSOnlyRedirectHandler())
+    return opener.open(request, timeout=timeout_seconds)
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,11 +120,16 @@ def fetch_admitted_dataset(
     *,
     candidate_url: str | None = None,
     timeout_seconds: float = 120.0,
+    replace_existing: bool = False,
 ) -> VerifiedFetchResult:
     """Retrieve candidate bytes and publish them only after exact manifest verification."""
 
     if _paths_alias(manifest_path, output_path):
         raise ValueError("output path must not overwrite the governed source manifest")
+    if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+        raise ValueError("timeout_seconds must be finite and positive")
+    if output_path.exists() and not replace_existing:
+        raise ValueError("output path already exists; explicit replace_existing=True is required")
 
     manifest = load_dataset_manifest(manifest_path)
     if manifest.admission_status is not DatasetAdmissionStatus.ADMITTED:
@@ -113,9 +138,7 @@ def fetch_admitted_dataset(
         raise ValueError("admitted source manifest must bind content length")
 
     source_url = manifest.source_url if candidate_url is None else candidate_url
-    parsed = urlparse(source_url)
-    if parsed.scheme != "https" or not parsed.netloc:
-        raise ValueError("candidate URL must be an absolute HTTPS URL")
+    _validate_https_url(source_url, label="candidate URL")
 
     request = Request(
         source_url,
@@ -124,13 +147,11 @@ def fetch_admitted_dataset(
             "User-Agent": "world-zero/0.1 admitted-source-fetch",
         },
     )
-    with urlopen(request, timeout=timeout_seconds) as response:
+    with _open_candidate(request, timeout_seconds=timeout_seconds) as response:
         if response.status != 200:
             raise ValueError(f"candidate source returned HTTP {response.status}")
         resolved_url = response.geturl()
-        resolved = urlparse(resolved_url)
-        if resolved.scheme != "https" or not resolved.netloc:
-            raise ValueError("candidate redirect target must remain an absolute HTTPS URL")
+        _validate_https_url(resolved_url, label="candidate redirect target")
 
         declared_length = response.headers.get("Content-Length")
         if (
