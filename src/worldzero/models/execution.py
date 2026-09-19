@@ -245,7 +245,6 @@ def _runtime_dependency_versions() -> dict[str, str]:
     return {
         "PyYAML": version("PyYAML"),
         "pydantic": version("pydantic"),
-        "world-zero": version("world-zero"),
     }
 
 
