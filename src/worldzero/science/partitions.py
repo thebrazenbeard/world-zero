@@ -76,6 +76,10 @@ class PartitionSet(BaseModel):
             )
 
         assert_no_holdout_leakage(self.calibration_ids, self.final_holdout_ids)
+        assert_no_initialization_holdout_leakage(
+            self.initialization_ids,
+            self.final_holdout_ids,
+        )
         return self
 
     @property
