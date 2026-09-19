@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from worldzero.science.partitions import load_partition_set
+from worldzero.science.partitions import PartitionSet, load_partition_set
 from worldzero.science.population_evidence import (
     load_population_evidence_catalog,
     verify_population_evidence_catalog,
@@ -82,14 +82,13 @@ def test_partition_object_rejects_initialization_holdout_overlap() -> None:
     duplicated = initialization.observation_ids[0]
 
     with pytest.raises(ValueError, match="overlap"):
-        partition_set.model_copy(
-            update={
-                "partitions": (
-                    partition_set.partitions[0],
-                    initialization,
-                    holdout.model_copy(
-                        update={"observation_ids": (duplicated, *holdout.observation_ids)}
-                    ),
-                )
-            }
+        PartitionSet(
+            partition_set_id="tampered",
+            partitions=(
+                partition_set.partitions[0],
+                initialization,
+                holdout.model_copy(
+                    update={"observation_ids": (duplicated, *holdout.observation_ids)}
+                ),
+            ),
         )
