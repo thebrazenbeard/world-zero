@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import gzip
 import io
+import math
 from collections import defaultdict
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
@@ -174,6 +175,46 @@ class CohortPopulationCut:
 
     def region_total(self, region_id: str) -> float:
         return sum(self.values[region_id].values())
+
+
+@dataclass(frozen=True, slots=True)
+class CohortPopulationReconciliation:
+    year: int
+    region_differences: Mapping[str, float]
+    global_difference: float
+    max_abs_region_difference: float
+
+
+def reconcile_macroregion_cohort_population(
+    cut: CohortPopulationCut,
+    *,
+    region_ids: tuple[str, ...],
+    expected_region_totals: Mapping[str, float],
+) -> CohortPopulationReconciliation:
+    """Compare cohort sums with an independently governed regional-total cut."""
+
+    if tuple(cut.values) != region_ids:
+        raise ValueError("cohort cut region order must exactly match frozen region set")
+    if set(expected_region_totals) != set(region_ids):
+        raise ValueError("reconciliation totals must exactly cover frozen regions")
+
+    differences: dict[str, float] = {}
+    for region_id in region_ids:
+        actual = float(cut.region_total(region_id))
+        if not math.isfinite(actual) or actual < 0:
+            raise ValueError("cohort totals must be finite and nonnegative")
+        expected = float(expected_region_totals[region_id])
+        if not math.isfinite(expected) or expected < 0:
+            raise ValueError("reconciliation totals must be finite and nonnegative")
+        differences[region_id] = actual - expected
+
+    frozen_differences = MappingProxyType(differences)
+    return CohortPopulationReconciliation(
+        year=cut.year,
+        region_differences=frozen_differences,
+        global_difference=sum(differences.values()),
+        max_abs_region_difference=max(abs(value) for value in differences.values()),
+    )
 
 
 def _extract_macroregion_cohort_population(
