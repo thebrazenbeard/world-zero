@@ -291,3 +291,25 @@ def test_verified_candidate_no_replace_is_atomic_against_destination_race(tmp_pa
 
     assert output.read_bytes() == b"competing-writer"
     assert list(tmp_path.glob(".*.candidate")) == []
+
+
+@pytest.mark.parametrize(
+    "candidate_url",
+    [
+        "https://example.invalid/source.bin?token=secret",
+        "https://example.invalid/source.bin#secret",
+    ],
+)
+def test_fetch_rejects_query_parameters_and_fragments(
+    tmp_path: Path,
+    candidate_url: str,
+):
+    payload = b"fixture"
+    manifest = _write_admitted_fixture_manifest(tmp_path, payload)
+
+    with pytest.raises(ValueError, match="query parameters or fragments"):
+        fetch_admitted_dataset(
+            manifest,
+            tmp_path / "source.bin",
+            candidate_url=candidate_url,
+        )
