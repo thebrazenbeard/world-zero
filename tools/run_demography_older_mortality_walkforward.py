@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import math
 from collections.abc import Mapping
@@ -22,7 +21,7 @@ from tools.run_demography_migration_walkforward import (
     _source_identity,
     _verify_raw,
 )
-from worldzero.data.manifests import load_dataset_manifest
+from worldzero.data.manifests import DatasetManifest, load_dataset_manifest
 from worldzero.regions.definitions import load_region_set_manifest
 from worldzero.sectors.demography import AgeCohort, DemographyRates, MigrationLink
 from worldzero.validation.older_mortality_walkforward import (
@@ -60,7 +59,7 @@ def _infer_regional_older_mortality(
     root: Path,
     age5_raw: Path,
     demographic_raw: Path,
-    age5_manifest,
+    age5_manifest: DatasetManifest,
     transitions: tuple[tuple[int, int], tuple[int, int]],
     broad: Mapping[int, Mapping[str, Mapping[AgeCohort, float]]],
 ) -> tuple[dict[str, float], dict[str, Any]]:
