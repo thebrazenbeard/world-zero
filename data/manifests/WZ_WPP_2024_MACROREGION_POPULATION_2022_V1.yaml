@@ -1,0 +1,21 @@
+schema_id: WORLD_ZERO_DERIVED_DATASET_MANIFEST_V1
+dataset_id: wz-wpp2024-macroregion-population-2022-v1
+source_lineage:
+  - dataset_id: un-wpp-2024-demographic-indicators-medium-v1
+    content_sha256: 286ac36bb1415e2e1ade03acfef0a29f0e4c087e2f78e38c48f50c5df89082bc
+transform_id: WPP2024_PARENT_TO_WZ_MACROREGION_V0
+transform_version: 1.0.0
+transform_code_commit: da12f485bc2bf68d691da209375c1fd160c1623a
+region_set_version: WZ_MACROREGION_V0
+years: [2022]
+unit: persons
+observation_class: DERIVED
+source_observation_class: OFFICIAL_ESTIMATE
+validation_eligible: true
+output_path: data/derived/wpp2024/WZ_MACROREGION_V0_population_2022.csv
+output_sha256: 883b29e5d6745d99eee2973a16d4b398296f79f27cd7e4801f8c8c051de63aed
+output_length_bytes: 737
+generated_at: 2026-09-19T18:02:51Z
+admission_status: ADMITTED
+admission_record_id: WZ_WPP_2024_MACROREGION_POPULATION_2022_ADMISSION_V1
+notes: Derived from exact admitted WPP 2024 official-estimate year 2022; materialization reproduced the canonical 2023 control bytes before admission.

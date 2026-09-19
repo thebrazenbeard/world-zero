@@ -1,0 +1,11 @@
+region_id,year,population_persons,source_observation_class,observation_class,validation_eligible
+north_america,2022,380481776,OFFICIAL_ESTIMATE,DERIVED,true
+latin_america_caribbean,2022,654366789,OFFICIAL_ESTIMATE,DERIVED,true
+western_northern_europe,2022,457913616,OFFICIAL_ESTIMATE,DERIVED,true
+eastern_europe_central_asia,2022,368392743,OFFICIAL_ESTIMATE,DERIVED,true
+middle_east_north_africa,2022,562408591,OFFICIAL_ESTIMATE,DERIVED,true
+sub_saharan_africa,2022,1182163728,OFFICIAL_ESTIMATE,DERIVED,true
+south_asia,2022,2022467286,OFFICIAL_ESTIMATE,DERIVED,true
+east_asia,2022,1663264901,OFFICIAL_ESTIMATE,DERIVED,true
+southeast_asia,2022,684898413,OFFICIAL_ESTIMATE,DERIVED,true
+oceania,2022,45049350,OFFICIAL_ESTIMATE,DERIVED,true

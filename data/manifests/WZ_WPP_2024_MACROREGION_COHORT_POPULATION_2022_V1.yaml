@@ -1,0 +1,22 @@
+schema_id: WORLD_ZERO_DERIVED_DATASET_MANIFEST_V1
+dataset_id: wz-wpp2024-macroregion-cohort-population-2022-v1
+source_lineage:
+  - dataset_id: un-wpp-2024-population-age5-sex-medium-v1
+    content_sha256: a04d7d1486a5eb2832cc812d599448f0a71e8ac9e1e7e6fa4066673d6a2487cd
+transform_id: WPP2024_AGE5_TO_WZ_MACROREGION_COHORT_V0
+transform_version: 1.0.0
+transform_code_commit: da12f485bc2bf68d691da209375c1fd160c1623a
+region_set_version: WZ_MACROREGION_V0
+cohort_set_version: WZ_AGE_COHORT_V0
+years: [2022]
+unit: persons
+observation_class: DERIVED
+source_observation_class: OFFICIAL_ESTIMATE
+validation_eligible: true
+output_path: data/derived/wpp2024/WZ_MACROREGION_V0_cohort_population_2022.csv
+output_sha256: d352515702fe0e114e532ad5198678010f1c990fce0aefbb4e86016969c36e1f
+output_length_bytes: 3074
+generated_at: 2026-09-19T18:02:51Z
+admission_status: ADMITTED
+admission_record_id: WZ_WPP_2024_MACROREGION_COHORT_POPULATION_2022_ADMISSION_V1
+notes: Derived from exact admitted WPP 2024 official-estimate year 2022; materialization reproduced the canonical 2023 control bytes before admission.

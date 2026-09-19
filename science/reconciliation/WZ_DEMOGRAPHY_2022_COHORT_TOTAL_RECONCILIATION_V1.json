@@ -1,0 +1,22 @@
+{
+  "schema_id": "WZ_DEMOGRAPHY_COHORT_TOTAL_RECONCILIATION_V1",
+  "year": 2022,
+  "cohort_output_sha256": "d352515702fe0e114e532ad5198678010f1c990fce0aefbb4e86016969c36e1f",
+  "total_output_sha256": "883b29e5d6745d99eee2973a16d4b398296f79f27cd7e4801f8c8c051de63aed",
+  "region_differences_persons": {
+    "north_america": 6,
+    "latin_america_caribbean": 47,
+    "western_northern_europe": 26,
+    "eastern_europe_central_asia": -2,
+    "middle_east_north_africa": -3,
+    "sub_saharan_africa": 50,
+    "south_asia": 13,
+    "east_asia": 14,
+    "southeast_asia": 8,
+    "oceania": 36
+  },
+  "global_difference_persons": 195,
+  "max_abs_region_difference_persons": 50,
+  "acceptance_policy": null,
+  "notes": "Descriptive reconciliation only. Cohort sum minus total population from sibling admitted WPP 2024 source tables; no acceptance threshold or independent-source claim is created."
+}

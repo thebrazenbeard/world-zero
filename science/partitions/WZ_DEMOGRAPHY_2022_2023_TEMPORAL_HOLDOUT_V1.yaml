@@ -1,0 +1,103 @@
+partition_set_id: WZ_DEMOGRAPHY_2022_2023_TEMPORAL_HOLDOUT_V1
+frozen_before_execution: true
+notes: 2022-only pre-holdout evidence; 2023 cohort evidence is reserved exclusively for temporal holdout.
+partitions:
+  - partition_id: WZ_DEMOGRAPHY_2022_TOTAL_CALIBRATION_V1
+    partition_class: CALIBRATION
+    observation_ids:
+      - wz-pop-2022-total-north_america
+      - wz-pop-2022-total-latin_america_caribbean
+      - wz-pop-2022-total-western_northern_europe
+      - wz-pop-2022-total-eastern_europe_central_asia
+      - wz-pop-2022-total-middle_east_north_africa
+      - wz-pop-2022-total-sub_saharan_africa
+      - wz-pop-2022-total-south_asia
+      - wz-pop-2022-total-east_asia
+      - wz-pop-2022-total-southeast_asia
+      - wz-pop-2022-total-oceania
+  - partition_id: WZ_DEMOGRAPHY_2022_COHORT_INITIALIZATION_V1
+    partition_class: INITIALIZATION
+    observation_ids:
+      - wz-pop-2022-cohort-north_america-child
+      - wz-pop-2022-cohort-north_america-young_adult
+      - wz-pop-2022-cohort-north_america-mature_adult
+      - wz-pop-2022-cohort-north_america-older_adult
+      - wz-pop-2022-cohort-latin_america_caribbean-child
+      - wz-pop-2022-cohort-latin_america_caribbean-young_adult
+      - wz-pop-2022-cohort-latin_america_caribbean-mature_adult
+      - wz-pop-2022-cohort-latin_america_caribbean-older_adult
+      - wz-pop-2022-cohort-western_northern_europe-child
+      - wz-pop-2022-cohort-western_northern_europe-young_adult
+      - wz-pop-2022-cohort-western_northern_europe-mature_adult
+      - wz-pop-2022-cohort-western_northern_europe-older_adult
+      - wz-pop-2022-cohort-eastern_europe_central_asia-child
+      - wz-pop-2022-cohort-eastern_europe_central_asia-young_adult
+      - wz-pop-2022-cohort-eastern_europe_central_asia-mature_adult
+      - wz-pop-2022-cohort-eastern_europe_central_asia-older_adult
+      - wz-pop-2022-cohort-middle_east_north_africa-child
+      - wz-pop-2022-cohort-middle_east_north_africa-young_adult
+      - wz-pop-2022-cohort-middle_east_north_africa-mature_adult
+      - wz-pop-2022-cohort-middle_east_north_africa-older_adult
+      - wz-pop-2022-cohort-sub_saharan_africa-child
+      - wz-pop-2022-cohort-sub_saharan_africa-young_adult
+      - wz-pop-2022-cohort-sub_saharan_africa-mature_adult
+      - wz-pop-2022-cohort-sub_saharan_africa-older_adult
+      - wz-pop-2022-cohort-south_asia-child
+      - wz-pop-2022-cohort-south_asia-young_adult
+      - wz-pop-2022-cohort-south_asia-mature_adult
+      - wz-pop-2022-cohort-south_asia-older_adult
+      - wz-pop-2022-cohort-east_asia-child
+      - wz-pop-2022-cohort-east_asia-young_adult
+      - wz-pop-2022-cohort-east_asia-mature_adult
+      - wz-pop-2022-cohort-east_asia-older_adult
+      - wz-pop-2022-cohort-southeast_asia-child
+      - wz-pop-2022-cohort-southeast_asia-young_adult
+      - wz-pop-2022-cohort-southeast_asia-mature_adult
+      - wz-pop-2022-cohort-southeast_asia-older_adult
+      - wz-pop-2022-cohort-oceania-child
+      - wz-pop-2022-cohort-oceania-young_adult
+      - wz-pop-2022-cohort-oceania-mature_adult
+      - wz-pop-2022-cohort-oceania-older_adult
+  - partition_id: WZ_DEMOGRAPHY_2023_COHORT_TEMPORAL_HOLDOUT_V1
+    partition_class: TEMPORAL_HOLDOUT
+    observation_ids:
+      - wz-pop-2023-cohort-north_america-child
+      - wz-pop-2023-cohort-north_america-young_adult
+      - wz-pop-2023-cohort-north_america-mature_adult
+      - wz-pop-2023-cohort-north_america-older_adult
+      - wz-pop-2023-cohort-latin_america_caribbean-child
+      - wz-pop-2023-cohort-latin_america_caribbean-young_adult
+      - wz-pop-2023-cohort-latin_america_caribbean-mature_adult
+      - wz-pop-2023-cohort-latin_america_caribbean-older_adult
+      - wz-pop-2023-cohort-western_northern_europe-child
+      - wz-pop-2023-cohort-western_northern_europe-young_adult
+      - wz-pop-2023-cohort-western_northern_europe-mature_adult
+      - wz-pop-2023-cohort-western_northern_europe-older_adult
+      - wz-pop-2023-cohort-eastern_europe_central_asia-child
+      - wz-pop-2023-cohort-eastern_europe_central_asia-young_adult
+      - wz-pop-2023-cohort-eastern_europe_central_asia-mature_adult
+      - wz-pop-2023-cohort-eastern_europe_central_asia-older_adult
+      - wz-pop-2023-cohort-middle_east_north_africa-child
+      - wz-pop-2023-cohort-middle_east_north_africa-young_adult
+      - wz-pop-2023-cohort-middle_east_north_africa-mature_adult
+      - wz-pop-2023-cohort-middle_east_north_africa-older_adult
+      - wz-pop-2023-cohort-sub_saharan_africa-child
+      - wz-pop-2023-cohort-sub_saharan_africa-young_adult
+      - wz-pop-2023-cohort-sub_saharan_africa-mature_adult
+      - wz-pop-2023-cohort-sub_saharan_africa-older_adult
+      - wz-pop-2023-cohort-south_asia-child
+      - wz-pop-2023-cohort-south_asia-young_adult
+      - wz-pop-2023-cohort-south_asia-mature_adult
+      - wz-pop-2023-cohort-south_asia-older_adult
+      - wz-pop-2023-cohort-east_asia-child
+      - wz-pop-2023-cohort-east_asia-young_adult
+      - wz-pop-2023-cohort-east_asia-mature_adult
+      - wz-pop-2023-cohort-east_asia-older_adult
+      - wz-pop-2023-cohort-southeast_asia-child
+      - wz-pop-2023-cohort-southeast_asia-young_adult
+      - wz-pop-2023-cohort-southeast_asia-mature_adult
+      - wz-pop-2023-cohort-southeast_asia-older_adult
+      - wz-pop-2023-cohort-oceania-child
+      - wz-pop-2023-cohort-oceania-young_adult
+      - wz-pop-2023-cohort-oceania-mature_adult
+      - wz-pop-2023-cohort-oceania-older_adult
