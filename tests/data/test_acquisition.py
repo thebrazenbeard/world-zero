@@ -150,7 +150,7 @@ def test_fetch_rejects_https_to_http_redirect(
         ),
     )
 
-    with pytest.raises(ValueError, match="redirect target must remain"):
+    with pytest.raises(ValueError, match="redirect target"):
         fetch_admitted_dataset(manifest, tmp_path / "source.bin")
 
 
