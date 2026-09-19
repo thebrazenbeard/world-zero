@@ -589,3 +589,50 @@ def test_canonical_baseline_builds_and_runs_with_provisional_bindings():
     assert len(result.native.times) > 1
     assert len(result.food_trade) == len(result.native.times)
     assert all(abs(item.mass_balance_difference) <= 1e-9 for item in result.food_trade)
+
+
+def test_canonical_runtime_receipt_binds_real_projection_inputs(tmp_path: Path):
+    output_path = tmp_path / "canonical-result.json"
+    receipt_path = tmp_path / "canonical-receipt.json"
+
+    receipt = execute_baseline_to_files(
+        root=Path("."),
+        scenario_path=Path("scenarios/2026_baseline.yaml"),
+        data_bundle_path=CANONICAL_BUNDLE,
+        parameter_set_path=CANONICAL_PARAMETERS,
+        output_path=output_path,
+        receipt_path=receipt_path,
+        source_root=Path.cwd(),
+        region_set_path=REGIONS,
+        cohort_set_path=COHORTS,
+    )
+
+    assert receipt.claim_class == "RUNNABLE_SOURCE_REPRODUCIBLE_ONLY"
+    assert receipt.source_worktree_clean is True
+    assert receipt.scenario.path == "scenarios/2026_baseline.yaml"
+    assert receipt.data_bundle.path == CANONICAL_BUNDLE.as_posix()
+
+    inputs = {item.role: item for item in receipt.dataset_inputs}
+    assert set(inputs) == {"POPULATION_TOTAL", "POPULATION_COHORT"}
+    assert all(item.source_observation_class == "PROJECTION" for item in inputs.values())
+    assert all(not item.validation_eligible for item in inputs.values())
+
+    cohort = inputs["POPULATION_COHORT"]
+    assert cohort.dataset_id == "wz-wpp2024-macroregion-cohort-population-2026-v1"
+    assert cohort.output.sha256 == (
+        "a9ed5b83ca86700f42893e3929929afcded2bf4574b1e9b74807fc736a69a236"
+    )
+    assert cohort.source_lineage[0].content_sha256 == (
+        "a04d7d1486a5eb2832cc812d599448f0a71e8ac9e1e7e6fa4066673d6a2487cd"
+    )
+
+    result_document = json.loads(output_path.read_text(encoding="utf-8"))
+    receipt_document = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert result_document["scenario_id"] == "WORLD_ZERO_2026_BASELINE"
+    assert result_document["data_manifest_id"] == "WORLD_ZERO_2026_BASELINE_DATA_V0"
+    assert result_document["parameter_set_id"] == "WORLD_ZERO_2026_PROVISIONAL_EXECUTION_V1"
+    assert result_document["times"][0] == 2026.0
+    assert result_document["times"][-1] == 2100.0
+    assert receipt_document["claim_class"] == "RUNNABLE_SOURCE_REPRODUCIBLE_ONLY"
+    assert receipt_document["result"]["sha256"] == receipt.result.sha256
+
