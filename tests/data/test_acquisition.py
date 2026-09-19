@@ -258,3 +258,36 @@ def test_redirect_handler_rejects_intermediate_http_downgrade():
             {},
             "http://mirror.example.invalid/source.bin",
         )
+
+
+class _DestinationRacingStream(io.BytesIO):
+    def __init__(self, payload: bytes, *, output_path: Path):
+        super().__init__(payload)
+        self._output_path = output_path
+        self._raced = False
+
+    def read(self, size: int = -1) -> bytes:
+        chunk = super().read(size)
+        if chunk and not self._raced:
+            self._output_path.write_bytes(b"competing-writer")
+            self._raced = True
+        return chunk
+
+
+def test_verified_candidate_no_replace_is_atomic_against_destination_race(tmp_path: Path):
+    payload = b"verified-candidate"
+    output = tmp_path / "source.bin"
+    stream = _DestinationRacingStream(payload, output_path=output)
+
+    with pytest.raises(ValueError, match="appeared during retrieval"):
+        _copy_verified_candidate(
+            stream,
+            output_path=output,
+            dataset_id="fixture",
+            requested_url="https://example.invalid/source.bin",
+            expected_length=len(payload),
+            expected_sha256=_sha(payload),
+        )
+
+    assert output.read_bytes() == b"competing-writer"
+    assert list(tmp_path.glob(".*.candidate")) == []

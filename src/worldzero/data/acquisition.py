@@ -55,6 +55,7 @@ def _copy_verified_candidate(
     resolved_url: str | None = None,
     expected_length: int,
     expected_sha256: str,
+    replace_existing: bool = False,
 ) -> VerifiedFetchResult:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256()
@@ -88,8 +89,18 @@ def _copy_verified_candidate(
         if actual_sha256 != expected_sha256:
             raise ValueError("candidate payload digest does not match admitted manifest")
 
-        os.replace(temporary_path, output_path)
-        temporary_path = None
+        if replace_existing:
+            os.replace(temporary_path, output_path)
+            temporary_path = None
+        else:
+            try:
+                os.link(temporary_path, output_path)
+            except FileExistsError as exc:
+                raise ValueError(
+                    "output path appeared during retrieval; refusing implicit replacement"
+                ) from exc
+            temporary_path.unlink()
+            temporary_path = None
         return VerifiedFetchResult(
             dataset_id=dataset_id,
             requested_url=requested_url,
@@ -167,4 +178,5 @@ def fetch_admitted_dataset(
             resolved_url=resolved_url,
             expected_length=manifest.content_length_bytes,
             expected_sha256=manifest.content_sha256,
+            replace_existing=replace_existing,
         )
