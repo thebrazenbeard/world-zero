@@ -33,6 +33,14 @@ Frozen 2022 outputs:
 
 Their derived manifests bind source lineage, transform commit, output digest, output length, region/cohort semantics, and validation eligibility.
 
+## Cross-source reconciliation
+
+The independently materialized 2022 cohort and total cuts were reconciled descriptively in:
+
+`science/reconciliation/WZ_DEMOGRAPHY_2022_COHORT_TOTAL_RECONCILIATION_V1.json`
+
+The regional cohort-sum-minus-total differences range from **-3 to +50 persons**; the global difference is **+195 persons**, and the maximum absolute regional difference is **50 persons**. The report deliberately sets no acceptance threshold. It records consistency between sibling WPP 2024 source tables without promoting them to independent confirmations.
+
 ## Evidence-use firewall
 
 The temporal verifier requires:
