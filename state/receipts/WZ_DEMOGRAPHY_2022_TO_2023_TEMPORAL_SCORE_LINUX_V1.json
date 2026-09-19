@@ -1,0 +1,102 @@
+{
+  "schema_version": "WORLD_ZERO_RUNTIME_RECEIPT_V1",
+  "receipt_id": "WORLD_ZERO_2022_TO_2023_TEMPORAL_SCORE_V1:e6d81ab8769ab0e3",
+  "claim_class": "RUNNABLE_SOURCE_REPRODUCIBLE_ONLY",
+  "source_commit": "5fc814349d55ba676fe8750b2a41cc229b82f1f1",
+  "source_tree": "d771add596bd88abfc11408f77f74259115aeddf",
+  "source_worktree_clean": true,
+  "execution_source_mode": "FRESH_LOCAL_CLONE",
+  "scenario": {
+    "path": "scenarios/2022_to_2023_temporal_score_v1.yaml",
+    "sha256": "0348eeb22079dff541b8d2b84439e83bcc5ba1f39bcfeaf5bb1b5f06192a5d79"
+  },
+  "data_bundle": {
+    "path": "data/bundles/WORLD_ZERO_2022_TEMPORAL_VALIDATION_DATA_V1.yaml",
+    "sha256": "161271f7a977ac6b240ff3e2e649157418f5f5ed7b07a4d518052fb96fb36fd0"
+  },
+  "dataset_inputs": [
+    {
+      "role": "POPULATION_TOTAL",
+      "dataset_id": "wz-wpp2024-macroregion-population-2022-v1",
+      "manifest": {
+        "path": "data/manifests/WZ_WPP_2024_MACROREGION_POPULATION_2022_V1.yaml",
+        "sha256": "e1973a7d5a928a5cf95e55d6b39d58574500186378d74991d11c150e052bb9a6"
+      },
+      "output": {
+        "path": "data/derived/wpp2024/WZ_MACROREGION_V0_population_2022.csv",
+        "sha256": "883b29e5d6745d99eee2973a16d4b398296f79f27cd7e4801f8c8c051de63aed",
+        "length_bytes": 737
+      },
+      "source_lineage": [
+        {
+          "dataset_id": "un-wpp-2024-demographic-indicators-medium-v1",
+          "content_sha256": "286ac36bb1415e2e1ade03acfef0a29f0e4c087e2f78e38c48f50c5df89082bc"
+        }
+      ],
+      "transform_id": "WPP2024_PARENT_TO_WZ_MACROREGION_V0",
+      "transform_version": "1.0.0",
+      "transform_code_commit": "da12f485bc2bf68d691da209375c1fd160c1623a",
+      "region_set_version": "WZ_MACROREGION_V0",
+      "cohort_set_version": null,
+      "source_observation_class": "OFFICIAL_ESTIMATE",
+      "validation_eligible": true
+    },
+    {
+      "role": "POPULATION_COHORT",
+      "dataset_id": "wz-wpp2024-macroregion-cohort-population-2022-v1",
+      "manifest": {
+        "path": "data/manifests/WZ_WPP_2024_MACROREGION_COHORT_POPULATION_2022_V1.yaml",
+        "sha256": "30cdd4466a8503cd47f3e3717bdae50f3419f4a201a8631fc777017d31843ab7"
+      },
+      "output": {
+        "path": "data/derived/wpp2024/WZ_MACROREGION_V0_cohort_population_2022.csv",
+        "sha256": "d352515702fe0e114e532ad5198678010f1c990fce0aefbb4e86016969c36e1f",
+        "length_bytes": 3074
+      },
+      "source_lineage": [
+        {
+          "dataset_id": "un-wpp-2024-population-age5-sex-medium-v1",
+          "content_sha256": "a04d7d1486a5eb2832cc812d599448f0a71e8ac9e1e7e6fa4066673d6a2487cd"
+        }
+      ],
+      "transform_id": "WPP2024_AGE5_TO_WZ_MACROREGION_COHORT_V0",
+      "transform_version": "1.0.0",
+      "transform_code_commit": "da12f485bc2bf68d691da209375c1fd160c1623a",
+      "region_set_version": "WZ_MACROREGION_V0",
+      "cohort_set_version": "WZ_AGE_COHORT_V0",
+      "source_observation_class": "OFFICIAL_ESTIMATE",
+      "validation_eligible": true
+    }
+  ],
+  "parameter_set": {
+    "path": "scenarios/parameters/WORLD_ZERO_2022_TEMPORAL_SCORE_PROVISIONAL_V1.yaml",
+    "sha256": "6ee10aa31b02a4ae7508f56d298367a938b323836ba4ba70ac709480cbfe2868"
+  },
+  "region_set": {
+    "path": "regions/WZ_MACROREGION_V0.yaml",
+    "sha256": "55e7dc046bfab91a3b3c1d13843a3f66117664a8ded04840ae395d2333ca9f7c"
+  },
+  "cohort_set": {
+    "path": "data/cohorts/WZ_AGE_COHORT_V0.yaml",
+    "sha256": "ea55dc855ae55c07a21aac2882b603a9d4946b8b68480e8619d1784bc3d619b5"
+  },
+  "solver": {
+    "name": "RK4Solver",
+    "version": "WORLD_ZERO_RK4_V0",
+    "timestep": 0.25
+  },
+  "environment": {
+    "python_implementation": "cpython",
+    "python_version": "3.12.14",
+    "operating_system": "Linux",
+    "machine": "x86_64",
+    "dependencies": {
+      "PyYAML": "6.0.3",
+      "pydantic": "2.13.4"
+    }
+  },
+  "result": {
+    "path": "runs/WORLD_ZERO_2022_TO_2023_TEMPORAL_SCORE_V1/result.json",
+    "sha256": "e6d81ab8769ab0e3ada5fa209149b3692bc3967e19af2d1ea56ce27e8afb3851"
+  }
+}
