@@ -4,6 +4,7 @@ from worldzero.models.bindings import (
     build_world_zero_v0_config,
     load_baseline_parameter_set,
 )
+from worldzero.sectors.demography import AgeCohort
 from worldzero.validation.temporal_population import TemporalPopulationScoreReport
 from worldzero.validation.temporal_population_comparison import (
     compare_temporal_population_scores,
@@ -65,7 +66,13 @@ def test_structural_ageing_candidate_builds_from_2022_initialization_only() -> N
     assert config.native.start == 2022.0
     assert config.native.stop == 2023.0
     assert config.native.dt == 0.25
-    assert config.native.parameter_set_id == "WORLD_ZERO_2022_PRE2023_DYNAMICS_V1"
+    assert all(
+        rates.ageing[AgeCohort.CHILD] == 1.0 / 15.0
+        and rates.ageing[AgeCohort.YOUNG_ADULT] == 1.0 / 25.0
+        and rates.ageing[AgeCohort.MATURE_ADULT] == 1.0 / 25.0
+        and rates.ageing[AgeCohort.OLDER_ADULT] == 0.0
+        for rates in config.native.demography_rates.values()
+    )
 
 
 def test_comparison_requires_all_primary_metrics_and_global_error_gate() -> None:
