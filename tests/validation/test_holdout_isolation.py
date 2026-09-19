@@ -71,18 +71,33 @@ def test_holdout_selection_rejects_calibration_partition():
 
     observations = {"h1": _observation("h1")}
     assert (
-        select_holdout(_partitions(), "holdout", observations=observations).observation_ids
+        select_holdout(
+            _partitions(),
+            "holdout",
+            observations=observations,
+            initialization_observation_ids=(),
+        ).observation_ids
         == ("h1",)
     )
     with pytest.raises(ValueError, match="calibration"):
-        select_holdout(_partitions(), "cal", observations={})
+        select_holdout(
+            _partitions(),
+            "cal",
+            observations={},
+            initialization_observation_ids=(),
+        )
 
 
 def test_holdout_selection_requires_governed_observation_binding():
     from worldzero.validation.holdouts import select_holdout
 
     with pytest.raises(ValueError, match="missing governed evidence binding"):
-        select_holdout(_partitions(), "holdout", observations={})
+        select_holdout(
+            _partitions(),
+            "holdout",
+            observations={},
+            initialization_observation_ids=(),
+        )
 
 
 def test_holdout_selection_rejects_mismatched_observation_identity():
@@ -93,6 +108,7 @@ def test_holdout_selection_rejects_mismatched_observation_identity():
             _partitions(),
             "holdout",
             observations={"h1": _observation("other")},
+            initialization_observation_ids=(),
         )
 
 
@@ -104,6 +120,7 @@ def test_holdout_selection_rejects_validation_ineligible_observation():
             _partitions(),
             "holdout",
             observations={"h1": _observation("h1", validation_eligible=False)},
+            initialization_observation_ids=(),
         )
 
 
@@ -129,3 +146,40 @@ def test_calibration_runner_requests_only_frozen_calibration_terms():
     assert result.best_parameters["x"] == pytest.approx(5.0)
     assert result.best_objective == pytest.approx(0.0)
     assert requested == [("o1",), ("o1",), ("o1",)]
+
+
+
+def test_holdout_selection_rejects_initialization_evidence_overlap():
+    from worldzero.validation.holdouts import select_holdout
+
+    with pytest.raises(ValueError, match="consumed during initialization"):
+        select_holdout(
+            _partitions(),
+            "holdout",
+            observations={"h1": _observation("h1")},
+            initialization_observation_ids=("h1",),
+        )
+
+
+def test_holdout_selection_accepts_disjoint_initialization_evidence():
+    from worldzero.validation.holdouts import select_holdout
+
+    selection = select_holdout(
+        _partitions(),
+        "holdout",
+        observations={"h1": _observation("h1")},
+        initialization_observation_ids=("initial-2022",),
+    )
+    assert selection.observation_ids == ("h1",)
+
+
+def test_holdout_selection_requires_exact_initialization_id_tuple():
+    from worldzero.validation.holdouts import select_holdout
+
+    with pytest.raises(ValueError, match="exact tuple"):
+        select_holdout(
+            _partitions(),
+            "holdout",
+            observations={"h1": _observation("h1")},
+            initialization_observation_ids=["h1"],  # type: ignore[arg-type]
+        )
