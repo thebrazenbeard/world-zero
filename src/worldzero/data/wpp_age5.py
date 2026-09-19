@@ -200,10 +200,13 @@ def reconcile_macroregion_cohort_population(
 
     differences: dict[str, float] = {}
     for region_id in region_ids:
+        actual = float(cut.region_total(region_id))
+        if not math.isfinite(actual) or actual < 0:
+            raise ValueError("cohort totals must be finite and nonnegative")
         expected = float(expected_region_totals[region_id])
         if not math.isfinite(expected) or expected < 0:
             raise ValueError("reconciliation totals must be finite and nonnegative")
-        differences[region_id] = cut.region_total(region_id) - expected
+        differences[region_id] = actual - expected
 
     frozen_differences = MappingProxyType(differences)
     return CohortPopulationReconciliation(
