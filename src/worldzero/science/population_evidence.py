@@ -193,3 +193,42 @@ def verify_population_evidence_partition(
         )
 
     return partition_set
+
+
+
+def verify_temporal_population_evidence_partition(
+    *,
+    catalog: PopulationEvidenceCatalog,
+    partition_set: PartitionSet,
+) -> PartitionSet:
+    """Verify a strict pre-fit / later temporal-holdout evidence split."""
+
+    verify_population_evidence_partition(catalog=catalog, partition_set=partition_set)
+    catalog_by_id = {item.observation_id: item for item in catalog.observations}
+
+    temporal_partitions = [
+        partition
+        for partition in partition_set.partitions
+        if partition.partition_class == "TEMPORAL_HOLDOUT"
+    ]
+    if len(temporal_partitions) != 1:
+        raise ValueError("temporal validation requires exactly one TEMPORAL_HOLDOUT partition")
+
+    temporal_ids = set(temporal_partitions[0].observation_ids)
+    if temporal_ids != partition_set.final_holdout_ids:
+        raise ValueError("temporal validation cannot mix final holdout classes")
+
+    prefit_ids = partition_set.calibration_ids | partition_set.initialization_ids
+    if not prefit_ids:
+        raise ValueError("temporal validation requires pre-holdout evidence")
+    if not temporal_ids:
+        raise ValueError("temporal validation requires holdout evidence")
+
+    latest_prefit_year = max(catalog_by_id[item].year for item in prefit_ids)
+    earliest_holdout_year = min(catalog_by_id[item].year for item in temporal_ids)
+    if latest_prefit_year >= earliest_holdout_year:
+        raise ValueError(
+            "temporal holdout must occur strictly after all calibration and initialization evidence"
+        )
+
+    return partition_set
