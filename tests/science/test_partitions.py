@@ -4,6 +4,7 @@ from worldzero.science.partitions import (
     EvidencePartition,
     PartitionSet,
     assert_no_holdout_leakage,
+    load_partition_set,
 )
 
 
@@ -78,3 +79,23 @@ def test_partition_set_exposes_calibration_and_final_holdout_ids():
 def test_partition_classes_are_closed():
     with pytest.raises(ValueError):
         partition("BAD", "TRAININGISH", {"obs_1"})
+
+
+def test_partition_set_loads_frozen_yaml(tmp_path):
+    path = tmp_path / "partitions.yaml"
+    path.write_text(
+        "partition_set_id: P1\n"
+        "frozen_before_execution: true\n"
+        "partitions:\n"
+        "  - partition_id: CAL\n"
+        "    partition_class: CALIBRATION\n"
+        "    observation_ids: [obs_1]\n"
+        "  - partition_id: HOLD\n"
+        "    partition_class: VARIABLE_HOLDOUT\n"
+        "    observation_ids: [obs_2]\n",
+        encoding="utf-8",
+    )
+    loaded = load_partition_set(path)
+    assert loaded.partition_set_id == "P1"
+    assert loaded.calibration_ids == {"obs_1"}
+    assert loaded.final_holdout_ids == {"obs_2"}
