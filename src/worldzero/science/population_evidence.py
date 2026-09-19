@@ -153,7 +153,6 @@ def verify_population_evidence_catalog(
     return catalog
 
 
-
 def verify_population_evidence_partition(
     *,
     catalog: PopulationEvidenceCatalog,
@@ -193,7 +192,6 @@ def verify_population_evidence_partition(
         )
 
     return partition_set
-
 
 
 def verify_temporal_population_evidence_partition(
