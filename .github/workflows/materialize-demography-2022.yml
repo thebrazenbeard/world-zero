@@ -1,0 +1,50 @@
+name: Materialize 2022 demography temporal split
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/materialize-demography-2022.yml
+      - tools/materialize_demography_temporal_split.py
+
+permissions:
+  contents: read
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e .
+      - name: Fetch exact admitted WPP sources
+        run: |
+          mkdir -p .materialize/raw .materialize/out
+          python tools/fetch_admitted_dataset.py \
+            data/manifests/UN_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_V1.yaml \
+            .materialize/raw/WPP2024_Demographic_Indicators_Medium.csv.gz
+          python tools/fetch_admitted_dataset.py \
+            data/manifests/UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1.yaml \
+            .materialize/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
+      - name: Derive 2022 split and reproduce canonical 2023 controls
+        run: |
+          python tools/materialize_demography_temporal_split.py \
+            --demographic-raw .materialize/raw/WPP2024_Demographic_Indicators_Medium.csv.gz \
+            --age5-raw .materialize/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz \
+            --output-dir .materialize/out \
+            --transform-code-commit "${{ github.event.pull_request.head.sha }}"
+      - name: Emit governed materialization result
+        run: |
+          echo "===BEGIN_RECEIPT==="
+          cat .materialize/out/WZ_DEMOGRAPHY_2022_2023_TEMPORAL_SPLIT_RECEIPT_V1.json
+          echo "===END_RECEIPT==="
+          echo "===BEGIN_2022_TOTAL==="
+          cat .materialize/out/WZ_MACROREGION_V0_population_2022.csv
+          echo "===END_2022_TOTAL==="
+          echo "===BEGIN_2022_COHORT==="
+          cat .materialize/out/WZ_MACROREGION_V0_cohort_population_2022.csv
+          echo "===END_2022_COHORT==="
