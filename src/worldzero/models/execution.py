@@ -244,14 +244,34 @@ def _git(source_root: Path, *args: str) -> str:
     return completed.stdout.strip()
 
 
+def _repository_root(source_root: Path) -> Path:
+    requested_root = source_root.resolve()
+    return Path(_git(requested_root, "rev-parse", "--show-toplevel")).resolve()
+
+
+def _assert_runtime_output_locations(
+    source_root: Path,
+    *,
+    output_path: Path,
+    receipt_path: Path,
+) -> None:
+    repository_root = _repository_root(source_root)
+    runtime_root = (repository_root / "runs").resolve()
+
+    for path in (output_path.resolve(), receipt_path.resolve()):
+        if path.is_relative_to(repository_root) and not path.is_relative_to(runtime_root):
+            raise ValueError(
+                "runtime outputs inside the source checkout must stay under runs/"
+            )
+
+
 def _resolve_source_identity(
     source_root: Path,
     *,
     expected_commit: str | None,
     expected_tree: str | None,
 ) -> _ResolvedSourceIdentity:
-    requested_root = source_root.resolve()
-    repository_root = Path(_git(requested_root, "rev-parse", "--show-toplevel")).resolve()
+    repository_root = _repository_root(source_root)
     executing_module = Path(__file__).resolve()
     source_package_root = repository_root / "src"
     if not executing_module.is_relative_to(source_package_root):
@@ -506,6 +526,11 @@ def execute_baseline_to_files(
 
     resolved_output = _resolve(root, output_path).resolve()
     resolved_receipt = _resolve(root, receipt_path).resolve()
+    _assert_runtime_output_locations(
+        source_root,
+        output_path=resolved_output,
+        receipt_path=resolved_receipt,
+    )
     (
         scenario,
         bundle,

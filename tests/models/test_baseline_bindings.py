@@ -636,3 +636,62 @@ def test_canonical_runtime_receipt_binds_real_projection_inputs(tmp_path: Path):
     assert receipt_document["claim_class"] == "RUNNABLE_SOURCE_REPRODUCIBLE_ONLY"
     assert receipt_document["result"]["sha256"] == receipt.result.sha256
 
+
+def test_runtime_receipt_refuses_output_overwriting_tracked_source(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    data_manifest_id, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    scenario_path = _write_synthetic_scenario(
+        tmp_path,
+        data_manifest_id=data_manifest_id,
+        parameter_set_id=parameters.parameter_set_id,
+    )
+
+    with pytest.raises(ValueError, match="must stay under runs"):
+        execute_baseline_to_files(
+            root=tmp_path,
+            scenario_path=scenario_path,
+            data_bundle_path=bundle_path,
+            parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+            output_path=Path.cwd() / "tools" / "run_world_zero_baseline.py",
+            receipt_path=tmp_path / "receipt.json",
+            source_root=Path.cwd(),
+            region_set_path=REGIONS.resolve(),
+            cohort_set_path=COHORTS.resolve(),
+        )
+
+
+def test_runtime_receipt_refuses_unignored_output_inside_source_checkout(tmp_path: Path):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    data_manifest_id, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    scenario_path = _write_synthetic_scenario(
+        tmp_path,
+        data_manifest_id=data_manifest_id,
+        parameter_set_id=parameters.parameter_set_id,
+    )
+
+    forbidden_output = Path.cwd() / "runtime-output-must-not-appear.json"
+    assert not forbidden_output.exists()
+    with pytest.raises(ValueError, match="must stay under runs"):
+        execute_baseline_to_files(
+            root=tmp_path,
+            scenario_path=scenario_path,
+            data_bundle_path=bundle_path,
+            parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+            output_path=forbidden_output,
+            receipt_path=tmp_path / "receipt.json",
+            source_root=Path.cwd(),
+            region_set_path=REGIONS.resolve(),
+            cohort_set_path=COHORTS.resolve(),
+        )
+    assert not forbidden_output.exists()
+
