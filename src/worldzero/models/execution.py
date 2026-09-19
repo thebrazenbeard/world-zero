@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import platform
+from importlib.metadata import version
 import subprocess
 import sys
 import tempfile
@@ -113,6 +114,8 @@ class EnvironmentIdentity(BaseModel):
     python_implementation: str = Field(min_length=1)
     python_version: str = Field(min_length=1)
     operating_system: str = Field(min_length=1)
+    machine: str = Field(min_length=1)
+    dependencies: dict[str, str] = Field(min_length=1)
 
 
 class RuntimeReceipt(BaseModel):
@@ -236,6 +239,14 @@ def _atomic_write_bytes(path: Path, payload: bytes) -> None:
     finally:
         if temporary_path is not None:
             temporary_path.unlink(missing_ok=True)
+
+
+def _runtime_dependency_versions() -> dict[str, str]:
+    return {
+        "PyYAML": version("PyYAML"),
+        "pydantic": version("pydantic"),
+        "world-zero": version("world-zero"),
+    }
 
 
 def _canonical_json_bytes(model: BaseModel) -> bytes:
@@ -658,6 +669,8 @@ def execute_baseline_to_files(
             python_implementation=sys.implementation.name,
             python_version=platform.python_version(),
             operating_system=platform.system(),
+            machine=platform.machine() or "UNKNOWN",
+            dependencies=_runtime_dependency_versions(),
         ),
         result=ArtifactBinding(
             path=_display_path(root, resolved_output),

@@ -635,6 +635,12 @@ def test_canonical_runtime_receipt_binds_real_projection_inputs(tmp_path: Path):
     assert result_document["times"][-1] == 2100.0
     assert receipt_document["claim_class"] == "RUNNABLE_SOURCE_REPRODUCIBLE_ONLY"
     assert receipt_document["result"]["sha256"] == receipt.result.sha256
+    assert receipt.environment.machine
+    assert receipt.environment.dependencies == {
+        "PyYAML": "6.0.3",
+        "pydantic": "2.13.4",
+        "world-zero": "0.1.0.dev0",
+    }
 
 
 def test_runtime_receipt_refuses_output_overwriting_tracked_source(tmp_path: Path):
