@@ -1,3 +1,5 @@
+import csv
+import json
 from pathlib import Path
 
 import pytest
@@ -92,3 +94,39 @@ def test_partition_object_rejects_initialization_holdout_overlap() -> None:
                 ),
             ),
         )
+
+
+
+def test_2022_cohort_total_reconciliation_is_exact_and_descriptive() -> None:
+    total_path = Path("data/derived/wpp2024/WZ_MACROREGION_V0_population_2022.csv")
+    cohort_path = Path(
+        "data/derived/wpp2024/WZ_MACROREGION_V0_cohort_population_2022.csv"
+    )
+    report_path = Path(
+        "science/reconciliation/WZ_DEMOGRAPHY_2022_COHORT_TOTAL_RECONCILIATION_V1.json"
+    )
+
+    with total_path.open(encoding="utf-8", newline="") as handle:
+        totals = {
+            row["region_id"]: int(row["population_persons"])
+            for row in csv.DictReader(handle)
+        }
+    cohort_totals = {region_id: 0 for region_id in totals}
+    with cohort_path.open(encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            cohort_totals[row["region_id"]] += int(row["population_persons"])
+
+    differences = {
+        region_id: cohort_totals[region_id] - totals[region_id]
+        for region_id in totals
+    }
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+
+    assert differences == report["region_differences_persons"]
+    assert sum(differences.values()) == report["global_difference_persons"] == 195
+    assert (
+        max(abs(value) for value in differences.values())
+        == report["max_abs_region_difference_persons"]
+        == 50
+    )
+    assert report["acceptance_policy"] is None
