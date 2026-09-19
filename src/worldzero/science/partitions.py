@@ -14,6 +14,7 @@ from .canonical import content_digest
 
 PartitionClass = Literal[
     "CALIBRATION",
+    "INITIALIZATION",
     "TEMPORAL_HOLDOUT",
     "REGIONAL_HOLDOUT",
     "VARIABLE_HOLDOUT",
@@ -85,11 +86,34 @@ class PartitionSet(BaseModel):
         return set(calibration.observation_ids)
 
     @property
-    def final_holdout_ids(self) -> set[str]:
+    def initialization_ids(self) -> set[str]:
         return {
             observation_id
             for partition in self.partitions
-            if partition.partition_class != "CALIBRATION"
+            if partition.partition_class == "INITIALIZATION"
+            for observation_id in partition.observation_ids
+        }
+
+    @property
+    def final_holdout_ids(self) -> set[str]:
+        holdout_classes = {
+            "TEMPORAL_HOLDOUT",
+            "REGIONAL_HOLDOUT",
+            "VARIABLE_HOLDOUT",
+            "SHOCK_HOLDOUT",
+        }
+        return {
+            observation_id
+            for partition in self.partitions
+            if partition.partition_class in holdout_classes
+            for observation_id in partition.observation_ids
+        }
+
+    @property
+    def observation_ids(self) -> set[str]:
+        return {
+            observation_id
+            for partition in self.partitions
             for observation_id in partition.observation_ids
         }
 
@@ -103,6 +127,15 @@ def assert_no_holdout_leakage(
     overlap = sorted(set(calibration_ids) & set(final_holdout_ids))
     if overlap:
         raise ValueError("calibration/final-holdout overlap: " + ", ".join(overlap))
+
+
+def assert_no_initialization_holdout_leakage(
+    initialization_ids: AbstractSet[str] | set[str],
+    final_holdout_ids: AbstractSet[str] | set[str],
+) -> None:
+    overlap = sorted(set(initialization_ids) & set(final_holdout_ids))
+    if overlap:
+        raise ValueError("initialization/final-holdout overlap: " + ", ".join(overlap))
 
 
 def load_partition_set(path: Path) -> PartitionSet:
