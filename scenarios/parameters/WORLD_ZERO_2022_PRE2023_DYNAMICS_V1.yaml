@@ -1,0 +1,63 @@
+schema_version: WORLD_ZERO_V0_EXECUTION_PARAMETER_SET_V1
+parameter_set_id: WORLD_ZERO_2022_PRE2023_DYNAMICS_V1
+status: PROVISIONAL_EXECUTION
+evidence_class: MODELING_ASSUMPTION
+region_set_version: WZ_MACROREGION_V0
+cohort_set_version: WZ_AGE_COHORT_V0
+default_region:
+  demography:
+    birth_rate_per_young_adult: 0.0
+    mortality:
+      child: 0.0
+      young_adult: 0.0
+      mature_adult: 0.0
+      older_adult: 0.0
+    ageing:
+      child: 0.06666666666666667
+      young_adult: 0.04
+      mature_adult: 0.04
+      older_adult: 0.0
+  production:
+    productive_capital_per_person: 3.0
+    service_capital_per_person: 1.0
+    capital_output_ratio: 3.0
+    labor_productivity: 10.0
+    investment_share: 0.0
+    service_investment_fraction: 0.0
+    productive_depreciation_rate: 0.0
+    service_depreciation_rate: 0.0
+  labor_share: 0.65
+  environment:
+    productive_land_per_person: 1.0
+    bioenergy_land_per_person: 0.0
+    initial_soil_condition: 1.0
+    soil_degradation_rate: 0.0
+    soil_recovery_rate: 0.0
+    soil_degradation_pressure: 0.0
+    soil_restoration_effort: 0.0
+    renewable_water_per_person: 1.0
+    irrigation_demand_per_person: 0.5
+    other_water_demand_per_person: 0.25
+    nutrient_input_per_person: 1.0
+    food_energy_input_per_person: 1.0
+    base_yield_per_land: 1.0
+    managed_input_gain: 0.0
+    water_half_saturation_per_person: 1.0
+    nutrient_half_saturation_per_person: 1.0
+    energy_half_saturation_per_person: 1.0
+  food_requirement_per_person: 0.5
+region_overrides: {}
+migration_links: []
+food_trade_links: []
+institutions:
+  response_capacity: 0.0
+  implementation_delay: 0.0
+notes: >-
+  A-priori structural-ageing candidate frozen before any candidate execution
+  against the 2023 temporal holdout. Ageing hazards are derived only from the
+  frozen WZ_AGE_COHORT_V0 interval widths: child 0-14 => 1/15 per year,
+  young_adult 15-39 => 1/25, mature_adult 40-64 => 1/25, older_adult => 0.
+  Birth, mortality, and migration remain zero. No parameter in this set is fit
+  to, selected from, or adjusted using 2023 holdout observations or the 2023
+  persistence score. This is a structural benchmark candidate, not a calibrated
+  demographic model.
