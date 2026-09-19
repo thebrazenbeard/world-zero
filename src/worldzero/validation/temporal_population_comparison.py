@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Literal
 
@@ -167,3 +168,17 @@ def compare_temporal_population_scores(
         ),
         same_holdout_observations=True,
     )
+
+
+def canonical_comparison_report_bytes(
+    report: TemporalPopulationComparisonReport,
+) -> bytes:
+    return (
+        json.dumps(
+            report.model_dump(mode="json"),
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode("utf-8")
