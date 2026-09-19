@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import platform
 import subprocess
 import sys
@@ -213,6 +214,28 @@ def _same_existing_file(left: Path, right: Path) -> bool:
         return left.samefile(right)
     except OSError as exc:
         raise ValueError("runtime path identity could not be established") from exc
+
+
+def _atomic_write_bytes(path: Path, payload: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temporary_path = Path(handle.name)
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_path, path)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
 
 
 def _canonical_json_bytes(model: BaseModel) -> bytes:
@@ -609,9 +632,8 @@ def execute_baseline_to_files(
         policy=policy,
     )
 
-    resolved_output.parent.mkdir(parents=True, exist_ok=True)
     output_bytes = _canonical_json_bytes(document)
-    resolved_output.write_bytes(output_bytes)
+    _atomic_write_bytes(resolved_output, output_bytes)
     result_sha256 = hashlib.sha256(output_bytes).hexdigest()
 
     receipt = RuntimeReceipt(
@@ -643,6 +665,5 @@ def execute_baseline_to_files(
         ),
     )
 
-    resolved_receipt.parent.mkdir(parents=True, exist_ok=True)
-    resolved_receipt.write_bytes(_canonical_json_bytes(receipt))
+    _atomic_write_bytes(resolved_receipt, _canonical_json_bytes(receipt))
     return receipt

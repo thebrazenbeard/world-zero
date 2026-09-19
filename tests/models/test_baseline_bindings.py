@@ -695,3 +695,46 @@ def test_runtime_receipt_refuses_unignored_output_inside_source_checkout(tmp_pat
         )
     assert not forbidden_output.exists()
 
+
+def test_runtime_output_atomic_replace_does_not_write_through_source_hardlink(
+    tmp_path: Path,
+):
+    total_manifest, cohort_manifest = _write_population_artifacts(tmp_path)
+    data_manifest_id, bundle_path = _write_ready_bundle(
+        tmp_path,
+        total_manifest=total_manifest,
+        cohort_manifest=cohort_manifest,
+    )
+    parameters = load_baseline_parameter_set(CANONICAL_PARAMETERS)
+    scenario_path = _write_synthetic_scenario(
+        tmp_path,
+        data_manifest_id=data_manifest_id,
+        parameter_set_id=parameters.parameter_set_id,
+    )
+
+    tracked_source = Path("tools/run_world_zero_baseline.py").resolve()
+    original_source = tracked_source.read_bytes()
+    output_path = Path("runs/test-hardlink-runtime-result.json").resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.unlink(missing_ok=True)
+    os.link(tracked_source, output_path)
+
+    try:
+        execute_baseline_to_files(
+            root=tmp_path,
+            scenario_path=scenario_path,
+            data_bundle_path=bundle_path,
+            parameter_set_path=CANONICAL_PARAMETERS.resolve(),
+            output_path=output_path,
+            receipt_path=tmp_path / "receipt.json",
+            source_root=Path.cwd(),
+            region_set_path=REGIONS.resolve(),
+            cohort_set_path=COHORTS.resolve(),
+        )
+
+        assert tracked_source.read_bytes() == original_source
+        assert output_path.read_bytes() != original_source
+        assert not output_path.samefile(tracked_source)
+    finally:
+        output_path.unlink(missing_ok=True)
+
