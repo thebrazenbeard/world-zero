@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from worldzero.data.derived import DerivedDatasetManifest, load_derived_dataset_manifest
 from worldzero.data.manifests import DatasetAdmissionStatus
+from worldzero.science.partitions import PartitionSet
 from worldzero.sectors.demography import AgeCohort
 
 
@@ -150,3 +151,40 @@ def verify_population_evidence_catalog(
             raise ValueError("population evidence value must be positive")
 
     return catalog
+
+
+
+def verify_population_evidence_partition(
+    *,
+    catalog: PopulationEvidenceCatalog,
+    partition_set: PartitionSet,
+) -> PartitionSet:
+    catalog_by_id = {item.observation_id: item for item in catalog.observations}
+    assigned_ids = partition_set.calibration_ids | partition_set.final_holdout_ids
+    catalog_ids = set(catalog_by_id)
+
+    unknown_ids = sorted(assigned_ids - catalog_ids)
+    if unknown_ids:
+        raise ValueError(
+            "population evidence partition references unknown observation ID(s): "
+            + ", ".join(unknown_ids)
+        )
+    missing_ids = sorted(catalog_ids - assigned_ids)
+    if missing_ids:
+        raise ValueError(
+            "population evidence catalog contains unassigned observation ID(s): "
+            + ", ".join(missing_ids)
+        )
+
+    ineligible_holdouts = sorted(
+        observation_id
+        for observation_id in partition_set.final_holdout_ids
+        if not catalog_by_id[observation_id].validation_eligible
+    )
+    if ineligible_holdouts:
+        raise ValueError(
+            "population evidence holdout contains non-validation-eligible observation ID(s): "
+            + ", ".join(ineligible_holdouts)
+        )
+
+    return partition_set

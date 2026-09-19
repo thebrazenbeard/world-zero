@@ -6,6 +6,7 @@ from worldzero.science.partitions import load_partition_set
 from worldzero.science.population_evidence import (
     load_population_evidence_catalog,
     verify_population_evidence_catalog,
+    verify_population_evidence_partition,
 )
 
 CATALOG = Path("science/evidence/WZ_DEMOGRAPHY_2023_EVIDENCE_V1.yaml")
@@ -39,6 +40,7 @@ def test_2023_demography_partition_freezes_total_calibration_and_cohort_holdout(
     assert {by_id[item].role for item in partition_set.final_holdout_ids} == {
         "POPULATION_COHORT"
     }
+    verify_population_evidence_partition(catalog=catalog, partition_set=partition_set)
 
 
 def test_population_evidence_rejects_manifest_digest_substitution():
@@ -55,3 +57,34 @@ def test_population_evidence_rejects_manifest_digest_substitution():
 
     with pytest.raises(ValueError, match="manifest digest mismatch"):
         verify_population_evidence_catalog(root=Path("."), catalog=tampered)
+
+
+
+def test_population_partition_rejects_unknown_governed_observation():
+    catalog = load_population_evidence_catalog(CATALOG)
+    partition_set = load_partition_set(PARTITIONS)
+    holdout = partition_set.partitions[1]
+    tampered_holdout = holdout.model_copy(
+        update={"observation_ids": (*holdout.observation_ids[:-1], "unknown-observation")}
+    )
+    tampered = partition_set.model_copy(
+        update={"partitions": (partition_set.partitions[0], tampered_holdout)}
+    )
+
+    with pytest.raises(ValueError, match="unknown observation"):
+        verify_population_evidence_partition(catalog=catalog, partition_set=tampered)
+
+
+def test_population_partition_rejects_unassigned_governed_observation():
+    catalog = load_population_evidence_catalog(CATALOG)
+    partition_set = load_partition_set(PARTITIONS)
+    holdout = partition_set.partitions[1]
+    tampered_holdout = holdout.model_copy(
+        update={"observation_ids": holdout.observation_ids[:-1]}
+    )
+    tampered = partition_set.model_copy(
+        update={"partitions": (partition_set.partitions[0], tampered_holdout)}
+    )
+
+    with pytest.raises(ValueError, match="unassigned observation"):
+        verify_population_evidence_partition(catalog=catalog, partition_set=tampered)
