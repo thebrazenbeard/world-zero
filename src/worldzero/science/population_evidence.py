@@ -10,7 +10,7 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from worldzero.data.derived import load_derived_dataset_manifest
+from worldzero.data.derived import DerivedDatasetManifest, load_derived_dataset_manifest
 from worldzero.data.manifests import DatasetAdmissionStatus
 from worldzero.sectors.demography import AgeCohort
 
@@ -85,7 +85,7 @@ def verify_population_evidence_catalog(
     root: Path,
     catalog: PopulationEvidenceCatalog,
 ) -> PopulationEvidenceCatalog:
-    cache: dict[str, tuple[object, list[dict[str, str]]]] = {}
+    cache: dict[str, tuple[DerivedDatasetManifest, list[dict[str, str]]]] = {}
 
     for observation in catalog.observations:
         if observation.manifest_path not in cache:
@@ -119,7 +119,7 @@ def verify_population_evidence_catalog(
             raise ValueError("population evidence region-set version mismatch")
         if manifest.source_observation_class.value != observation.source_observation_class:
             raise ValueError("population evidence source observation class mismatch")
-        if manifest.validation_eligible is not observation.validation_eligible:
+        if manifest.validation_eligible != observation.validation_eligible:
             raise ValueError("population evidence validation eligibility mismatch")
         if observation.role == "POPULATION_COHORT":
             if manifest.cohort_set_version != catalog.cohort_set_version:
