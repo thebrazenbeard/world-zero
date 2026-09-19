@@ -1,0 +1,59 @@
+{
+  "schema_id": "WZ_TEMPORAL_SCORE_CROSS_PLATFORM_QUALIFICATION_V1",
+  "scoring_contract_freeze_commit": "e21895a4e96daf75c5b93a087cdf1c58e508a603",
+  "execution_source_commit": "5fc814349d55ba676fe8750b2a41cc229b82f1f1",
+  "execution_source_tree": "d771add596bd88abfc11408f77f74259115aeddf",
+  "workflow_run_id": 35462414099,
+  "linux_job_id": 105948527945,
+  "windows_job_id": 105948528046,
+  "result_sha256": "e6d81ab8769ab0e3ada5fa209149b3692bc3967e19af2d1ea56ce27e8afb3851",
+  "score_reports_identical": true,
+  "result_sha256_identical": true,
+  "source_identity_identical": true,
+  "score_contract_id": "WZ_DEMOGRAPHY_2022_TO_2023_TEMPORAL_SCORE_CONTRACT_V1",
+  "result_claim": "SCORE_ONLY",
+  "acceptance_policy": "NONE_SCORE_ONLY",
+  "observation_count": 40,
+  "metrics": {
+    "mean_error_persons": -1758193.425,
+    "mae_persons": 2897964.775,
+    "rmse_persons": 4408722.530433552,
+    "mape_percent": 1.690737673995113,
+    "global_observed_persons": 8091735125,
+    "global_predicted_persons": 8021407388,
+    "global_error_persons": -70327737
+  },
+  "linux_environment": {
+    "python_implementation": "cpython",
+    "python_version": "3.12.14",
+    "operating_system": "Linux",
+    "machine": "x86_64",
+    "dependencies": {
+      "PyYAML": "6.0.3",
+      "pydantic": "2.13.4"
+    }
+  },
+  "windows_environment": {
+    "python_implementation": "cpython",
+    "python_version": "3.12.10",
+    "operating_system": "Windows",
+    "machine": "AMD64",
+    "dependencies": {
+      "PyYAML": "6.0.3",
+      "pydantic": "2.13.4"
+    }
+  },
+  "artifacts": {
+    "wz-temporal-score-windows": {
+      "artifact_id": 10590516131,
+      "digest": "sha256:14eca9ab841e604ede746ac5ba9cad2e348a243f199cf4b7eec075de5f6b58db",
+      "size_in_bytes": 6180
+    },
+    "wz-temporal-score-linux": {
+      "artifact_id": 10589981627,
+      "digest": "sha256:eb9c074b90a9b8d73123f0e356aed97a6c539d71bfe660a303950b96e87a6664",
+      "size_in_bytes": 6180
+    }
+  },
+  "claim_ceiling": "SCORE_ONLY; no TEMPORAL_HOLDOUT_PASS, predictive validity, forecast skill, calibrated-parameter quality, scientific validation, deployment, or runtime-effect claim."
+}
