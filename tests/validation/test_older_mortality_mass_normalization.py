@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from tools.run_demography_older_mortality_mass_normalization import (
     _normalize_regional_older_mortality,
 )
@@ -61,8 +63,7 @@ def test_normalization_preserves_regional_shape_and_reference_death_mass() -> No
         initial_population=initial,
     )
 
-    assert normalized["a"] / normalized["b"] == regional["a"] / regional["b"]
-    assert receipt["reference_global_shape_death_mass_persons_per_year"] == 16.0
+    assert normalized["a"] / normalized["b"] == pytest.approx(\n        regional["a"] / regional["b"]\n    )\n    assert receipt["reference_global_shape_death_mass_persons_per_year"] == 16.0
     assert receipt["unnormalized_regional_death_mass_persons_per_year"] == 20.0
     assert receipt["normalization_factor"] == 0.8
     assert receipt["normalized_regional_death_mass_persons_per_year"] == 16.0
