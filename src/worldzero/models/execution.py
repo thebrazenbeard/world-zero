@@ -127,6 +127,7 @@ class RuntimeReceipt(BaseModel):
     source_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
     source_tree: str = Field(pattern=r"^[0-9a-f]{40}$")
     source_worktree_clean: Literal[True]
+    execution_source_mode: Literal["FRESH_LOCAL_CLONE"]
     scenario: ArtifactBinding
     data_bundle: ArtifactBinding
     dataset_inputs: tuple[ResolvedDatasetBinding, ...] = Field(min_length=1)
@@ -532,7 +533,7 @@ def _run_from_verified_snapshot(
         return scenario, bundle, parameters, runtime_inputs, dataset_inputs, result
 
 
-def execute_baseline_to_files(
+def _execute_baseline_to_files_in_process(
     *,
     root: Path,
     scenario_path: Path,
@@ -545,7 +546,11 @@ def execute_baseline_to_files(
     expected_source_tree: str | None = None,
     region_set_path: Path = Path("regions/WZ_MACROREGION_V0.yaml"),
     cohort_set_path: Path = Path("data/cohorts/WZ_AGE_COHORT_V0.yaml"),
+    _attested_fresh_source: bool = False,
+    _output_policy_source_root: Path | None = None,
 ) -> RuntimeReceipt:
+    if not _attested_fresh_source:
+        raise ValueError("strong runtime receipt requires fresh local-clone execution")
     source_identity = _resolve_source_identity(
         source_root,
         expected_commit=expected_source_commit,
@@ -560,7 +565,7 @@ def execute_baseline_to_files(
     resolved_output = _resolve(root, output_path).resolve()
     resolved_receipt = _resolve(root, receipt_path).resolve()
     _assert_runtime_output_locations(
-        source_root,
+        source_root if _output_policy_source_root is None else _output_policy_source_root,
         output_path=resolved_output,
         receipt_path=resolved_receipt,
     )
@@ -653,6 +658,7 @@ def execute_baseline_to_files(
         source_commit=source_identity.commit,
         source_tree=source_identity.tree,
         source_worktree_clean=True,
+        execution_source_mode="FRESH_LOCAL_CLONE",
         scenario=runtime_inputs_before.scenario,
         data_bundle=runtime_inputs_before.data_bundle,
         dataset_inputs=dataset_inputs_before,
@@ -679,3 +685,127 @@ def execute_baseline_to_files(
 
     _atomic_write_bytes(resolved_receipt, _canonical_json_bytes(receipt))
     return receipt
+
+
+_FRESH_CLONE_BOOTSTRAP = r"""
+import json
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+request = json.loads(sys.stdin.read())
+source_root = Path(request["source_root"]).resolve()
+
+
+def git(*args: str) -> str:
+    completed = subprocess.run(
+        ["git", "-C", str(source_root), *args],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError("git provenance command failed: " + " ".join(args))
+    return completed.stdout.strip()
+
+
+repository_root = Path(git("rev-parse", "--show-toplevel")).resolve()
+if git("status", "--porcelain=v1", "--untracked-files=all"):
+    raise RuntimeError("source worktree must be clean before runtime execution")
+commit = git("rev-parse", "HEAD")
+tree = git("rev-parse", "HEAD^{tree}")
+if request.get("expected_source_commit") is not None and request["expected_source_commit"] != commit:
+    raise RuntimeError("resolved source commit does not match expected commit")
+if request.get("expected_source_tree") is not None and request["expected_source_tree"] != tree:
+    raise RuntimeError("resolved source tree does not match expected tree")
+
+with tempfile.TemporaryDirectory(prefix="world-zero-source-clone-") as temporary:
+    clone_root = Path(temporary) / "source"
+    cloned = subprocess.run(
+        ["git", "clone", "--no-hardlinks", "--quiet", str(repository_root), str(clone_root)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if cloned.returncode != 0:
+        raise RuntimeError("fresh local source clone failed")
+    checked_out = subprocess.run(
+        ["git", "-C", str(clone_root), "checkout", "--detach", "--quiet", commit],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if checked_out.returncode != 0:
+        raise RuntimeError("fresh local source checkout failed")
+
+    sys.path.insert(0, str(clone_root / "src"))
+    from worldzero.models.execution import _execute_baseline_to_files_in_process
+
+    receipt = _execute_baseline_to_files_in_process(
+        root=Path(request["root"]),
+        scenario_path=Path(request["scenario_path"]),
+        data_bundle_path=Path(request["data_bundle_path"]),
+        parameter_set_path=Path(request["parameter_set_path"]),
+        output_path=Path(request["output_path"]),
+        receipt_path=Path(request["receipt_path"]),
+        source_root=clone_root,
+        expected_source_commit=commit,
+        expected_source_tree=tree,
+        region_set_path=Path(request["region_set_path"]),
+        cohort_set_path=Path(request["cohort_set_path"]),
+        _attested_fresh_source=True,
+        _output_policy_source_root=repository_root,
+    )
+    print(receipt.model_dump_json())
+"""
+
+
+def execute_baseline_to_files(
+    *,
+    root: Path,
+    scenario_path: Path,
+    data_bundle_path: Path,
+    parameter_set_path: Path,
+    output_path: Path,
+    receipt_path: Path,
+    source_root: Path,
+    expected_source_commit: str | None = None,
+    expected_source_tree: str | None = None,
+    region_set_path: Path = Path("regions/WZ_MACROREGION_V0.yaml"),
+    cohort_set_path: Path = Path("data/cohorts/WZ_AGE_COHORT_V0.yaml"),
+) -> RuntimeReceipt:
+    """Execute the strong-receipt path from a fresh local clone in a child interpreter."""
+
+    resolved_root = root.resolve()
+
+    def rooted(path: Path) -> Path:
+        return path.resolve() if path.is_absolute() else (resolved_root / path).resolve()
+
+    request = {
+        "root": str(resolved_root),
+        "scenario_path": str(rooted(scenario_path)),
+        "data_bundle_path": str(rooted(data_bundle_path)),
+        "parameter_set_path": str(rooted(parameter_set_path)),
+        "output_path": str(rooted(output_path)),
+        "receipt_path": str(rooted(receipt_path)),
+        "source_root": str(source_root.resolve()),
+        "expected_source_commit": expected_source_commit,
+        "expected_source_tree": expected_source_tree,
+        "region_set_path": str(rooted(region_set_path)),
+        "cohort_set_path": str(rooted(cohort_set_path)),
+    }
+    completed = subprocess.run(
+        [sys.executable, "-I", "-c", _FRESH_CLONE_BOOTSTRAP],
+        input=json.dumps(request),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        detail = completed.stderr.strip() or completed.stdout.strip()
+        raise ValueError("fresh-clone runtime execution failed: " + detail)
+    output_lines = [line for line in completed.stdout.splitlines() if line.strip()]
+    if not output_lines:
+        raise ValueError("fresh-clone runtime execution returned no receipt")
+    return RuntimeReceipt.model_validate_json(output_lines[-1])
