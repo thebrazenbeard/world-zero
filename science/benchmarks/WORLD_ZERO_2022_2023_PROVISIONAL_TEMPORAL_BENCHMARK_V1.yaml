@@ -1,0 +1,26 @@
+schema_version: WORLD_ZERO_TEMPORAL_BENCHMARK_V1
+benchmark_id: WORLD_ZERO_2022_2023_PROVISIONAL_TEMPORAL_BENCHMARK_V1
+status: FROZEN_BEFORE_EXECUTION
+claim_class: PROVISIONAL_TEMPORAL_BENCHMARK_ONLY
+scenario:
+  path: scenarios/2022_2023_provisional_temporal_benchmark_v1.yaml
+  git_blob_sha1: 389828614ed424c0c830a14e6f737a5413957a6a
+data_bundle:
+  path: data/bundles/WORLD_ZERO_2022_TEMPORAL_BENCHMARK_DATA_V1.yaml
+  git_blob_sha1: 39ecea69530522692807354e914696042a95a791
+parameter_set:
+  path: scenarios/parameters/WORLD_ZERO_2026_PROVISIONAL_EXECUTION_V1.yaml
+  git_blob_sha1: 5f38c2dcf58fdaed31536855173b4bdfeb040930
+  frozen_reference_commit: e78071670ade9161889b434fbb742134b73002e4
+evidence_catalog:
+  path: science/evidence/WZ_DEMOGRAPHY_2022_2023_TEMPORAL_EVIDENCE_V1.yaml
+  git_blob_sha1: b153d684ed01f73c7c2b56572f5dd24100b6d8a0
+partition_set:
+  path: science/partitions/WZ_DEMOGRAPHY_2022_2023_TEMPORAL_HOLDOUT_V1.yaml
+  git_blob_sha1: 1926abe92d4304492eebbf6769e5167dd750f877
+initialization_partition_id: WZ_DEMOGRAPHY_2022_COHORT_INITIALIZATION_V1
+holdout_partition_id: WZ_DEMOGRAPHY_2023_COHORT_TEMPORAL_HOLDOUT_V1
+initialization_year: 2022
+holdout_year: 2023
+acceptance_policy: null
+notes: The trajectory must be executed and its runtime result digest frozen before the scorer loads the 2023 temporal holdout. The reused parameter set predates this benchmark and remains MODELING_ASSUMPTION / PROVISIONAL_EXECUTION; it is not calibrated against 2023.
