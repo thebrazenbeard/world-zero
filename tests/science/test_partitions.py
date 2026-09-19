@@ -4,6 +4,7 @@ from worldzero.science.partitions import (
     EvidencePartition,
     PartitionSet,
     assert_no_holdout_leakage,
+    assert_no_initialization_holdout_leakage,
     load_partition_set,
 )
 
@@ -19,6 +20,11 @@ def partition(partition_id: str, partition_class: str, ids: set[str]):
 def test_calibration_and_final_holdout_cannot_overlap():
     with pytest.raises(ValueError, match="overlap"):
         assert_no_holdout_leakage({"x", "y"}, {"y", "z"})
+
+
+def test_initialization_and_final_holdout_cannot_overlap():
+    with pytest.raises(ValueError, match="initialization/final-holdout overlap"):
+        assert_no_initialization_holdout_leakage({"x", "y"}, {"y", "z"})
 
 
 def test_partition_set_rejects_calibration_holdout_leakage():
@@ -63,23 +69,28 @@ def test_partition_observation_ids_are_unique():
         )
 
 
-def test_partition_set_exposes_calibration_and_final_holdout_ids():
+def test_partition_set_exposes_calibration_initialization_and_final_holdout_ids():
     partitions = PartitionSet(
         partition_set_id="P1",
         partitions=(
             partition("CAL", "CALIBRATION", {"obs_1", "obs_2"}),
+            partition("INIT", "INITIALIZATION", {"obs_init"}),
             partition("TEMP", "TEMPORAL_HOLDOUT", {"obs_3"}),
             partition("SHOCK", "SHOCK_HOLDOUT", {"obs_4"}),
+            partition("NEG", "NEGATIVE_CONTROL", {"obs_neg"}),
         ),
     )
     assert partitions.calibration_ids == {"obs_1", "obs_2"}
+    assert partitions.initialization_ids == {"obs_init"}
     assert partitions.final_holdout_ids == {"obs_3", "obs_4"}
+    assert partitions.observation_ids == {
+        "obs_1", "obs_2", "obs_init", "obs_3", "obs_4", "obs_neg"
+    }
 
 
 def test_partition_classes_are_closed():
     with pytest.raises(ValueError):
         partition("BAD", "TRAININGISH", {"obs_1"})
-
 
 
 def test_partition_set_loads_frozen_yaml(tmp_path):
