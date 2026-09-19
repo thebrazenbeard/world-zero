@@ -1,12 +1,12 @@
 from pathlib import Path
 
+from tools.run_demography_migration_walkforward import _balanced_migration_links
 from worldzero.sectors.demography import AgeCohort
 from worldzero.validation.demography_walkforward import (
     compare_walkforward_scores,
     load_walkforward_contract,
     score_terminal_population,
 )
-from tools.run_demography_migration_walkforward import _balanced_migration_links
 
 CONTRACT = Path(
     "science/scoring/WZ_DEMOGRAPHY_MIGRATION_WALKFORWARD_2017_TO_2018_V1.yaml"
