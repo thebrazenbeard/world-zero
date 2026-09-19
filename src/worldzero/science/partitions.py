@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Set as AbstractSet
+from pathlib import Path
 from typing import Literal
 
+import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .canonical import content_digest
@@ -101,3 +103,10 @@ def assert_no_holdout_leakage(
     overlap = sorted(set(calibration_ids) & set(final_holdout_ids))
     if overlap:
         raise ValueError("calibration/final-holdout overlap: " + ", ".join(overlap))
+
+
+def load_partition_set(path: Path) -> PartitionSet:
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise TypeError("partition set must be a mapping")
+    return PartitionSet.model_validate(payload)
