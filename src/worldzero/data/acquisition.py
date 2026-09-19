@@ -19,7 +19,8 @@ _CHUNK_BYTES = 1024 * 1024
 @dataclass(frozen=True, slots=True)
 class VerifiedFetchResult:
     dataset_id: str
-    source_url: str
+    requested_url: str
+    resolved_url: str
     output_path: Path
     content_sha256: str
     content_length_bytes: int
@@ -30,7 +31,8 @@ def _copy_verified_candidate(
     *,
     output_path: Path,
     dataset_id: str,
-    source_url: str,
+    requested_url: str,
+    resolved_url: str | None = None,
     expected_length: int,
     expected_sha256: str,
 ) -> VerifiedFetchResult:
@@ -70,7 +72,8 @@ def _copy_verified_candidate(
         temporary_path = None
         return VerifiedFetchResult(
             dataset_id=dataset_id,
-            source_url=source_url,
+            requested_url=requested_url,
+            resolved_url=requested_url if resolved_url is None else resolved_url,
             output_path=output_path,
             content_sha256=actual_sha256,
             content_length_bytes=written,
@@ -124,6 +127,11 @@ def fetch_admitted_dataset(
     with urlopen(request, timeout=timeout_seconds) as response:
         if response.status != 200:
             raise ValueError(f"candidate source returned HTTP {response.status}")
+        resolved_url = response.geturl()
+        resolved = urlparse(resolved_url)
+        if resolved.scheme != "https" or not resolved.netloc:
+            raise ValueError("candidate redirect target must remain an absolute HTTPS URL")
+
         declared_length = response.headers.get("Content-Length")
         if (
             declared_length is not None
@@ -134,7 +142,8 @@ def fetch_admitted_dataset(
             response,
             output_path=output_path,
             dataset_id=manifest.dataset_id,
-            source_url=source_url,
+            requested_url=source_url,
+            resolved_url=resolved_url,
             expected_length=manifest.content_length_bytes,
             expected_sha256=manifest.content_sha256,
         )

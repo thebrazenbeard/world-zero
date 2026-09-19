@@ -35,7 +35,8 @@ def main() -> int:
                 "content_sha256": result.content_sha256,
                 "dataset_id": result.dataset_id,
                 "output_path": result.output_path.as_posix(),
-                "source_url": result.source_url,
+                "requested_url": result.requested_url,
+                "resolved_url": result.resolved_url,
             },
             sort_keys=True,
         )
