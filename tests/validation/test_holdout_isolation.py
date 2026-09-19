@@ -1,6 +1,7 @@
 import pytest
 
 from worldzero.calibration.objective import CalibrationObjective, ObjectiveTerm
+from worldzero.data.observations import ObservationClass, ObservationLineage, ObservationSeries
 from worldzero.science.partitions import EvidencePartition, PartitionSet
 
 
@@ -52,12 +53,58 @@ def test_missing_prediction_fails_instead_of_being_silently_dropped():
         objective.evaluate({})
 
 
+def _observation(observable_id: str, *, validation_eligible: bool = True) -> ObservationSeries:
+    return ObservationSeries(
+        observable_id=observable_id,
+        observation_class=ObservationClass.OFFICIAL_ESTIMATE,
+        unit="persons",
+        geography=("global",),
+        time=(2023,),
+        values=(1.0,),
+        lineage=(ObservationLineage(dataset_id="fixture", content_sha256="a" * 64),),
+        validation_eligible=validation_eligible,
+    )
+
+
 def test_holdout_selection_rejects_calibration_partition():
     from worldzero.validation.holdouts import select_holdout
 
-    assert select_holdout(_partitions(), "holdout").observation_ids == ("h1",)
+    observations = {"h1": _observation("h1")}
+    assert (
+        select_holdout(_partitions(), "holdout", observations=observations).observation_ids
+        == ("h1",)
+    )
     with pytest.raises(ValueError, match="calibration"):
-        select_holdout(_partitions(), "cal")
+        select_holdout(_partitions(), "cal", observations={})
+
+
+def test_holdout_selection_requires_governed_observation_binding():
+    from worldzero.validation.holdouts import select_holdout
+
+    with pytest.raises(ValueError, match="missing governed evidence binding"):
+        select_holdout(_partitions(), "holdout", observations={})
+
+
+def test_holdout_selection_rejects_mismatched_observation_identity():
+    from worldzero.validation.holdouts import select_holdout
+
+    with pytest.raises(ValueError, match="binding identity mismatch"):
+        select_holdout(
+            _partitions(),
+            "holdout",
+            observations={"h1": _observation("other")},
+        )
+
+
+def test_holdout_selection_rejects_validation_ineligible_observation():
+    from worldzero.validation.holdouts import select_holdout
+
+    with pytest.raises(ValueError, match="not validation eligible"):
+        select_holdout(
+            _partitions(),
+            "holdout",
+            observations={"h1": _observation("h1", validation_eligible=False)},
+        )
 
 
 def test_calibration_runner_requests_only_frozen_calibration_terms():
