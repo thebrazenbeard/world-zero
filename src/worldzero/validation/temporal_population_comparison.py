@@ -85,3 +85,85 @@ def validate_benchmark_binding(
         raise ValueError("benchmark target year mismatch")
     if benchmark.result_claim != "SCORE_ONLY":
         raise ValueError("benchmark must remain a score-only result")
+
+
+class TemporalPopulationComparisonReport(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid", allow_inf_nan=False)
+
+    schema_version: Literal["WORLD_ZERO_TEMPORAL_POPULATION_COMPARISON_REPORT_V1"]
+    comparison_contract_id: str
+    result_claim: Literal["COMPARISON_ONLY"]
+    disposition: Literal["BETTER_THAN_PERSISTENCE", "NOT_BETTER_THAN_PERSISTENCE"]
+    benchmark_runtime_result_sha256: str
+    candidate_runtime_result_sha256: str
+    benchmark_mae_persons: float
+    candidate_mae_persons: float
+    benchmark_rmse_persons: float
+    candidate_rmse_persons: float
+    benchmark_mape_percent: float
+    candidate_mape_percent: float
+    benchmark_absolute_global_error_persons: float
+    candidate_absolute_global_error_persons: float
+    same_holdout_observations: Literal[True]
+
+
+def compare_temporal_population_scores(
+    *,
+    contract: TemporalPopulationComparisonContract,
+    benchmark: TemporalPopulationScoreReport,
+    candidate: TemporalPopulationScoreReport,
+) -> TemporalPopulationComparisonReport:
+    validate_benchmark_binding(contract=contract, benchmark=benchmark)
+
+    if candidate.score_contract_id != contract.candidate_score_contract_id:
+        raise ValueError("candidate score-contract identity mismatch")
+    if candidate.scenario_id != contract.candidate_scenario_id:
+        raise ValueError("candidate scenario identity mismatch")
+    if candidate.parameter_set_id != contract.candidate_parameter_set_id:
+        raise ValueError("candidate parameter-set identity mismatch")
+    if candidate.data_manifest_id != contract.data_manifest_id:
+        raise ValueError("candidate data-bundle identity mismatch")
+    if candidate.holdout_partition_id != contract.holdout_partition_id:
+        raise ValueError("candidate holdout identity mismatch")
+    if candidate.target_year != contract.target_year:
+        raise ValueError("candidate target year mismatch")
+    if candidate.result_claim != "SCORE_ONLY":
+        raise ValueError("candidate must remain a score-only result")
+
+    benchmark_ids = tuple(item.observation_id for item in benchmark.observations)
+    candidate_ids = tuple(item.observation_id for item in candidate.observations)
+    if benchmark_ids != candidate_ids:
+        raise ValueError("candidate must score the exact benchmark holdout observations")
+
+    better = (
+        candidate.mae_persons < benchmark.mae_persons
+        and candidate.rmse_persons < benchmark.rmse_persons
+        and candidate.mape_percent < benchmark.mape_percent
+        and abs(candidate.global_error_persons) <= abs(benchmark.global_error_persons)
+    )
+
+    return TemporalPopulationComparisonReport(
+        schema_version="WORLD_ZERO_TEMPORAL_POPULATION_COMPARISON_REPORT_V1",
+        comparison_contract_id=contract.comparison_contract_id,
+        result_claim=contract.result_claim,
+        disposition=(
+            "BETTER_THAN_PERSISTENCE"
+            if better
+            else "NOT_BETTER_THAN_PERSISTENCE"
+        ),
+        benchmark_runtime_result_sha256=benchmark.runtime_result_sha256,
+        candidate_runtime_result_sha256=candidate.runtime_result_sha256,
+        benchmark_mae_persons=benchmark.mae_persons,
+        candidate_mae_persons=candidate.mae_persons,
+        benchmark_rmse_persons=benchmark.rmse_persons,
+        candidate_rmse_persons=candidate.rmse_persons,
+        benchmark_mape_percent=benchmark.mape_percent,
+        candidate_mape_percent=candidate.mape_percent,
+        benchmark_absolute_global_error_persons=abs(
+            benchmark.global_error_persons
+        ),
+        candidate_absolute_global_error_persons=abs(
+            candidate.global_error_persons
+        ),
+        same_holdout_observations=True,
+    )
