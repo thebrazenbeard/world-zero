@@ -1,0 +1,17 @@
+schema_version: WORLD_ZERO_SCENARIO_V1
+scenario_id: WORLD_ZERO_2022_TO_2023_PRE2023_DYNAMICS_V1
+scenario_class: NATIVE_BASELINE
+status: EXECUTABLE
+start: 2022.0
+stop: 2023.0
+dt: 0.25
+region_set_version: WZ_MACROREGION_V0
+data_manifest_id: WORLD_ZERO_2022_TEMPORAL_VALIDATION_DATA_V1
+parameter_set_id: WORLD_ZERO_2022_PRE2023_DYNAMICS_V1
+reference_artifact: null
+reference_sha256: null
+notes: >-
+  One-year structural-ageing candidate initialized from admitted 2022 cohort
+  population only. The parameter set is frozen before any candidate execution
+  against the governed 2023 holdout. Executable does not mean calibrated,
+  validated, predictive, or forecast-qualified.
