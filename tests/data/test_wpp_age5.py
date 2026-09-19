@@ -15,6 +15,7 @@ from worldzero.data.wpp_age5 import (
     extract_macroregion_cohort_population,
     extract_macroregion_cohort_population_bytes,
     inspect_wpp_age5,
+    reconcile_macroregion_cohort_population,
     render_cohort_population_csv,
     validate_wpp_age5_mapping_compatibility,
 )
@@ -313,3 +314,48 @@ def test_projection_cut_is_bridge_only(tmp_path: Path):
     assert not cut.validation_eligible
     rendered = render_cohort_population_csv(cut).decode("utf-8")
     assert ",PROJECTION,DERIVED,false" in rendered
+
+
+def test_cohort_reconciliation_reports_deltas_without_setting_acceptance_policy(
+    tmp_path: Path,
+):
+    path = tmp_path / "age5.csv.gz"
+    _write_fixture(path)
+    regions = load_region_set_manifest(REGIONS).region_set
+    cut = extract_macroregion_cohort_population(
+        path,
+        year=2023,
+        dataset_id="age5-test",
+        content_sha256="a" * 64,
+        region_mapping=load_region_mapping_manifest(MAPPING),
+        region_set=regions,
+        cohort_manifest=load_age_cohort_manifest(COHORTS),
+    )
+    expected = {region_id: cut.region_total(region_id) for region_id in regions.ids}
+
+    exact = reconcile_macroregion_cohort_population(
+        cut,
+        region_ids=regions.ids,
+        expected_region_totals=expected,
+    )
+    assert exact.global_difference == 0.0
+    assert exact.max_abs_region_difference == 0.0
+
+    expected[regions.ids[0]] += 5.0
+    shifted = reconcile_macroregion_cohort_population(
+        cut,
+        region_ids=regions.ids,
+        expected_region_totals=expected,
+    )
+    assert shifted.region_differences[regions.ids[0]] == -5.0
+    assert shifted.global_difference == -5.0
+    assert shifted.max_abs_region_difference == 5.0
+
+    bad = dict(expected)
+    bad[regions.ids[0]] = float("nan")
+    with pytest.raises(ValueError, match="finite and nonnegative"):
+        reconcile_macroregion_cohort_population(
+            cut,
+            region_ids=regions.ids,
+            expected_region_totals=bad,
+        )
