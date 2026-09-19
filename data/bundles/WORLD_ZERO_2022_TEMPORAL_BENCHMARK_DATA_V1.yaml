@@ -1,0 +1,15 @@
+schema_version: WORLD_ZERO_DATA_BUNDLE_V1
+data_manifest_id: WORLD_ZERO_2022_TEMPORAL_BENCHMARK_DATA_V1
+status: READY
+region_set_version: WZ_MACROREGION_V0
+cohort_set_version: WZ_AGE_COHORT_V0
+year: 2022
+population_reconciliation_tolerance_persons: 100.0
+bindings:
+  - role: POPULATION_TOTAL
+    dataset_id: wz-wpp2024-macroregion-population-2022-v1
+    manifest_path: data/manifests/WZ_WPP_2024_MACROREGION_POPULATION_2022_V1.yaml
+  - role: POPULATION_COHORT
+    dataset_id: wz-wpp2024-macroregion-cohort-population-2022-v1
+    manifest_path: data/manifests/WZ_WPP_2024_MACROREGION_COHORT_POPULATION_2022_V1.yaml
+notes: READY for the 2022-to-2023 provisional temporal benchmark only. Both inputs are admitted 2022 official-estimate derivatives and reconcile within the existing 100-person V0 ceiling. No 2023 holdout artifact is a runtime input.
