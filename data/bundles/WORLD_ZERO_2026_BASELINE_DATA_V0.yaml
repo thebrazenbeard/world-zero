@@ -1,0 +1,18 @@
+schema_version: WORLD_ZERO_DATA_BUNDLE_V1
+data_manifest_id: WORLD_ZERO_2026_BASELINE_DATA_V0
+status: READY
+region_set_version: WZ_MACROREGION_V0
+cohort_set_version: WZ_AGE_COHORT_V0
+year: 2026
+population_reconciliation_tolerance_persons: 100.0
+bindings:
+- role: POPULATION_TOTAL
+  dataset_id: wz-wpp2024-macroregion-population-2026-v1
+  manifest_path: data/manifests/WZ_WPP_2024_MACROREGION_POPULATION_2026_V1.yaml
+- role: POPULATION_COHORT
+  dataset_id: wz-wpp2024-macroregion-cohort-population-2026-v1
+  manifest_path: data/manifests/WZ_WPP_2024_MACROREGION_COHORT_POPULATION_2026_V1.yaml
+notes: Both required 2026 population bridge inputs are admitted and reconcile within
+  the frozen 100-person regional ceiling. READY means the data bundle is complete for
+  provisional execution only; all 2026 population evidence remains WPP projection
+  evidence and is not validation evidence.

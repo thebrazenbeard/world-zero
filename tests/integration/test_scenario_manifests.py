@@ -14,11 +14,13 @@ def test_world3_compatibility_manifest_is_control_only_and_bound_to_frozen_fixtu
     )
 
 
-def test_2026_baseline_is_explicitly_not_executable_before_data_binding():
+def test_2026_baseline_is_executable_with_explicit_bound_inputs():
     manifest = load_scenario_manifest(Path("scenarios/2026_baseline.yaml"))
     assert manifest.scenario_class == "NATIVE_BASELINE"
-    assert manifest.status == "DATA_BINDING_REQUIRED"
-    assert not manifest.executable
+    assert manifest.status == "EXECUTABLE"
+    assert manifest.executable
+    assert manifest.data_manifest_id == "WORLD_ZERO_2026_BASELINE_DATA_V0"
+    assert manifest.parameter_set_id == "WORLD_ZERO_2026_PROVISIONAL_EXECUTION_V1"
 
 
 def test_native_executable_status_requires_data_and_parameter_bindings():
