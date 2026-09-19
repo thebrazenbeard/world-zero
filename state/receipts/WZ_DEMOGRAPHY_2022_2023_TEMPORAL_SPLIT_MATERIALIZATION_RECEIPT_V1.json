@@ -1,0 +1,36 @@
+{
+  "controls": {
+    "canonical_2023_cohort": {
+      "length_bytes": 3074,
+      "sha256": "e42aee90f156e51471c2c1704492b412626dc647fb5e6b4bde6b8b43d9a486d4"
+    },
+    "canonical_2023_total": {
+      "length_bytes": 737,
+      "sha256": "e12423a8c8edb5f68548605bb837d7689c18caa10b122261e4f96f2aeb7a8578"
+    }
+  },
+  "holdout_year": 2023,
+  "initialization_year": 2022,
+  "outputs": {
+    "WZ_MACROREGION_V0_cohort_population_2022.csv": {
+      "length_bytes": 3074,
+      "sha256": "d352515702fe0e114e532ad5198678010f1c990fce0aefbb4e86016969c36e1f"
+    },
+    "WZ_MACROREGION_V0_population_2022.csv": {
+      "length_bytes": 737,
+      "sha256": "883b29e5d6745d99eee2973a16d4b398296f79f27cd7e4801f8c8c051de63aed"
+    }
+  },
+  "schema_id": "WZ_DEMOGRAPHY_TEMPORAL_SPLIT_MATERIALIZATION_RECEIPT_V1",
+  "sources": {
+    "un-wpp-2024-demographic-indicators-medium-v1": {
+      "length_bytes": 16557272,
+      "sha256": "286ac36bb1415e2e1ade03acfef0a29f0e4c087e2f78e38c48f50c5df89082bc"
+    },
+    "un-wpp-2024-population-age5-sex-medium-v1": {
+      "length_bytes": 29948947,
+      "sha256": "a04d7d1486a5eb2832cc812d599448f0a71e8ac9e1e7e6fa4066673d6a2487cd"
+    }
+  },
+  "transform_code_commit": "da12f485bc2bf68d691da209375c1fd160c1623a"
+}
