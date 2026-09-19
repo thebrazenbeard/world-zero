@@ -143,7 +143,7 @@ def test_fetch_rejects_https_to_http_redirect(
 
     monkeypatch.setattr(
         acquisition_module,
-        "urlopen",
+        "_open_candidate",
         lambda request, timeout_seconds: _FakeResponse(
             payload,
             url="http://mirror.example.invalid/source.bin",
@@ -164,7 +164,7 @@ def test_fetch_records_effective_https_redirect(
 
     monkeypatch.setattr(
         acquisition_module,
-        "urlopen",
+        "_open_candidate",
         lambda request, timeout_seconds: _FakeResponse(payload, url=resolved_url),
     )
 
