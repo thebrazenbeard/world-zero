@@ -23,6 +23,8 @@ def _validate_https_url(url: str, *, label: str) -> None:
         raise ValueError(f"{label} must be an absolute HTTPS URL")
     if parsed.username is not None or parsed.password is not None:
         raise ValueError(f"{label} must not contain URL credentials")
+    if parsed.query or parsed.fragment:
+        raise ValueError(f"{label} must not contain query parameters or fragments")
 
 
 class _HTTPSOnlyRedirectHandler(HTTPRedirectHandler):
