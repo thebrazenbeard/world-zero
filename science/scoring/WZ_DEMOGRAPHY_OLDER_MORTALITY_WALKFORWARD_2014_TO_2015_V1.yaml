@@ -1,0 +1,47 @@
+schema_version: WORLD_ZERO_DEMOGRAPHY_OLDER_MORTALITY_WALKFORWARD_V1
+experiment_id: WZ_DEMOGRAPHY_OLDER_MORTALITY_WALKFORWARD_2014_TO_2015_V1
+status: FROZEN_PRE_EXECUTION
+history_years: [2012, 2013, 2014]
+base_rate_fit_years: [2013, 2014]
+older_mortality_transitions:
+  - [2012, 2013]
+  - [2013, 2014]
+initialization_year: 2014
+target_year: 2015
+source_age5_manifest: data/manifests/UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1.yaml
+source_demographic_manifest: data/manifests/UN_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_V1.yaml
+baseline_lineage_id: WZ_DEMOGRAPHY_MIGRATION_GLOBAL_MORTALITY_SHAPE_HISTORICAL_V1
+candidate_lineage_id: WZ_DEMOGRAPHY_MIGRATION_REGIONAL_OLDER_MORTALITY_HISTORICAL_V1
+baseline_parameter_set_id: WORLD_ZERO_2014_MIGRATION_GLOBAL_MORTALITY_V1
+candidate_parameter_set_id: WORLD_ZERO_2014_MIGRATION_REGIONAL_OLDER_MORTALITY_V1
+candidate_method:
+  older_adult_mortality: >-
+    For each region and each pre-target transition, infer older-adult deaths as
+    mature-to-older ageing inflow plus modeled net older-adult migration minus
+    the observed older-adult stock change. Divide by mean older-adult stock for
+    that transition, require a finite nonnegative rate, then arithmetic-mean the
+    two transition rates. All non-older mortality, birth, ageing, migration,
+    initialization, solver, and timestep settings remain identical to baseline.
+  negative_residual_policy: FAIL_CLOSED
+  smoothing: ARITHMETIC_MEAN_OF_TWO_TRANSITION_RATES
+holdout_use:
+  allowed_for_fit: false
+  allowed_for_model_selection: false
+  first_evaluation_only: true
+comparison:
+  require_strict_improvement:
+    - OLDER_ADULT_MAE_PERSONS
+    - OLDER_ADULT_MAPE_PERCENT
+  require_not_worse:
+    - MAE_PERSONS
+    - RMSE_PERSONS
+    - MAPE_PERCENT
+    - GLOBAL_ABSOLUTE_ERROR_PERSONS
+result_claim: HISTORICAL_WALKFORWARD_COMPARISON_ONLY
+notes: >-
+  Frozen before this lane extracts or inspects the 2015 target. The experiment
+  keeps the migration mechanism established by the 2017->2018 walk-forward and
+  changes only the older-adult mortality estimator. Passing supports only a
+  bounded historical comparison; it does not establish structural mortality
+  identification, calibration, predictive validity, forecast skill, or general
+  scientific validation.

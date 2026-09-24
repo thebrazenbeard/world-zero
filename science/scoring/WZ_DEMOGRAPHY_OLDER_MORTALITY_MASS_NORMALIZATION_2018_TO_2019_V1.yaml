@@ -1,0 +1,50 @@
+schema_version: WORLD_ZERO_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_V1
+experiment_id: WZ_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_2018_TO_2019_V1
+status: FROZEN_PRE_EXECUTION
+history_years: [2016, 2017, 2018]
+base_rate_fit_years: [2017, 2018]
+older_mortality_transitions:
+  - [2016, 2017]
+  - [2017, 2018]
+initialization_year: 2018
+target_year: 2019
+source_age5_manifest: data/manifests/UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1.yaml
+source_demographic_manifest: data/manifests/UN_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_V1.yaml
+baseline_lineage_id: WZ_DEMOGRAPHY_MIGRATION_REGIONAL_OLDER_MORTALITY_UNNORMALIZED_HISTORICAL_V1
+candidate_lineage_id: WZ_DEMOGRAPHY_MIGRATION_REGIONAL_OLDER_MORTALITY_MASS_NORMALIZED_HISTORICAL_V1
+baseline_parameter_set_id: WORLD_ZERO_2018_MIGRATION_REGIONAL_OLDER_MORTALITY_UNNORMALIZED_V1
+candidate_parameter_set_id: WORLD_ZERO_2018_MIGRATION_REGIONAL_OLDER_MORTALITY_MASS_NORMALIZED_V1
+candidate_method:
+  regional_shape: >-
+    Infer regional older-adult mortality from the same two-transition continuity
+    residual method as the unnormalized baseline.
+  normalization_reference: >-
+    Compute the aggregate older-adult death mass implied at 2018 initialization
+    by the existing global-mortality-shape model fitted on 2017-2018.
+  normalization: >-
+    Multiply every inferred regional older-adult mortality rate by one common
+    positive scalar so the candidate's aggregate older-adult death mass at the
+    2018 initialization stock exactly equals the global-shape reference mass.
+    This preserves the inferred regional relative shape while restoring aggregate
+    death mass before target execution.
+  target_use_for_normalization: false
+holdout_use:
+  allowed_for_fit: false
+  allowed_for_model_selection: false
+  first_evaluation_only: true
+comparison:
+  require_strict_improvement:
+    - GLOBAL_ABSOLUTE_ERROR_PERSONS
+  require_not_worse:
+    - OLDER_ADULT_MAE_PERSONS
+    - OLDER_ADULT_MAPE_PERCENT
+    - MAE_PERSONS
+    - RMSE_PERSONS
+    - MAPE_PERCENT
+result_claim: HISTORICAL_WALKFORWARD_COMPARISON_ONLY
+notes: >-
+  Frozen before this lane extracts or inspects the 2019 target. This test is a
+  direct response to the 2014->2015 result: regional older-adult mortality
+  improved distributional/cohort accuracy but worsened aggregate population
+  error. The candidate tests pre-target mass normalization on a new year rather
+  than retuning against 2015.

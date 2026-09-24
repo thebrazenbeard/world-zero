@@ -1,0 +1,118 @@
+name: Older-mortality mass-normalization walk-forward
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/older-mortality-mass-normalization.yml
+      - science/scoring/WZ_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_2018_TO_2019_V1.yaml
+      - src/worldzero/validation/older_mortality_mass_normalization.py
+      - tools/run_demography_older_mortality_mass_normalization.py
+      - tools/run_demography_older_mortality_walkforward.py
+      - tools/run_demography_migration_walkforward.py
+      - src/worldzero/sectors/demography.py
+      - src/worldzero/models/native_backbone.py
+      - src/worldzero/data/wpp2024.py
+      - src/worldzero/data/wpp_age5.py
+      - data/manifests/UN_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_V1.yaml
+      - data/manifests/UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: world-zero-older-mortality-mass-normalization-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  normalize-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify committed Linux wheelhouse
+        run: python -m tools.verify_wheelhouse third_party/wheels/cp312-manylinux_x86_64
+      - name: Reconstruct Linux environment offline
+        run: >-
+          python -m tools.bootstrap_offline
+          --wheelhouse third_party/wheels/cp312-manylinux_x86_64
+          --venv "${{ runner.temp }}/wz-normalize"
+      - name: Fetch exact admitted WPP demographic source
+        env:
+          PYTHONPATH: src
+        run: >-
+          "${{ runner.temp }}/wz-normalize/bin/python"
+          -m tools.fetch_admitted_dataset
+          data/manifests/UN_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_V1.yaml
+          data/raw/WPP2024_Demographic_Indicators_Medium.csv.gz
+      - name: Fetch exact admitted WPP age5 source
+        env:
+          PYTHONPATH: src
+        run: >-
+          "${{ runner.temp }}/wz-normalize/bin/python"
+          -m tools.fetch_admitted_dataset
+          data/manifests/UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1.yaml
+          data/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
+      - name: Execute frozen mass-normalization walk-forward
+        env:
+          PYTHONPATH: src
+        run: >-
+          "${{ runner.temp }}/wz-normalize/bin/python"
+          -m tools.run_demography_older_mortality_mass_normalization
+          --age5-raw data/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
+          --demographic-raw data/raw/WPP2024_Demographic_Indicators_Medium.csv.gz
+          --expected-source-commit "${{ github.event.pull_request.head.sha || github.sha }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wz-older-mortality-mass-normalization-linux
+          path: runs/WZ_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_2018_TO_2019_V1
+          if-no-files-found: error
+
+  normalize-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify committed Windows wheelhouse
+        run: python -m tools.verify_wheelhouse third_party/wheels/cp312-win_amd64
+      - name: Reconstruct Windows environment offline
+        run: >-
+          python -m tools.bootstrap_offline
+          --wheelhouse third_party/wheels/cp312-win_amd64
+          --venv "${{ runner.temp }}\wz-normalize"
+      - name: Fetch exact admitted WPP demographic source
+        shell: pwsh
+        env:
+          PYTHONPATH: src
+        run: |
+          $python = Join-Path "${{ runner.temp }}" "wz-normalize\Scripts\python.exe"
+          & $python -m tools.fetch_admitted_dataset data/manifests/UN_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_V1.yaml data/raw/WPP2024_Demographic_Indicators_Medium.csv.gz
+      - name: Fetch exact admitted WPP age5 source
+        shell: pwsh
+        env:
+          PYTHONPATH: src
+        run: |
+          $python = Join-Path "${{ runner.temp }}" "wz-normalize\Scripts\python.exe"
+          & $python -m tools.fetch_admitted_dataset data/manifests/UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1.yaml data/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
+      - name: Execute frozen mass-normalization walk-forward
+        shell: pwsh
+        env:
+          PYTHONPATH: src
+        run: |
+          $python = Join-Path "${{ runner.temp }}" "wz-normalize\Scripts\python.exe"
+          & $python -m tools.run_demography_older_mortality_mass_normalization --age5-raw data/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz --demographic-raw data/raw/WPP2024_Demographic_Indicators_Medium.csv.gz --expected-source-commit "${{ github.event.pull_request.head.sha || github.sha }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wz-older-mortality-mass-normalization-windows
+          path: runs/WZ_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_2018_TO_2019_V1
+          if-no-files-found: error
