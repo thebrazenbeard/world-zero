@@ -8,7 +8,7 @@ version = "0.1.0.dev0"
 description = "Provenance-aware global systems modeling and scientific comparison framework"
 requires-python = ">=3.12,<3.14"
 dependencies = [
-  "pydantic==2.13.4",
+  "pydantic==2.13.5",
   "PyYAML==6.0.3",
 ]
 
