@@ -1,0 +1,52 @@
+{
+  "schema_id": "WZ_DEMOGRAPHY_PRE2023_DYNAMICS_EXECUTION_RECEIPT_V1",
+  "status": "EXECUTED",
+  "execution_source_commit": "7913cf89c81e02b58c8e3c364371d5d18899f9a8",
+  "execution_source_tree": "9510dfdebe9026ea84d18b2c0d835edead38bd62",
+  "workflow_run_id": 35464356165,
+  "workflow_job_id": 105953782375,
+  "workflow_artifact_id": 10591080802,
+  "workflow_artifact_name": "wz-pre2023-demography-successor-linux",
+  "workflow_artifact_zip_sha256": "04bdbd3580bb692413ef8b56bffcb5f157558d5768a820cb4f8b98aa28afb450",
+  "workflow_artifact_expires_at": "2026-12-18T19:26:33Z",
+  "environment": {
+    "python": "3.12.14",
+    "operating_system": "Linux",
+    "machine": "x86_64",
+    "PyYAML": "6.0.3",
+    "pydantic": "2.13.4"
+  },
+  "fit_years": [2021, 2022],
+  "holdout_used_for_fit": false,
+  "source_inputs": {
+    "un-wpp-2024-demographic-indicators-medium-v1": {
+      "sha256": "286ac36bb1415e2e1ade03acfef0a29f0e4c087e2f78e38c48f50c5df89082bc",
+      "length_bytes": 16557272
+    },
+    "un-wpp-2024-population-age5-sex-medium-v1": {
+      "sha256": "a04d7d1486a5eb2832cc812d599448f0a71e8ac9e1e7e6fa4066673d6a2487cd",
+      "length_bytes": 29948947
+    }
+  },
+  "parameter_set_id": "WORLD_ZERO_2022_PRE2023_DYNAMICS_V1",
+  "parameter_set_sha256": "58a10a770b0f5c58ab6ccdcc6170238f83b5499db2b90d55aa06f3f7a1d01bfe",
+  "runtime_result_sha256": "f6392ae3d03391df3f64a26f78fa61d5a03d51a076f625a5f735185e933ad05f",
+  "runtime_receipt_sha256": "5af06051dd7e3c66f3d2d959768cca5de049f1f2e9c677b6a067093d4958b30d",
+  "score_report_sha256": "082daa1291598db0023c1e8fe36d7abdb93248dda022a461adf915fe239c9a59",
+  "comparison_report_sha256": "ab0b8c24d595f3f23c7391ab2b66dfe6ebe41d3b492b7883d68c339d893f2acf",
+  "derivation_receipt_sha256": "92a5e8a4aa9c0f4538c2373b86255f671a60e1d9c763b6d51abb355f518460ce",
+  "comparison_result": "BETTER_THAN_PERSISTENCE",
+  "claim_class": "COMPARISON_ONLY",
+  "verification": {
+    "standard_ci_run_id": 35464356140,
+    "standard_ci_job_id": 105953782187,
+    "pytest_passed": 337,
+    "ruff": "PASS",
+    "mypy": "PASS",
+    "offline_ci_run_id": 35464356142,
+    "offline_linux_job_id": 105953802039,
+    "offline_windows_job_id": 105953802202,
+    "offline_linux": "PASS",
+    "offline_windows": "PASS"
+  }
+}

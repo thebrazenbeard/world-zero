@@ -1,0 +1,31 @@
+schema_version: WORLD_ZERO_DEMOGRAPHY_MIGRATION_WALKFORWARD_V1
+experiment_id: WZ_DEMOGRAPHY_MIGRATION_WALKFORWARD_2017_TO_2018_V1
+status: FROZEN_PRE_EXECUTION
+fit_years: [2016, 2017]
+initialization_year: 2017
+target_year: 2018
+source_age5_manifest: data/manifests/UN_WPP_2024_POPULATION_AGE5_SEX_MEDIUM_V1.yaml
+source_demographic_manifest: data/manifests/UN_WPP_2024_DEMOGRAPHIC_INDICATORS_MEDIUM_V1.yaml
+baseline_lineage_id: WZ_DEMOGRAPHY_PRE2023_DYNAMICS_NO_MIGRATION_HISTORICAL_V1
+candidate_lineage_id: WZ_DEMOGRAPHY_PRE2023_DYNAMICS_WITH_MIGRATION_HISTORICAL_V1
+baseline_parameter_set_id: WORLD_ZERO_2017_PRE2018_DYNAMICS_NO_MIGRATION_V1
+candidate_parameter_set_id: WORLD_ZERO_2017_PRE2018_DYNAMICS_WITH_MIGRATION_V1
+holdout_use:
+  allowed_for_fit: false
+  allowed_for_model_selection: false
+  first_evaluation_only: true
+comparison:
+  require_strict_improvement:
+    - MAE_PERSONS
+    - RMSE_PERSONS
+    - MAPE_PERCENT
+    - OLDER_ADULT_MAPE_PERCENT
+  require_global_absolute_error_not_worse: true
+result_claim: HISTORICAL_WALKFORWARD_COMPARISON_ONLY
+notes: >-
+  Frozen before any 2018 target extraction or execution in this lane. Both arms
+  use identical 2016-2017 birth, ageing, and mortality derivation. The candidate
+  differs only by deterministic balanced interregional migration links derived
+  from 2016-2017 WPP CNMR values. A BETTER_WITH_MIGRATION result is a bounded
+  historical walk-forward comparison only and does not establish calibration,
+  predictive validity, forecast skill, or general scientific validation.
