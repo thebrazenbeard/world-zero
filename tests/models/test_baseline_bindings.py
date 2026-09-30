@@ -684,7 +684,7 @@ def test_canonical_runtime_receipt_binds_real_projection_inputs(tmp_path: Path):
     assert receipt.environment.machine
     assert receipt.environment.dependencies == {
         "PyYAML": "6.0.3",
-        "pydantic": "2.13.4",
+        "pydantic": "2.13.5",
     }
 
 
