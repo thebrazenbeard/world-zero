@@ -1,0 +1,39 @@
+schema_version: WORLD_ZERO_TEMPORAL_POPULATION_COMPARISON_V1
+comparison_contract_id: WZ_DEMOGRAPHY_SUCCESSOR_VS_PERSISTENCE_COMPARISON_V1
+status: FROZEN_PRE_CANDIDATE_EXECUTION
+
+benchmark_score_path: state/results/WZ_DEMOGRAPHY_2022_TO_2023_TEMPORAL_SCORE_V1.json
+benchmark_score_contract_id: WZ_DEMOGRAPHY_2022_TO_2023_TEMPORAL_SCORE_CONTRACT_V1
+benchmark_runtime_result_sha256: e6d81ab8769ab0e3ada5fa209149b3692bc3967e19af2d1ea56ce27e8afb3851
+
+candidate_lineage_id: WZ_DEMOGRAPHY_PRE2023_DYNAMICS_CANDIDATE_V1
+candidate_scenario_id: WORLD_ZERO_2022_TO_2023_PRE2023_DYNAMICS_V1
+candidate_parameter_set_id: WORLD_ZERO_2022_PRE2023_DYNAMICS_V1
+candidate_score_contract_id: WZ_DEMOGRAPHY_2022_TO_2023_PRE2023_DYNAMICS_SCORE_CONTRACT_V1
+
+data_manifest_id: WORLD_ZERO_2022_TEMPORAL_VALIDATION_DATA_V1
+holdout_partition_id: WZ_DEMOGRAPHY_2023_COHORT_TEMPORAL_HOLDOUT_V1
+target_year: 2023
+max_fit_evidence_year: 2022
+
+required_primary_improvements:
+  - MAE_PERSONS
+  - RMSE_PERSONS
+  - MAPE_PERCENT
+require_global_absolute_error_not_worse: true
+require_same_holdout_observations: true
+allow_holdout_refit: false
+first_candidate_evaluation_only: true
+result_claim: COMPARISON_ONLY
+
+notes: >-
+  Frozen after the persistence baseline was scored but before any successor
+  dynamics candidate was executed against the 2023 temporal holdout. The named
+  successor lineage may use fitting evidence dated 2022 or earlier only. Its
+  first 2023 holdout evaluation is one-shot for clean comparison purposes.
+  A successor is BETTER_THAN_PERSISTENCE only if MAE, RMSE, and MAPE are all
+  strictly lower than the frozen persistence benchmark and absolute global
+  population error is not worse, using the exact same governed holdout
+  observations. Passing this comparison would be a bounded benchmark result,
+  not HISTORICAL_CALIBRATION_PASS, TEMPORAL_HOLDOUT_PASS, predictive validity,
+  calibrated-parameter quality, scientific validation, or deployment authority.
