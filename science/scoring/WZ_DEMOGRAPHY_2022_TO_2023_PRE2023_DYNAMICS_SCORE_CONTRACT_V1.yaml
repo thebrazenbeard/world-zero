@@ -1,0 +1,29 @@
+schema_version: WORLD_ZERO_TEMPORAL_POPULATION_SCORING_V1
+score_contract_id: WZ_DEMOGRAPHY_2022_TO_2023_PRE2023_DYNAMICS_SCORE_CONTRACT_V1
+status: FROZEN_PRE_EXECUTION
+scenario_id: WORLD_ZERO_2022_TO_2023_PRE2023_DYNAMICS_V1
+data_manifest_id: WORLD_ZERO_2022_TEMPORAL_VALIDATION_DATA_V1
+parameter_set_id: WORLD_ZERO_2022_PRE2023_DYNAMICS_V1
+evidence_catalog_path: science/evidence/WZ_DEMOGRAPHY_2022_2023_TEMPORAL_EVIDENCE_V1.yaml
+evidence_catalog_id: WZ_DEMOGRAPHY_2022_2023_TEMPORAL_EVIDENCE_V1
+partition_set_path: science/partitions/WZ_DEMOGRAPHY_2022_2023_TEMPORAL_HOLDOUT_V1.yaml
+partition_set_id: WZ_DEMOGRAPHY_2022_2023_TEMPORAL_HOLDOUT_V1
+initialization_partition_id: WZ_DEMOGRAPHY_2022_COHORT_INITIALIZATION_V1
+holdout_partition_id: WZ_DEMOGRAPHY_2023_COHORT_TEMPORAL_HOLDOUT_V1
+initialization_year: 2022
+target_year: 2023
+prediction_stock_template: "population:{region_id}:{cohort_id}"
+metrics:
+  - MEAN_ERROR_PERSONS
+  - MAE_PERSONS
+  - RMSE_PERSONS
+  - MAPE_PERCENT
+  - GLOBAL_ERROR_PERSONS
+acceptance_policy: NONE_SCORE_ONLY
+result_claim: SCORE_ONLY
+allow_refit_on_holdout: false
+notes: >-
+  Frozen for the first PRE2023_DYNAMICS candidate. Parameter derivation may use
+  admitted evidence dated 2022 or earlier only. This score contract remains
+  descriptive; benchmark superiority is evaluated separately by the already
+  frozen successor-vs-persistence comparison contract.

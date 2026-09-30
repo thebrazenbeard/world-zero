@@ -1,0 +1,45 @@
+{
+  "schema_id": "WZ_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_RESULT_V1",
+  "experiment_id": "WZ_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_2018_TO_2019_V1",
+  "claim_class": "HISTORICAL_WALKFORWARD_COMPARISON_ONLY",
+  "verdict": "NOT_BETTER_MASS_NORMALIZED",
+  "frozen_contract_commit": "848ddbdc35eb285a2d74e861b8c752603abaaa47",
+  "execution_source_commit": "9acf067d6c445d1dbd402f7e86d65d1acbd31b01",
+  "execution_source_tree": "dcb4f0a75f2fd5ac28d67f78dcaba26604526290",
+  "history_years": [
+    2016,
+    2017,
+    2018
+  ],
+  "initialization_year": 2018,
+  "target_year": 2019,
+  "normalization_factor": 1.025210372140686,
+  "baseline": {
+    "parameter_sha256": "12cb051a462ece8a9f34b98a61410481e562d8ccd17ad71e08ce3a34d4497179",
+    "result_sha256": "2abf2e001bbd26ed0c40e9290005fec96f7723b003fa937c65c8c53829603a11",
+    "mae_persons": 461357.01504375355,
+    "rmse_persons": 723828.9207175403,
+    "mape_percent": 0.2599953648266364,
+    "older_adult_mae_persons": 202216.42746220288,
+    "older_adult_mape_percent": 0.3059859432267995,
+    "global_error_persons": 2321645.6740455627
+  },
+  "candidate": {
+    "parameter_sha256": "8912d3fa32d4a1e002ed8f7c3e321b1c01d764a6cd5d020525e59f899f5f295c",
+    "result_sha256": "337ec3178146e09e996eddfb4a583c8eaf01d3bfb3e4b4c34af7106a1a883dc2",
+    "mae_persons": 485789.02420864813,
+    "rmse_persons": 736979.3100462845,
+    "mape_percent": 0.2960470040869019,
+    "older_adult_mae_persons": 299944.46412178094,
+    "older_adult_mape_percent": 0.45019250026786145,
+    "global_error_persons": 1344365.3074483871
+  },
+  "gates": {
+    "global_absolute_error_improved": true,
+    "older_adult_mae_not_worse": false,
+    "older_adult_mape_not_worse": false,
+    "mae_not_worse": false,
+    "rmse_not_worse": false,
+    "mape_not_worse": false
+  }
+}
