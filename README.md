@@ -1,3 +1,5 @@
+> **License:** Source-visible, not open source. Original material is proprietary. Commercial use, redistribution, hosted-service use, and commercial derivative products require written permission. See [LICENSE](LICENSE) and [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md). Separately identified third-party components retain their own licenses.
+
 # World Zero
 
 World Zero is a research and modeling project to build a modern, transparent successor to the World3 system-dynamics model used in *The Limits to Growth*.
@@ -6,13 +8,11 @@ The goal is **not** to reproduce a predetermined collapse narrative, nor to assu
 
 ## Current status
 
-`RESEARCH_AND_ARCHITECTURE_V2` — no executable World Zero model is claimed yet.
+`main` is the canonical repository source. It now contains an executable Python scientific-comparison/modeling framework, machine-readable contracts, data/region/scenario controls, model-family and benchmark infrastructure, reproducibility receipts, and bounded executed historical comparison work. That is not a claim that a complete World Zero world model is scientifically validated, calibrated for general forecasting, deployed, or production-qualified.
 
-Current research branch: `work/world-zero-research-architecture-v1`
+Open branches and pull requests are candidate research or implementation subjects until merged. Their exact heads must be read fresh; this README does not treat any mutable branch or PR number as a timeless currentness pointer.
 
-Draft review surface: PR #1. Exact branch head must be read fresh before review; this README does not serve as a timeless head pointer.
-
-The architecture now requires a scientific comparison spine **before** modern-sector calibration. The first implementation frontier is therefore:
+The architecture requires a scientific comparison spine **before** broader modern-sector calibration. The implementation sequence remains:
 
 1. typed evidence/claim/provenance contracts;
 2. hyperedge-capable causal topology;
@@ -86,4 +86,4 @@ Architecture defects discovered during review are treated as normal project bugs
 
 ## Governance
 
-Research and planning on this branch do not authorize merge, publication claims, deployment, or claims of behavioral/predictive qualification. Those are separate gates.
+Repository source, research results, and planning do not by themselves authorize publication claims, deployment, or claims of broad behavioral/predictive qualification. Candidate-branch review, merge authority, scientific claim promotion, and deployment remain separate gates.
