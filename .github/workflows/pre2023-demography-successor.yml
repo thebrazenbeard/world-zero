@@ -71,7 +71,7 @@ jobs:
           --age5-raw data/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
           --demographic-raw data/raw/WPP2024_Demographic_Indicators_Medium.csv.gz
           --expected-source-commit "${{ github.event.pull_request.head.sha || github.sha }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wz-pre2023-demography-successor-linux
           path: runs/WORLD_ZERO_2022_TO_2023_PRE2023_DYNAMICS_V1

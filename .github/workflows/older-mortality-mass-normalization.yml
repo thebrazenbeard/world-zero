@@ -67,7 +67,7 @@ jobs:
           --age5-raw data/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
           --demographic-raw data/raw/WPP2024_Demographic_Indicators_Medium.csv.gz
           --expected-source-commit "${{ github.event.pull_request.head.sha || github.sha }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wz-older-mortality-mass-normalization-linux
           path: runs/WZ_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_2018_TO_2019_V1
@@ -111,7 +111,7 @@ jobs:
         run: |
           $python = Join-Path "${{ runner.temp }}" "wz-normalize\Scripts\python.exe"
           & $python -m tools.run_demography_older_mortality_mass_normalization --age5-raw data/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz --demographic-raw data/raw/WPP2024_Demographic_Indicators_Medium.csv.gz --expected-source-commit "${{ github.event.pull_request.head.sha || github.sha }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wz-older-mortality-mass-normalization-windows
           path: runs/WZ_DEMOGRAPHY_OLDER_MORTALITY_MASS_NORMALIZATION_2018_TO_2019_V1

@@ -66,7 +66,7 @@ jobs:
           --age5-raw data/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz
           --demographic-raw data/raw/WPP2024_Demographic_Indicators_Medium.csv.gz
           --expected-source-commit "${{ github.event.pull_request.head.sha || github.sha }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wz-older-mortality-walkforward-linux
           path: runs/WZ_DEMOGRAPHY_OLDER_MORTALITY_WALKFORWARD_2014_TO_2015_V1
@@ -110,7 +110,7 @@ jobs:
         run: |
           $python = Join-Path "${{ runner.temp }}" "wz-older\Scripts\python.exe"
           & $python -m tools.run_demography_older_mortality_walkforward --age5-raw data/raw/WPP2024_PopulationByAge5GroupSex_Medium.csv.gz --demographic-raw data/raw/WPP2024_Demographic_Indicators_Medium.csv.gz --expected-source-commit "${{ github.event.pull_request.head.sha || github.sha }}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wz-older-mortality-walkforward-windows
           path: runs/WZ_DEMOGRAPHY_OLDER_MORTALITY_WALKFORWARD_2014_TO_2015_V1
