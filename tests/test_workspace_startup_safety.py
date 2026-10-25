@@ -7,7 +7,6 @@ already-installed workstation or extension.
 import json
 import re
 import unittest
-
 from pathlib import Path
 
 
