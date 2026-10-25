@@ -87,3 +87,7 @@ Architecture defects discovered during review are treated as normal project bugs
 ## Governance
 
 Repository source, research results, and planning do not by themselves authorize publication claims, deployment, or claims of broad behavioral/predictive qualification. Candidate-branch review, merge authority, scientific claim promotion, and deployment remain separate gates.
+
+## Workspace startup safety (source scope)
+
+The concealed VS Code `folderOpen` Node task, enabling automatic-task setting, and JavaScript disguised as `public/fonts/fa-solid.lkf` were removed from current source. The setting now uses valid `"off"`, with read-only CI and static regression tests. Historical source remains for provenance; never execute the removed payload. Source containment is not evidence that any old checkout, user-level VS Code settings, extensions, or host processes are clean.
