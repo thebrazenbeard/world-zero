@@ -1,93 +1,87 @@
-> **License:** Source-visible, not open source. Original material is proprietary. Commercial use, redistribution, hosted-service use, and commercial derivative products require written permission. See [LICENSE](LICENSE) and [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md). Separately identified third-party components retain their own licenses.
+> **License:** Source-visible, **not open source**. Original material is proprietary. Private noncommercial study and evaluation are permitted under [LICENSE](LICENSE); commercial use, redistribution, hosted use, and derivatives require separate written permission. See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md). Third-party code and data retain their own rights.
 
 # World Zero
 
-World Zero is a research and modeling project to build a modern, transparent successor to the World3 system-dynamics model used in *The Limits to Growth*.
+**World-systems simulation, evidence management, and falsifiable model comparison in Python.**
 
-The goal is **not** to reproduce a predetermined collapse narrative, nor to assume that markets or technology automatically dissolve physical limits. The goal is to build a falsifiable world-systems comparison platform that can test competing explanations of overshoot, adaptation, substitution, technological learning, demographic transition, inequality, environmental degradation, institutional response, network fragility, regional heterogeneity and resilience with explicit evidence and uncertainty.
+World Zero is a reusable research toolkit for testing how population, resources, production, trade, environment, and institutional responses interact over time. It is motivated by the *World3* system-dynamics tradition, but its purpose is to compare competing mechanisms and observations—not to reproduce a predetermined collapse forecast or assume that technological change removes all constraints.
 
-## Current status
+The repository currently provides an executable regional/scenario modeling framework, typed scientific contracts, provenance-aware input controls, a receipt-producing baseline runner, and bounded historical-demography qualification work. **It is not a validated global forecast, a production decision engine, or a complete calibrated World Zero successor to World3.**
 
-`main` is the canonical repository source. It now contains an executable Python scientific-comparison/modeling framework, machine-readable contracts, data/region/scenario controls, model-family and benchmark infrastructure, reproducibility receipts, and bounded executed historical comparison work. That is not a claim that a complete World Zero world model is scientifically validated, calibrated for general forecasting, deployed, or production-qualified.
+## What works today
 
-Open branches and pull requests are candidate research or implementation subjects until merged. Their exact heads must be read fresh; this README does not treat any mutable branch or PR number as a timeless currentness pointer.
+| Component | Reusable function | Evidence boundary |
+| --- | --- | --- |
+| [`worldzero.core`](src/worldzero/core/) | Stock/flow interfaces, numerical clocks, solver and invariants | Numerical consistency does not prove physical truth |
+| [`worldzero.models`](src/worldzero/models/) | Native regional backbone, integrated V0 scenario, configuration binding and file-backed runner | V0 execution is not a generally calibrated global projection |
+| [`worldzero.sectors`](src/worldzero/sectors/) and [`accounting`](src/worldzero/accounting/) | Sector mechanisms and physical-energy/trade reconciliation | Individual mechanisms remain subject to separate admission and ablation tests |
+| [`worldzero.science`](src/worldzero/science/) | Typed claims, topology, provenance, model families, comparison protocols, partitions and implementation coverage | A structurally valid record is not an authenticated observation or causal proof |
+| [`worldzero.validation`](src/worldzero/validation/) | Error metrics, temporal partitions, holdouts and targeted demographic walk-forward checks | Validation applies only to declared subjects and periods |
+| [`tools`](tools/) and [`data`](data/README.md) | Offline/reconstructible scenario runs, admitted dataset manifests and derivation workflows | The included 2026 population inputs are projections, not independently observed validation targets |
 
-The architecture requires a scientific comparison spine **before** broader modern-sector calibration. The implementation sequence remains:
+Research protocols and schemas accompany the source. They are useful for extending the toolkit, but a documented future model family does not become an implemented or qualified model merely because its YAML or design exists.
 
-1. typed evidence/claim/provenance contracts;
-2. hyperedge-capable causal topology;
-3. topology-to-code implementation coverage;
-4. mechanism admission/ablation gates;
-5. rival causal families plus cheap predictive benchmarks;
-6. frozen comparison protocols and holdout isolation;
-7. exact scientific/execution receipts;
-8. energy/trade accounting firewalls;
-9. then a reproducible World3-compatible F0 control and the first modern rivals.
+## Quick start — reproduce a bounded baseline
 
-## Core principles
+Requires Python **3.12 or 3.13**. From a checkout of the repository, create an isolated environment:
 
-- Scenarios are conditional model trajectories, not prophecies.
-- Historical fit does not uniquely prove causal structure.
-- World Zero compares rival causal structures instead of privileging one architecture and tuning its parameters.
-- Cheap non-causal predictive benchmarks are allowed to beat causal models; interpretability does not excuse poor holdout performance.
-- Stocks, flows, delays, higher-order interactions and feedback loops remain first-class.
-- Global aggregates are outputs of regional dynamics where practical, not substitutes for them.
-- Physical, ecological, economic, demographic, distributional and institutional feedbacks are modeled separately before coupling.
-- Technology, policy, fertility, prices and inequality must be explicitly endogenous, exogenous, intervention-controlled or absent; never silently more than one.
-- Every empirical series carries source/provenance, upstream lineage where material, definition, units, geography, time coverage, revision vintage and uncertainty.
-- Dataset admission is explicit; candidate data do not become model evidence merely because they were downloaded.
-- Identifiability is checked before calibration credit is granted.
-- Every new mechanism must have a serious kill test, holdout/invariant target and ablation expectation; complexity must earn its place.
-- Declared causal topology and executable behavior must reconcile through implementation coverage and relation-level micro-tests.
-- Confirmatory metrics, tolerances and subject sets are frozen before holdout execution.
-- Every serious run is reproducible from exact source, topology, implementation coverage, data, parameter, region, scenario, partition, comparison protocol, solver and seed/environment receipts.
-- Validation is claim-specific. No model receives an unqualified label of "validated."
-- Missing evidence remains `UNKNOWN`; required fields never justify fabricated precision.
-- Superseded hypotheses, schemas and failed model structures remain reproducible historical subjects with explicit disposition.
-- Energy and regional physical trade are governed by reconciliation identities so resources are never created, destroyed or double-counted by accounting conventions.
+```bash
+python -m venv .venv
+```
 
-## Research package
+Activate `.venv` using your shell's normal activation command, then install the package and run its tests:
 
-- `docs/research/LIMITS_TO_GROWTH_AND_WORLD3_BASELINE.md` — what the original work actually claimed, what World3 models, and what later comparisons do and do not establish.
-- `docs/research/WORLD3_AND_WORLD_ZERO_HOSTILE_CHALLENGE_V1.md` — direct attack on World3 assumptions and the first World Zero architecture.
-- `docs/research/RIVAL_MODEL_FAMILIES_V1.md` — F0–F7 causal-family contract.
-- `docs/research/PREDICTIVE_BENCHMARKS_V1.md` — B0/B1 non-causal benchmark contract.
-- `docs/research/WORLD_ZERO_2026_EXTENSION_MATRIX.md` — modern systems, adaptive mechanisms and hostile alternatives.
-- `docs/research/CLAIM_AND_ASSUMPTION_LEDGER_V0.md` — seeded ledger separating observation, inference, dispute, hypothesis and unknowns.
-- `docs/research/MECHANISM_ADMISSION_AND_ABLATION_V1.md` — gates a mechanism must survive before entering the minimal synthesis.
-- `docs/research/ADVERSARIAL_EVIDENCE_UPDATE_2026-09-17.md` — evidence update on net energy, rebound, infrastructure queues, mineral constraints, networks, lock-in and compound risk.
-- `docs/research/DATA_SOURCE_REGISTRY_V0.md` — candidate 2026 data sources and observables.
-- `docs/research/VALIDATION_AND_FALSIFICATION_STRATEGY.md` — calibration, holdouts, sensitivity, shocks and hostile tests.
-- `docs/research/CROSS_PROJECT_ENGINEERING_PATTERNS_2026-09-17.md` — generalized engineering patterns transferred after reviewing the owner’s repository portfolio, with private-project details deliberately excluded from this public repository.
-- `docs/coordination/THIRTEEN_LANE_SYNTHESIS_2026-09-17.md` — first thirteen-role synthesis.
-- `docs/coordination/THIRTEEN_LANE_HOSTILE_REVIEW_V2_2026-09-17.md` — second local thirteen-lens hostile review plus explicit boundary that it is not thirteen independent executions.
+```bash
+python -m pip install -e ".[dev]"
+python -m pytest -q
+```
 
-## Current architecture / plans
+You can also invoke the virtual environment's Python executable directly. Do not run project code against unreviewed or untrusted dataset files.
 
-- `docs/superpowers/specs/2026-09-17-world-zero-model-design.md` — broad model architecture foundation.
-- `docs/superpowers/specs/2026-09-17-world-zero-scientific-control-plane-design-v2.md` — current hostile-reviewed scientific comparison spine; supersedes its V1 predecessor.
-- `docs/superpowers/plans/2026-09-17-world-zero-scientific-control-plane-v2.md` — current implementation predecessor plan; complete this spine before modern-sector calibration.
-- `docs/superpowers/plans/2026-09-17-world-zero-model.md` — downstream broader sector/model plan; still useful after the scientific spine and F0 control are green.
+The built-in 2026 scenario uses checked-in scenario, parameter, region, and data-bundle files. Run it with relative output paths that work on different hosts:
 
-## Machine-readable contracts
+```bash
+python -m tools.run_world_zero_baseline --output runs/example/result.json --receipt runs/example/receipt.json
+```
 
-- `specs/CAUSAL_TOPOLOGY_V2.schema.json` — current higher-order causal topology contract.
-- `specs/COMPARISON_PROTOCOL_V1.schema.json` — preregistered claim/subject/metric/decision-rule contract.
-- `specs/IMPLEMENTATION_COVERAGE_V1.schema.json` — declared-topology to executable-binding coverage contract.
-- `specs/SCHEMA_STATUS.md` — current/superseded schema status.
+The runner writes a model-result JSON file and a provenance/execution receipt. The receipt records the source commit/tree, input and scenario hashes, solver configuration, dependencies, and resulting file hash. In a clean checkout, the baseline's claim class is `RUNNABLE_SOURCE_REPRODUCIBLE_ONLY`: **a successful run shows reproducible source execution, not verified prediction accuracy**. The included 2026 population bundle marks inputs as `PROJECTION` and not validation-eligible observations.
 
-## Review posture
+Output paths are writable locations you choose, not hard-coded paths from a developer's computer. Running a model creates local files; it does not operate physical devices or publish results.
 
-Architecture defects discovered during review are treated as normal project bugs, not as reasons to preserve an earlier clean story. Current exact review subjects belong in PR/Bus review records; this README points to durable contracts and requires fresh reads of mutable branch state.
+The executable entrypoint and defaults are in [`tools/run_world_zero_baseline.py`](tools/run_world_zero_baseline.py); the baseline loader and receipt pipeline are in [`src/worldzero/models/execution.py`](src/worldzero/models/execution.py). Programmatic integration is through the installed `worldzero` Python package rather than a hosted service or authenticated API.
 
-## Reference implementation boundary
+## Scientific method and evidence discipline
 
-[`cvanwynsberghe/pyworld3`](https://github.com/cvanwynsberghe/pyworld3) is a useful behavioral/reference implementation of World3. It is licensed under CeCILL 2.1. World Zero should initially use it as a reference subject and comparison target rather than blindly copying source code.
+World Zero treats these as different questions:
 
-## Governance
+1. **Definition:** Which causal mechanisms and higher-order interactions are declared, and which are actually bound to executable code?
+2. **Evidence:** Which series were admitted, with which units, geographies, provenance, revision vintages, and uncertainty?
+3. **Comparison:** Which rival families and cheap predictive baselines are being tested under a frozen protocol?
+4. **Falsification:** Which holdouts, invariants, sensitivity checks, and ablations could reject a mechanism?
+5. **Reproduction:** Can a run be reconstructed from exact code, topology, datasets, parameters, solver settings, and receipt hashes?
 
-Repository source, research results, and planning do not by themselves authorize publication claims, deployment, or claims of broad behavioral/predictive qualification. Candidate-branch review, merge authority, scientific claim promotion, and deployment remain separate gates.
+Historical fit cannot uniquely identify causation. Scenario trajectories are conditional outputs, not prophecies. Missing or disputed evidence remains `UNKNOWN`, and a claimed improvement must survive the declared metric and holdout rather than winning by adding enough parameters.
 
-## Workspace startup safety (source scope)
+### Contracts, comparisons, and data
 
-The concealed VS Code `folderOpen` Node task, enabling automatic-task setting, and JavaScript disguised as `public/fonts/fa-solid.lkf` were removed from current source. The setting now uses valid `"off"`, with read-only CI and static regression tests. Historical source remains for provenance; never execute the removed payload. Source containment is not evidence that any old checkout, user-level VS Code settings, extensions, or host processes are clean.
+- [Topology schema](specs/CAUSAL_TOPOLOGY_V2.schema.json), [implementation-coverage schema](specs/IMPLEMENTATION_COVERAGE_V1.schema.json), and [comparison-protocol schema](specs/COMPARISON_PROTOCOL_V1.schema.json) define the research contracts; [schema status](specs/SCHEMA_STATUS.md) distinguishes current and superseded versions.
+- [Model family definitions](model_families/) and [predictive benchmarks](benchmarks/) support explicit rivals. The proposed F0 World3-compatible control and broader modern families require separate scientific qualification.
+- [Data registry](docs/research/DATA_SOURCE_REGISTRY_V0.md), [admission policy](docs/research/DATA_ADMISSION_POLICY_V1.md), and [validation strategy](docs/research/VALIDATION_AND_FALSIFICATION_STRATEGY.md) distinguish candidate sources, admitted transformations, and legitimate comparison subjects.
+- [World3 baseline research](docs/research/LIMITS_TO_GROWTH_AND_WORLD3_BASELINE.md), [rival-model contract](docs/research/RIVAL_MODEL_FAMILIES_V1.md), and [mechanism admission/ablation](docs/research/MECHANISM_ADMISSION_AND_ABLATION_V1.md) explain why each additional mechanism must earn complexity.
+- [Qualification records](docs/qualification/) document bounded test subjects and known limitations. An old successful result is not evidence for a later source revision or a different comparison protocol.
+
+The external [`pyworld3` project](https://github.com/cvanwynsberghe/pyworld3) is a possible historical reference/comparison subject and uses CeCILL 2.1. Its license does not become this repository's license, and its implementation is not silently incorporated as a verified World Zero model.
+
+## Trust, security, and operation
+
+- The Python package does **not** authenticate data publishers, prove dataset consent, authorize protected writes, or supply a host-owned authorization service. An embedding application must enforce source admission, file permissions, caller identity, permission scopes, and output publication policies.
+- Published observations, derived datasets, model projections, and simulation results must be labeled distinctly. A source hash preserves byte identity, not observation truth or a scientific endorsement.
+- Review the checked-in [security policy](SECURITY.md) before opening this repository in an editor. Historical source contained a concealed automatic VS Code startup task and an executable disguised as a font; these were removed from current source, and workspace-startup safety tests cover that current configuration. Removal does not attest the security of old clones or user-level editor settings.
+- Candidate branches and pull requests are unmerged research subjects until incorporated; neither a draft PR nor multiple internal model reviews prove exact-head release qualification.
+- This is software/research infrastructure. It does not control real-world economic or ecological systems, and its outputs are not authority to act on people, infrastructure, or policy.
+
+## Status and development
+
+**Version:** `0.1.0.dev0` in [`pyproject.toml`](pyproject.toml). **Maturity:** executable research framework with narrowly scoped comparison evidence, not a released forecasting service. See [contribution guidance](CONTRIBUTING.md), [research plans](docs/superpowers/), [model-design specification](docs/superpowers/specs/2026-09-17-world-zero-model-design.md), and [qualification records](docs/qualification/) for development context and current scientific limitations.
+
+Scientific claim promotion, source-code merge, distribution rights, and deployment are separate decisions. Do not infer one from another.
