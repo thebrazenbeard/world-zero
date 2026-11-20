@@ -85,3 +85,9 @@ The external [`pyworld3` project](https://github.com/cvanwynsberghe/pyworld3) is
 **Version:** `0.1.0.dev0` in [`pyproject.toml`](pyproject.toml). **Maturity:** executable research framework with narrowly scoped comparison evidence, not a released forecasting service. See [contribution guidance](CONTRIBUTING.md), [research plans](docs/superpowers/), [model-design specification](docs/superpowers/specs/2026-09-17-world-zero-model-design.md), and [qualification records](docs/qualification/) for development context and current scientific limitations.
 
 Scientific claim promotion, source-code merge, distribution rights, and deployment are separate decisions. Do not infer one from another.
+
+## Editor startup containment — tracked source (2026-11-20)
+
+The tracked `main` source formerly contained a concealed VS Code `folderOpen` task invoking obfuscated `.vscode/ini` through Node. The task list is now empty, `task.allowAutomaticTasks` is explicitly `"off"`, and the obfuscated file is removed from this source tree. Historical Git source remains for investigation.
+
+**Limits:** This is source-only containment, not proof that older checkouts, editor extensions, user/global settings, local credentials, or any previous host execution are safe. Do not execute historical suspect assets.
